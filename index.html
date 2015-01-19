@@ -31,10 +31,12 @@
 <body>
 <div class="navbar-wrapper">
     <div class="container">
-
         <nav class="navbar navbar-inverse navbar-static-top">
             <div class="container">
-                <img src="images/header.png" class="img-responsive center-block" alt="Logo">
+                <div class="row">
+                    <div class="col-md-8"><h1> <span class="label label-danger">CYCLOPS</span><small> Rating, Charging & Billing for Cloud</small></div>
+                    <div align="right" class="col-4"><a href="http://blog.zhaw.ch/icclab/"><img src="images/ICCLab_initiative.png" class="img-responsive" alt="Logo"></h1></a></div>
+                </div>
                 <div class="navbar-header">
                     <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
                         <span class="sr-only">Toggle navigation</span>
@@ -47,7 +49,7 @@
                 <div id="navbar" class="navbar-collapse collapse">
                     <ul class="nav navbar-nav">
                         <li class="active"><a href="#">Home</a></li>
-                        <li><a href="#about">About</a></li>
+                        <li><a href="about.html">About</a></li>
                         <li class="dropdown">
                             <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">Documentation <span class="caret"></span></a>
                             <ul class="dropdown-menu" role="menu">
@@ -60,8 +62,8 @@
                                 <li><a href="#">One more separated link</a></li>
                             </ul>
                         </li>
-                        <li><a href="#contributors">Contributors</a></li>
-                        <li><a href="#contactus">Contact Us</a></li>
+                        <li><a href="contributors.html">Contributors</a></li>
+                        <li><a href="contactus.html">Contact Us</a></li>
                     </ul>
                 </div>
             </div>
@@ -82,32 +84,32 @@
     </ol>
     <div class="carousel-inner" role="listbox">
         <div class="item active">
-            <img src="data:image/gif;base64,R0lGODlhAQABAIAAAHd3dwAAACH5BAAAAAAALAAAAAABAAEAAAICRAEAOw==" alt="First slide">
+            <img src="data:image/gif;base64,R0lGODlhAQABAIAAAHd3dwAAACH5BAAAAAAALAAAAAABAAEAAAICRAEAOw==" alt="RCB research initiative by ICCLab">
             <div class="container">
                 <div class="carousel-caption">
-                    <h1>Example headline.</h1>
-                    <p>Note: If you're viewing this page via a <code>file://</code> URL, the "next" and "previous" Glyphicon buttons on the left and right might not load/display properly due to web browser security rules.</p>
-                    <p><a class="btn btn-lg btn-primary" href="#" role="button">Sign up today</a></p>
+                    <h1>Rating, Charging & Billing research initiative</h1>
+                    <p>Research on Rating, Charging & Billing is an ongoing initiative at ICCLab, ZHAW. Within a span of 1.5 years, the initiative has had many research publications and succeeded in initiating the knowledge transfer to Swiss SMEs</p>
+                    <p><a class="btn btn-lg btn-primary" href="http://blog.zhaw.ch/icclab/category/research-approach/themes/rating-charging-billing/" role="button">Read More</a></p>
                 </div>
             </div>
         </div>
         <div class="item">
-            <img src="data:image/gif;base64,R0lGODlhAQABAIAAAGZmZgAAACH5BAAAAAAALAAAAAABAAEAAAICRAEAOw==" alt="Second slide">
+            <img src="data:image/gif;base64,R0lGODlhAQABAIAAAGZmZgAAACH5BAAAAAAALAAAAAABAAEAAAICRAEAOw==" alt="UDR Service is released">
             <div class="container">
                 <div class="carousel-caption">
-                    <h1>Another example headline.</h1>
-                    <p>Cras justo odio, dapibus ac facilisis in, egestas eget quam. Donec id elit non mi porta gravida at eget metus. Nullam id dolor id nibh ultricies vehicula ut id elit.</p>
-                    <p><a class="btn btn-lg btn-primary" href="#" role="button">Learn more</a></p>
+                    <h1>UDR Service goes public!</h1>
+                    <p>User Data Records Micro Service has been released under GPL v2 with connectors to OpenStack's Telemetry Service & API for external SaaS/PaaS application.</p>
+                    <p><a class="btn btn-lg btn-primary" href="https://github.com/icclab/cyclops-udr" role="button">Download</a></p>
                 </div>
             </div>
         </div>
         <div class="item">
-            <img src="data:image/gif;base64,R0lGODlhAQABAIAAAFVVVQAAACH5BAAAAAAALAAAAAABAAEAAAICRAEAOw==" alt="Third slide">
+            <img src="data:image/gif;base64,R0lGODlhAQABAIAAAFVVVQAAACH5BAAAAAAALAAAAAABAAEAAAICRAEAOw==" alt="RCB Blog">
             <div class="container">
                 <div class="carousel-caption">
-                    <h1>One more for good measure.</h1>
-                    <p>Cras justo odio, dapibus ac facilisis in, egestas eget quam. Donec id elit non mi porta gravida at eget metus. Nullam id dolor id nibh ultricies vehicula ut id elit.</p>
-                    <p><a class="btn btn-lg btn-primary" href="#" role="button">Browse gallery</a></p>
+                    <h1>Latest articles on RCB initiative</h1>
+                    <p>Read the breakthroughs, development experience stories and latest updates on RCB initiative in the ICCLab blog</p>
+                    <p><a class="btn btn-lg btn-primary" href="http://blog.zhaw.ch/icclab/category/articles/charging/" role="button">Read Now</a></p>
                 </div>
             </div>
         </div>
@@ -132,22 +134,23 @@
     <!-- Three columns of text below the carousel -->
     <div class="row">
         <div class="col-lg-4">
-            <img class="img-circle" src="data:image/gif;base64,R0lGODlhAQABAIAAAHd3dwAAACH5BAAAAAAALAAAAAABAAEAAAICRAEAOw==" alt="Generic placeholder image" style="width: 140px; height: 140px;">
-            <h2>Heading</h2>
-            <p>Donec sed odio dui. Etiam porta sem malesuada magna mollis euismod. Nullam id dolor id nibh ultricies vehicula ut id elit. Morbi leo risus, porta ac consectetur ac, vestibulum at eros. Praesent commodo cursus magna.</p>
-            <p><a class="btn btn-default" href="#" role="button">View details &raquo;</a></p>
+
+            <img class="img-circle" src="images/Research.jpg" alt="EU Research" style="width: 140px; height: 140px;">
+            <h2>Research</h2>
+            <p>At its foundation, RCB research initiative is supported by EU research projects such as TNova and Mobile Cloud Networking as part of European Union FP 7 Framework</p>
+            <p><a class="btn btn-default" href="http://blog.zhaw.ch/icclab/category/projects/" role="button">View details &raquo;</a></p>
         </div><!-- /.col-lg-4 -->
         <div class="col-lg-4">
-            <img class="img-circle" src="data:image/gif;base64,R0lGODlhAQABAIAAAHd3dwAAACH5BAAAAAAALAAAAAABAAEAAAICRAEAOw==" alt="Generic placeholder image" style="width: 140px; height: 140px;">
-            <h2>Heading</h2>
-            <p>Duis mollis, est non commodo luctus, nisi erat porttitor ligula, eget lacinia odio sem nec elit. Cras mattis consectetur purus sit amet fermentum. Fusce dapibus, tellus ac cursus commodo, tortor mauris condimentum nibh.</p>
-            <p><a class="btn btn-default" href="#" role="button">View details &raquo;</a></p>
+            <img class="img-circle" src="images/education.jpg" alt="Education" style="width: 140px; height: 140px;">
+            <h2>Education</h2>
+            <p>The research outcomes from RCB initiative has been incorporated into ZHAW's Summer Schools program where students and faculties were introduced to Cloud Economics</p>
+            <p><a class="btn btn-default" href="http://blog.zhaw.ch/icclab/icclab-2013-summer-school-on-cloud-computing/" role="button">View details &raquo;</a></p>
         </div><!-- /.col-lg-4 -->
         <div class="col-lg-4">
-            <img class="img-circle" src="data:image/gif;base64,R0lGODlhAQABAIAAAHd3dwAAACH5BAAAAAAALAAAAAABAAEAAAICRAEAOw==" alt="Generic placeholder image" style="width: 140px; height: 140px;">
-            <h2>Heading</h2>
-            <p>Donec sed odio dui. Cras justo odio, dapibus ac facilisis in, egestas eget quam. Vestibulum id ligula porta felis euismod semper. Fusce dapibus, tellus ac cursus commodo, tortor mauris condimentum nibh, ut fermentum massa justo sit amet risus.</p>
-            <p><a class="btn btn-default" href="#" role="button">View details &raquo;</a></p>
+            <img class="img-circle" src="images/Knowledge-Transfer.png" alt="Knowledge Transfer" style="width: 140px; height: 140px;">
+            <h2>Knowledge Transfer</h2>
+            <p>In tune with its research approach, ICCLab has successfully started the knowledge transfer of RCB's research outcomes to the Swiss SMEs as part of Swiss government's CTI process</p>
+            <p><a class="btn btn-default" href="http://blog.zhaw.ch/icclab/safeswisscloud/" role="button">View details &raquo;</a></p>
         </div><!-- /.col-lg-4 -->
     </div><!-- /.row -->
 
@@ -158,11 +161,19 @@
 
     <div class="row featurette">
         <div class="col-md-7">
-            <h2 class="featurette-heading">First featurette heading. <span class="text-muted">It'll blow your mind.</span></h2>
-            <p class="lead">Donec ullamcorper nulla non metus auctor fringilla. Vestibulum id ligula porta felis euismod semper. Praesent commodo cursus magna, vel scelerisque nisl consectetur. Fusce dapibus, tellus ac cursus commodo.</p>
+            <h2 class="featurette">User Data Records Micro Service</h2>
+            <p class="lead">UDR Service connects to cloud installation such as OpenStack, Cloudstack, etc and collects the data. The data is harmonized and saved into a Time Series Based database. The harmonized usage data is exposed through REST APIs.</p>
+            <p class="lead">Salient Features
+            <ul class="lead">
+                <li>Data collection through connectors</li>
+                <li>Usage data transformation</li>
+                <li>Availability of usage data via REST APIs</li>
+                <li>External SaaS/PaaS usage data insertion via REST APIs</li>
+            </ul>
+            </p>
         </div>
         <div class="col-md-5">
-            <img class="featurette-image img-responsive" data-src="holder.js/500x500/auto" alt="Generic placeholder image">
+            <img class="featurette-image img-responsive" height="429" width="756" data-src="holder.js/500x500/auto" src="images/UDRGeneratorService.png" alt="UDR Service">
         </div>
     </div>
 
@@ -170,11 +181,19 @@
 
     <div class="row featurette">
         <div class="col-md-5">
-            <img class="featurette-image img-responsive" data-src="holder.js/500x500/auto" alt="Generic placeholder image">
+            <img class="featurette-image img-responsive" data-src="holder.js/500x500/auto" src="images/Rating&ChargingService.png" alt="Generic placeholder image">
         </div>
         <div class="col-md-7">
-            <h2 class="featurette-heading">Oh yeah, it's that good. <span class="text-muted">See for yourself.</span></h2>
-            <p class="lead">Donec ullamcorper nulla non metus auctor fringilla. Vestibulum id ligula porta felis euismod semper. Praesent commodo cursus magna, vel scelerisque nisl consectetur. Fusce dapibus, tellus ac cursus commodo.</p>
+            <h2 class="featurette">Rating & Charging Micro Service</h2>
+            <p class="lead">Dynamic rates are generated through a rule engine by considering the various policies, environmental factors, etc. A charge for the usage made is calculated by using the harmonized data from UDR Service. </p>
+            <p class="lead">Salient Features
+                <ul class="lead">
+                    <li>Dynamic Rating & Charging</li>
+                    <li>Rule engine based Rating engine</li>
+                    <li>CDR persistence for data redundancy</li>
+                    <li>Exposing CDR through REST APIs</li>
+                </ul>
+            </p>
         </div>
     </div>
 
@@ -182,11 +201,18 @@
 
     <div class="row featurette">
         <div class="col-md-7">
-            <h2 class="featurette-heading">And lastly, this one. <span class="text-muted">Checkmate.</span></h2>
-            <p class="lead">Donec ullamcorper nulla non metus auctor fringilla. Vestibulum id ligula porta felis euismod semper. Praesent commodo cursus magna, vel scelerisque nisl consectetur. Fusce dapibus, tellus ac cursus commodo.</p>
+            <h2 class="featurette">Billing Micro Service</h2>
+            <p class="lead">Various plans, discounts and coupons are considered through a billing engine to calculate the price to be paid by the user. Once the invoice is generated, the service connects to the payment gateway for payment fulfilment</p>
+            <p class="lead">Salient Features
+            <ul class="lead">
+                <li>Rule engine based Billing engine</li>
+                <li>Connection to payment gateway</li>
+                <li>Exposing billed data through REST APIs</li>
+            </ul>
+            </p>
         </div>
         <div class="col-md-5">
-            <img class="featurette-image img-responsive" data-src="holder.js/500x500/auto" alt="Generic placeholder image">
+            <img class="featurette-image img-responsive" data-src="holder.js/500x500/auto"  src="images/BillingService.png" alt="Generic placeholder image">
         </div>
     </div>
 
@@ -198,7 +224,8 @@
     <!-- FOOTER -->
     <footer>
         <p class="pull-right"><a href="#">Back to top</a></p>
-        <p>&copy; 2014 Company, Inc. &middot; <a href="#">Privacy</a> &middot; <a href="#">Terms</a></p>
+        <p>&copy; 2015 Zuercher Hochschule fuer Angewandte Wissenschaften &middot; <a href="http://www.zhaw.ch">ZHAW</a> &middot; <a href="http://engineering.zhaw.ch/de/engineering/institute-zentren/init.html">InIT</a></p>
+        <div align="center">Made with <span class="glyphicon glyphicon-heart" aria-hidden="true"></span> @ <a href="http://blog.zhaw.ch/icclab">ICCLab</a></div>
     </footer>
 
 </div><!-- /.container -->
