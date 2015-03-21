@@ -1,0 +1,8 @@
+ch.icclab.cyclops.dashboard.application
+ch.icclab.cyclops.dashboard.builder
+ch.icclab.cyclops.dashboard.keystone
+ch.icclab.cyclops.dashboard.login
+ch.icclab.cyclops.dashboard.token
+ch.icclab.cyclops.dashboard.udr
+ch.icclab.cyclops.dashboard.users
+ch.icclab.cyclops.dashboard.util
