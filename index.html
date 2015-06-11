@@ -54,6 +54,8 @@
                             <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">Download <span class="caret"></span></a>
                             <ul class="dropdown-menu" role="menu">
                                 <li><a href="https://github.com/icclab/cyclops-udr">UDR Service</a></li>
+                                <li><a href="https://github.com/icclab/cyclops-rc">RC Service</a></li>
+                                <li><a href="https://github.com/icclab/cyclops-billing">Billing Service</a></li>
                                 <li><a href="https://github.com/icclab/cyclops-support">Dashboard</a></li>
                             </ul>
                         </li>
@@ -109,12 +111,22 @@
             </div>
         </div>
         <div class="item">
-            <img src="data:image/gif;base64,R0lGODlhAQABAIAAAGZmZgAAACH5BAAAAAAALAAAAAABAAEAAAICRAEAOw==" alt="UDR Service is released">
+            <img src="data:image/gif;base64,R0lGODlhAQABAIAAAGZmZgAAACH5BAAAAAAALAAAAAABAAEAAAICRAEAOw==" alt="Cyclops Dashboard is released">
             <div class="container">
                 <div class="carousel-caption">
                     <h1>Cyclops Dashboard now on GitHub!</h1>
                     <p>Usage visualization, rate configuration &amp; billing for OpenStack using data provided by the Rating, Charging &amp; Billing microservices</p>
                     <p><a class="btn btn-lg btn-primary" href="https://github.com/icclab/cyclops-support" role="button">Download</a></p>
+                </div>
+            </div>
+        </div>
+        <div class="item">
+            <img src="data:image/gif;base64,R0lGODlhAQABAIAAAGZmZgAAACH5BAAAAAAALAAAAAABAAEAAAICRAEAOw==" alt="Rating & Charging Micro Service is released">
+            <div class="container">
+                <div class="carousel-caption">
+                    <h1>Rating & Charging Micro Service is released</h1>
+                    <p>RC Micro service calculates the rate of a resource accordingto different rating plocies. Also it generates Charge Data Records for a user</p>
+                    <p><a class="btn btn-lg btn-primary" href="https://github.com/icclab/cyclops-rc" role="button">Download</a></p>
                 </div>
             </div>
         </div>
@@ -159,13 +171,19 @@
         </div><!-- /.col-lg-4 -->
     </div><!-- /.row -->
 
+    <hr class="featurette-divider">
+
+    <div class="row" align="center">
+        <img class="featurette-image img-responsive" height="250" width="500" data-src="holder.js/500x500/auto" src="images/overall_architecture.png" alt="CYCLOPS Framework Architecture">
+        <h2 class="featurette">CYLOPS: Rating, Charging & Billing Framework</h2>
+    </div>
 
     <!-- START THE FEATURETTES -->
 
     <hr class="featurette-divider">
 
     <div class="row featurette">
-        <div class="col-md-7">
+        <div class="col-md-6">
             <h2 class="featurette">User Data Records Micro Service</h2>
             <p class="lead">UDR Service connects to cloud installation such as OpenStack, Cloudstack, etc and collects the data. The data is harmonized and saved into a Time Series Based database. The harmonized usage data is exposed through REST APIs.</p>
             <p class="lead">Salient Features
@@ -179,21 +197,23 @@
             <h2>
                 <a href="https://github.com/icclab/cyclops-udr"><span class="label label-primary">Download</span></a>
                 <a href="https://github.com/icclab/cyclops-udr/wiki"><span class="label label-info">Wiki</span></a>
+                <a href="https://github.com/icclab/cyclops-udr/wiki/API-Documentation"><span class="label label-info">API Doc</span></a>
+                <a href="/javadoc/udrservice/index.html"><span class="label label-info">JavaDoc</span></a>
             </h2>
             </p>
         </div>
-        <div class="col-md-5">
-            <img class="featurette-image img-responsive" height="429" width="756" data-src="holder.js/500x500/auto" src="images/UDRGeneratorService.png" alt="UDR Service">
+        <div class="col-md-6">
+            <img class="featurette-image img-responsive" height="650" width="1000" data-src="holder.js/500x500/auto" src="images/UDRGeneratorService.png" alt="UDR Service">
         </div>
     </div>
 
     <hr class="featurette-divider">
 
     <div class="row featurette">
-        <div class="col-md-5">
+        <div class="col-md-6">
             <img class="featurette-image img-responsive" data-src="holder.js/500x500/auto" src="images/Rating&ChargingService.png" alt="Generic placeholder image">
         </div>
-        <div class="col-md-7">
+        <div class="col-md-6">
             <h2 class="featurette">Rating &amp; Charging Micro Service</h2>
             <p class="lead">Dynamic rates are generated through a rule engine by considering the various policies, environmental factors, etc. A charge for the usage made is calculated by using the harmonized data from UDR Service. </p>
             <p class="lead">Salient Features
@@ -201,8 +221,14 @@
                     <li>Dynamic Rating &amp; Charging</li>
                     <li>Rule engine based Rating engine</li>
                     <li>CDR persistence for data redundancy</li>
-                    <li>Exposing CDR through REST APIs</li>
+                    <li>Exposes CDR through REST APIs</li>
                 </ul>
+            <h2>
+                <a href="https://github.com/icclab/cyclops-rc"><span class="label label-primary">Download</span></a>
+                <a href="https://github.com/icclab/cyclops-rc/wiki"><span class="label label-info">Wiki</span></a>
+                <a href="https://github.com/icclab/cyclops-rc/wiki/API-Documentation"><span class="label label-info">API Doc</span></a>
+                <a href="/javadoc/rcservice/index.html"><span class="label label-info">JavaDoc</span></a>
+            </h2>
             </p>
         </div>
     </div>
@@ -210,19 +236,25 @@
     <hr class="featurette-divider">
 
     <div class="row featurette">
-        <div class="col-md-7">
+        <div class="col-md-6">
             <h2 class="featurette">Billing Micro Service</h2>
             <p class="lead">Various plans, discounts and coupons are considered through a billing engine to calculate the price to be paid by the user. Once the invoice is generated, the service connects to the payment gateway for payment fulfilment</p>
             <p class="lead">Salient Features
             <ul class="lead">
                 <li>Rule engine based Billing engine</li>
                 <li>Connection to payment gateway</li>
-                <li>Exposing billed data through REST APIs</li>
+                <li>Exposes billed data through REST APIs</li>
                 <li>Planned compatibility with the proposed OCCI billing-extension</li>
             </ul>
+            <h2>
+                <a href="https://github.com/icclab/cyclops-billing"><span class="label label-primary">Download</span></a>
+                <a href="https://github.com/icclab/cyclops-billing/wiki"><span class="label label-info">Wiki</span></a>
+                <a href="https://github.com/icclab/cyclops-billing/wiki/API-Documentation"><span class="label label-info">API Doc</span></a>
+                <a href="/javadoc/billingservice/index.html"><span class="label label-info">JavaDoc</span></a>
+            </h2>
             </p>
         </div>
-        <div class="col-md-5">
+        <div class="col-md-6">
             <img class="featurette-image img-responsive" data-src="holder.js/500x500/auto"  src="images/BillingService.png" alt="Generic placeholder image">
         </div>
     </div>
@@ -230,10 +262,10 @@
     <hr class="featurette-divider">
 
     <div class="row featurette">
-        <div class="col-md-5">
+        <div class="col-md-6">
             <img class="featurette-image img-responsive" data-src="holder.js/500x500/auto"  src="images/dashboard_menu.png" alt="Generic placeholder image">
         </div>
-        <div class="col-md-7">
+        <div class="col-md-6">
             <h2 class="featurette">Dashboard</h2>
             <p class="lead">The place where the data from the UDR, RC and Billing Microservices is presented to the end user in the form of charts, statistics and bills.</p>
             <p class="lead">Administrators use the dashboard to manage user accounts, select what meters are being used, configure the rating details, etc.
@@ -241,6 +273,7 @@
             <h2>
                 <a href="https://github.com/icclab/cyclops-support"><span class="label label-primary">Download</span></a>
                 <a href="https://github.com/icclab/cyclops-support/wiki"><span class="label label-info">Wiki</span></a>
+                <a href="/javadoc/dashboard/index.html"><span class="label label-info">JavaDoc</span></a>
             </h2>
             </p>
         </div>
