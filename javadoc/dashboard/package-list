@@ -1,7 +1,14 @@
 ch.icclab.cyclops.dashboard.application
+ch.icclab.cyclops.dashboard.bills
 ch.icclab.cyclops.dashboard.builder
+ch.icclab.cyclops.dashboard.charge
+ch.icclab.cyclops.dashboard.database
+ch.icclab.cyclops.dashboard.errorreporting
+ch.icclab.cyclops.dashboard.externalMeters
 ch.icclab.cyclops.dashboard.keystone
 ch.icclab.cyclops.dashboard.login
+ch.icclab.cyclops.dashboard.oauth2
+ch.icclab.cyclops.dashboard.rate
 ch.icclab.cyclops.dashboard.token
 ch.icclab.cyclops.dashboard.udr
 ch.icclab.cyclops.dashboard.users
