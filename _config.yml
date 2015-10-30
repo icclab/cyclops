@@ -1,0 +1,13 @@
+title: Rating, Charging & Billing research initiative
+name: Cyclops
+description: "Research on Rating, Charging & Billing is an ongoing initiative at ICCLab, ZHAW. Within a span of 2.5 years, the initiative has had many research publications and succeeded in initiating the knowledge transfer to Swiss SMEs"
+
+baseurl: '/cyclops'
+url: "https://icclab.github.io"
+
+email: harh@zhaw.ch
+twitter_username: ICC_Lab
+github_username: ICCLab
+
+#paginate: 10 #deprecated
+

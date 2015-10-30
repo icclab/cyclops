@@ -1,0 +1,16 @@
+---
+title: Cyclops News
+layout: default
+---
+<section class="box special">
+	<header class="major">
+		<h2>Cyclops News</h2>
+	</header>
+		{% for post in site.posts %}
+			<h3>{{ post.title }}</h3>
+			<span class="date">{{ post.date | date_to_string }}</span>
+			<section class="box special">
+				{{ post.content | remove: '<p>' | remove: '</p>' }}
+			</section>
+		{% endfor %}
+</section>

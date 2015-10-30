@@ -1,0 +1,7 @@
+{% include header.html %}
+	<section class="box special">
+		<h3>{{ page.title }}</h3>
+		<span class="date">{{ page.date | date_to_string }}</span>
+		{{ page.content }}
+	</section>
+{% include footer.html %}

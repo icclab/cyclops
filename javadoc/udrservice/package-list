@@ -1,9 +1,0 @@
-ch.icclab.cyclops.application
-ch.icclab.cyclops.model.udr
-ch.icclab.cyclops.persistence.client
-ch.icclab.cyclops.persistence.impl
-ch.icclab.cyclops.resource.client
-ch.icclab.cyclops.resource.impl
-ch.icclab.cyclops.resource.interfc
-ch.icclab.cyclops.server
-ch.icclab.cyclops.util
