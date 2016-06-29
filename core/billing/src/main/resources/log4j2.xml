@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration>
+    <Appenders>
+        <File name="errors" filename="/var/log/cyclops/billing/errors.log" append="false">
+            <PatternLayout pattern="[ %-6p] %d{yyyy-MM-dd HH:mm:ss} (%C{2}:%L) - %m%n"/>
+        </File>
+        <File name="trace" filename="/var/log/cyclops/billing/trace.log" append="false">
+            <PatternLayout pattern="[ %-6p] %d{yyyy-MM-dd HH:mm:ss} (%C{2}:%L) - %m%n"/>
+        </File>
+        <File name="rest" filename="/var/log/cyclops/billing/rest.log" append="false">
+            <PatternLayout pattern="[%d{yyyy-MM-dd HH:mm:ss}] %m%n"/>
+        </File>
+        <File name="dispatch" filename="/var/log/cyclops/billing/dispatch.log" append="false">
+            <PatternLayout pattern="[%d{yyyy-MM-dd HH:mm:ss}] %m%n"/>
+        </File>
+        <File name="data" filename="/var/log/cyclops/billing/data.log" append="false">
+            <PatternLayout pattern="[%d{yyyy-MM-dd HH:mm:ss}] %m%n"/>
+        </File>
+        <File name="commands" filename="/var/log/cyclops/billing/commands.log" append="false">
+            <PatternLayout pattern="[%d{yyyy-MM-dd HH:mm:ss}] %m%n"/>
+        </File>
+        <File name="timeseries" filename="/var/log/cyclops/billing/timeseries.log" append="false">
+            <PatternLayout pattern="[%d{yyyy-MM-dd HH:mm:ss}] %m%n"/>
+        </File>
+    </Appenders>
+    <Loggers>
+        <Root level="ERROR">
+            <AppenderRef ref="errors" level="ERROR"/>
+        </Root>
+        <logger name="ch.icclab.cyclops" level="ALL">
+            <appender-ref ref="trace" level="TRACE"/>
+        </logger>
+        <logger name="ch.icclab.cyclops.util.loggers.RESTLogger" level="REST">
+            <appender-ref ref="rest" level="REST"/>
+        </logger>
+
+        <logger name="ch.icclab.cyclops.util.loggers.DispatchLogger" level="DISPATCH">
+            <appender-ref ref="dispatch" level="DISPATCH"/>
+        </logger>
+
+        <logger name="ch.icclab.cyclops.util.loggers.DataLogger" level="DATA">
+            <appender-ref ref="data" level="DATA"/>
+        </logger>
+
+        <logger name="ch.icclab.cyclops.util.loggers.CommandLogger" level="COMMAND">
+            <appender-ref ref="commands" level="COMMAND"/>
+        </logger>
+
+        <logger name="ch.icclab.cyclops.util.loggers.TimeSeriesLogger" level="TIMESERIES">
+            <appender-ref ref="timeseries" level="TIMESERIES"/>
+        </logger>
+    </Loggers>
+</Configuration>

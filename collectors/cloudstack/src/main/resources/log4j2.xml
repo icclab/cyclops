@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration>
+    <Appenders>
+        <File name="errors" filename="/var/log/cyclops/cloudstack/errors.log" append="false">
+            <PatternLayout pattern="[ %-6p] %d{yyyy-MM-dd HH:mm:ss} (%C{2}:%L) - %m%n"/>
+        </File>
+        <File name="trace" filename="/var/log/cyclops/cloudstack/trace.log" append="false">
+            <PatternLayout pattern="[ %-6p] %d{yyyy-MM-dd HH:mm:ss} (%C{2}:%L) - %m%n"/>
+        </File>
+        <File name="scheduler" filename="/var/log/cyclops/cloudstack/scheduler.log" append="false">
+            <PatternLayout pattern="[%d{yyyy-MM-dd HH:mm:ss}] %m%n"/>
+        </File>
+        <File name="dispatch" filename="/var/log/cyclops/cloudstack/dispatch.log" append="false">
+            <PatternLayout pattern="[%d{yyyy-MM-dd HH:mm:ss}] %m%n"/>
+        </File>
+        <File name="hibernate" filename="/var/log/cyclops/cloudstack/hibernate.log" append="false">
+            <PatternLayout pattern="[ %-6p] %d{yyyy-MM-dd HH:mm:ss} (%C{2}:%L) - %m%n"/>
+        </File>
+    </Appenders>
+    <Loggers>
+        <Root level="ERROR">
+            <AppenderRef ref="errors" level="ERROR"/>
+        </Root>
+        <logger name="ch.icclab.cyclops" level="ALL">
+            <appender-ref ref="trace" level="TRACE"/>
+        </logger>
+        <logger name="ch.icclab.cyclops.util.loggers.SchedulerLogger" level="SCHEDULER">
+            <appender-ref ref="scheduler" level="SCHEDULER"/>
+        </logger>
+
+        <logger name="ch.icclab.cyclops.util.loggers.DispatchLogger" level="DISPATCH">
+            <appender-ref ref="dispatch" level="DISPATCH"/>
+        </logger>
+
+        <logger name="org.hibernate" level="INFO">
+            <appender-ref ref="hibernate" level="INFO"/>
+        </logger>
+    </Loggers>
+</Configuration>
