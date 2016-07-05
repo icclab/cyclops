@@ -13,7 +13,19 @@ After verifying the configuration files in each sub-folder for correctness, simp
 ```
 docker-compose up
 ```
+#### Pre-test setting
+In order to setup queue bindings properly, a few scripts are included in the *scripts* subfolder. Execute them as follows -
 
+```
+chmod +x *.sh
+./bindings_rcb_rate.sh localhost 15672
+./bindings_cloudstack.sh localhost 15672
+```
+Change *localhost* to the url where rabbitmq is running in case you are running the containers remotely. Now simply follow the developers and user's guide available in the WiKi to test or extend Cyclops, or to write your own collectors.
+
+### Not included in this release
+Our generic rule-engine *Coin* is not included in this release, but will be released once the legal release restrictions expire in next few months. Dashboard is also not included, and once we have prepared the docker container for the basic dashboard it will be incuded.
+ 
 ### Documentation
 Comprehensive API reference and developer's guides, as well as troubleshooting pages are available in the Wiki section.
 
