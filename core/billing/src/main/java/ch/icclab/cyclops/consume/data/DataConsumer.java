@@ -2,9 +2,9 @@ package ch.icclab.cyclops.consume.data;
 
 import ch.icclab.cyclops.consume.AbstractConsumer;
 import ch.icclab.cyclops.load.Loader;
-import ch.icclab.cyclops.load.model.InfluxDBCredentials;
 import ch.icclab.cyclops.load.model.PublisherCredentials;
 import ch.icclab.cyclops.publish.Messenger;
+import ch.icclab.cyclops.timeseries.BatchPointsContainer;
 import ch.icclab.cyclops.timeseries.InfluxDBClient;
 import ch.icclab.cyclops.timeseries.RemoveNullValues;
 import ch.icclab.cyclops.util.RegexParser;
@@ -29,11 +29,18 @@ public class DataConsumer extends AbstractConsumer {
     final static Logger logger = LogManager.getLogger(DataConsumer.class.getName());
 
     private static InfluxDBClient influxDBClient = InfluxDBClient.getInstance();
+    private static Messenger messenger = Messenger.getInstance();
 
     public static TimeUnit TIME_UNIT = TimeUnit.SECONDS;
 
     private PublisherCredentials publisherSettings;
     private String defaultMeasurementName;
+
+    private Long validRecords;
+
+    private BatchPointsContainer container;
+    private List<Object> broadcast;
+    private Map<String, List<Object>> dispatch;
 
     public DataConsumer(String name, PublisherCredentials settings) {
         this.defaultMeasurementName = name;
@@ -41,19 +48,63 @@ public class DataConsumer extends AbstractConsumer {
     }
 
     @Override
-    protected void consume(String content) {
+    public void consume(String content) {
+        initialise();
+
         try {
             // try to map it as array
-            List array = new Gson().fromJson(content, List.class);
+            List<Map> array = new Gson().fromJson(content, List.class);
 
             // iterate over object entries
-            for (Object obj: array) {
-                processDataFrame(obj);
-            }
+            array.forEach(this::processDataFrame);
 
         } catch (Exception ignored) {
             // this means it was not an array to begin with, just a simple object
             processDataFrame(content);
+        }
+
+        finalise();
+    }
+
+    public Long getNumberOfValidRecords() {
+        return validRecords;
+    }
+
+    private void initialise() {
+        validRecords = 0l;
+        container = new BatchPointsContainer();
+        broadcast = new ArrayList<>();
+        dispatch = new HashMap<>();
+    }
+
+    private void finalise() {
+        // persist points that were created
+        influxDBClient.persistContainer(container);
+
+        // broadcast
+        if (broadcast != null && !broadcast.isEmpty()) {
+            if (broadcast.size() == 1) {
+                // broadcast it as value
+                messenger.broadcast(broadcast.get(0));
+            } else {
+                // broadcast it as array
+                messenger.broadcast(broadcast);
+            }
+        }
+
+        // dispatch
+        if (dispatch != null && !dispatch.isEmpty()) {
+            for (Map.Entry entry: dispatch.entrySet()) {
+                List<Object> list = (List<Object>) entry.getValue();
+
+                if (list.size() == 1) {
+                    // publish it as value
+                    messenger.publish(list.get(0), (String) entry.getKey());
+                } else {
+                    // publish it as array
+                    messenger.publish(list, (String) entry.getKey());
+                }
+            }
         }
     }
 
@@ -61,10 +112,8 @@ public class DataConsumer extends AbstractConsumer {
      * Process data frame as OBJECT
      * @param obj to be processed
      */
-    private void processDataFrame(Object obj) {
-        String json = new Gson().toJson(obj);
-
-        storeAndPublish(json, obj);
+    private void processDataFrame(Map obj) {
+        storeAndPublish(obj);
     }
 
     /**
@@ -73,39 +122,55 @@ public class DataConsumer extends AbstractConsumer {
      */
     private void processDataFrame(String str) {
         try {
-            Object obj = new Gson().fromJson(str, Object.class);
+            Map obj = new Gson().fromJson(str, Map.class);
 
-            storeAndPublish(str, obj);
+            storeAndPublish(obj);
         } catch (Exception ignored) {
+            // if incoming JSON is not valid we are simply skipping it
         }
     }
 
     /**
-     * Process JSON object
-     * @param json as JSON string
+     * Process, store and publish incoming object
+     * @param obj representation
      */
-    private void storeAndPublish(String json, Object obj) {
+    private void storeAndPublish(Map obj) {
         try {
-            // flatten JSON and map it to HashMap
-            Map<String, Object> flat = JsonFlattener.flattenAsMap(json);
-
             // now parse it and create a database Point
-            ConsumedData data = processDataAndGetPoint(flat);
+            ConsumedData data = processDataAndGetPoint(obj);
 
             // and finally persist it
-            influxDBClient.persistSinglePoint(data.getPoint());
+            container.addPoint(data.getPoint());
 
             // publish or broadcast if desired
             if (data.shouldPublish()) {
-                Messenger messenger = Messenger.getInstance();
+
+                // reapply class definition
+                obj.put(DataMapping.FIELD_FOR_MAPPING, data.getClazz());
 
                 // where to publish
                 if (data.doNotBroadcastButRoute()) {
-                    messenger.publish(obj, data.getRoutingKey());
+                    String clazz = data.getClazz();
+
+                    // add to internal dispatch structure
+                    if (dispatch.containsKey(clazz)) {
+                        // we need to fetch the list
+                        List<Object> list = dispatch.get(clazz);
+                        list.add(obj);
+                    } else {
+                        // we need to create a new one
+                        List<Object> list = new ArrayList<>();
+                        list.add(obj);
+
+                        dispatch.put(clazz, list);
+                    }
+
                 } else {
-                    messenger.broadcast(obj);
+                    broadcast.add(obj);
                 }
             }
+
+            validRecords += 1;
 
         } catch (Exception notValidJson) {
             DataLogger.log(String.format("Received event/measurement is not a valid JSON: %s", notValidJson.getMessage()));
@@ -116,25 +181,28 @@ public class DataConsumer extends AbstractConsumer {
      * Data holder for consumed data including database point and mapping guidelines
      */
     private class ConsumedData {
+        private String clazz;
         private Point.Builder builder;
         private Boolean shouldPublish;
         private Boolean doNotBroadcastButRoute;
-        private String routingKey;
 
-        public ConsumedData(Point.Builder builder, Boolean shouldPublish, Boolean doNotBroadcastButRoute, String routingKey) {
+        public ConsumedData(String clazz, Point.Builder builder, Boolean shouldPublish, Boolean doNotBroadcastButRoute) {
+            this.clazz = clazz;
             this.builder = builder;
-            this.routingKey = routingKey;
             this.shouldPublish = shouldPublish;
             this.doNotBroadcastButRoute = doNotBroadcastButRoute;
         }
 
-        public ConsumedData(Point.Builder builder, DataMapping guideline, String routingKey) {
+        public ConsumedData(String clazz, Point.Builder builder, DataMapping guideline) {
+            this.clazz = clazz;
             this.builder = builder;
-            this.routingKey = routingKey;
             this.shouldPublish = guideline.shouldPublish();
             this.doNotBroadcastButRoute = guideline.doNotBroadcastButRoute();
         }
 
+        public String getClazz() {
+            return clazz;
+        }
         public Point.Builder getPoint() {
             return builder;
         }
@@ -144,24 +212,17 @@ public class DataConsumer extends AbstractConsumer {
         public Boolean doNotBroadcastButRoute() {
             return doNotBroadcastButRoute;
         }
-
-        public String getRoutingKey() {
-            return routingKey;
-        }
-        public void setRoutingKey(String routingKey) {
-            this.routingKey = routingKey;
-        }
     }
 
     /**
      * Process and create database Point
-     * @param flat map
+     * @param map to be processed
      * @return point
      */
-    private ConsumedData processDataAndGetPoint(Map<String, Object> flat) {
+    private ConsumedData processDataAndGetPoint(Map<String, Object> map) {
         try {
             // check whether type field is present
-            String clazz = (String) flat.get(DataMapping.FIELD_FOR_MAPPING);
+            String clazz = (String) map.get(DataMapping.FIELD_FOR_MAPPING);
 
             // find corresponding classes
             Set set = new ClassesInPackageScanner().setResourceNameFilter((packageName, fileName)
@@ -174,9 +235,23 @@ public class DataConsumer extends AbstractConsumer {
                 // access object based on provided class definition
                 DataMapping guideline = (DataMapping) Class.forName(first.get().getName()).newInstance();
 
-                String measurement = (String) flat.get(DataMapping.FIELD_FOR_MAPPING);
+                DataLogger.log(String.format("Event/measurement received with \"%s\" guidelines", clazz));
 
-                DataLogger.log(String.format("Event/measurement received with \"%s\" guidelines", measurement));
+                // by default we will work with the original map
+                Map<String, Object> processed = map;
+                try {
+                    // let's call user specified pre-processing method
+                    Map<String, Object> preProcessing = guideline.preProcess(map);
+
+                    // assign new one if it's valid
+                    if (preProcessing != null && !preProcessing.isEmpty()) {
+                        processed = preProcessing;
+                    }
+                } catch (Exception ignored) {
+                }
+
+                // we will be storing flattened version of the map
+                Map<String, Object> flat = JsonFlattener.flattenAsMap(new Gson().toJson(processed));
 
                 // remove type from original HashMap
                 flat.remove(DataMapping.FIELD_FOR_MAPPING);
@@ -195,8 +270,8 @@ public class DataConsumer extends AbstractConsumer {
                     unit = TIME_UNIT;
                 }
                 // finally construct database point
-                Point.Builder builder = constructPoint(measurement, timeStamp, unit, flat, tags);
-                return new ConsumedData(builder, guideline, clazz);
+                Point.Builder builder = constructPoint(clazz, timeStamp, unit, flat, tags);
+                return new ConsumedData(clazz, builder, guideline);
             } else {
                 // guideline was not present or wasn't valid
                 throw new Exception();
@@ -207,6 +282,8 @@ public class DataConsumer extends AbstractConsumer {
             DataLogger.log("Event/measurement received without valid guidelines");
 
             Point.Builder builder;
+
+            Map<String, Object> flat = JsonFlattener.flattenAsMap(new Gson().toJson(map));
 
             // even though we don't have mapping template, we still want to have proper measurement name if TYPE is present
             if (flat.containsKey(DataMapping.FIELD_FOR_MAPPING)){
@@ -226,9 +303,9 @@ public class DataConsumer extends AbstractConsumer {
             // determine publisher preferences
             Boolean shouldPublish = publisherSettings.getPublisherIncludeAlsoUnknown();
             Boolean doNotRouteButBroadcast = publisherSettings.getPublisherByDefaultDispatchInsteadOfBroadcast();
-            String defaultRoutingKey = Loader.getSettings().getInfluxDBCredentials().getInfluxDBDefaultMeasurement();
+            String clazz = Loader.getSettings().getInfluxDBCredentials().getInfluxDBDefaultMeasurement();
 
-            return new ConsumedData(builder, shouldPublish, doNotRouteButBroadcast, defaultRoutingKey);
+            return new ConsumedData(clazz, builder, shouldPublish, doNotRouteButBroadcast);
         }
     }
 

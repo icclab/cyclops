@@ -17,6 +17,7 @@ package ch.icclab.cyclops.consume.data;
  */
 
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -45,6 +46,14 @@ public interface DataMapping {
      * @return list of strings or null
      */
     List<String> getTagNames();
+
+    /**
+     * Pre-process, update or change incoming fields and values
+     * This method is called for you on the level of original Map (parsed JSON)
+     * @param original Map representation of the incoming object
+     * @return preprocessed or null (original will be used)
+     */
+    Map preProcess(Map original);
 
     /**
      * Should response be automatically published?

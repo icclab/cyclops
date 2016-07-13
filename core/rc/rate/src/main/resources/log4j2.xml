@@ -1,16 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Configuration>
     <Appenders>
-        <File name="errors" filename="/var/log/cyclops/rc/rate/errors.log" append="false">
+        <File name="errors" filename="/var/log/cyclops/rate/errors.log" append="false">
             <PatternLayout pattern="[ %-6p] %d{yyyy-MM-dd HH:mm:ss} (%C{2}:%L) - %m%n"/>
         </File>
-        <File name="trace" filename="/var/log/cyclops/rc/rate/trace.log" append="false">
+        <File name="trace" filename="/var/log/cyclops/rate/trace.log" append="false">
             <PatternLayout pattern="[ %-6p] %d{yyyy-MM-dd HH:mm:ss} (%C{2}:%L) - %m%n"/>
         </File>
-        <File name="dispatch" filename="/var/log/cyclops/rc/rate/dispatch.log" append="false">
+        <File name="dispatch" filename="/var/log/cyclops/rate/dispatch.log" append="false">
             <PatternLayout pattern="[%d{yyyy-MM-dd HH:mm:ss}] %m%n"/>
         </File>
-        <File name="data" filename="/var/log/cyclops/rc/rate/data.log" append="false">
+        <File name="data" filename="/var/log/cyclops/rate/data.log" append="false">
             <PatternLayout pattern="[%d{yyyy-MM-dd HH:mm:ss}] %m%n"/>
         </File>
     </Appenders>

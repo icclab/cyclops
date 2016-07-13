@@ -20,6 +20,7 @@ import ch.icclab.cyclops.consume.data.DataMapping;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -43,6 +44,11 @@ public class CloudStackUsageData implements DataMapping {
         List<String> list = new ArrayList<>();
         list.add("account");
         return list;
+    }
+
+    @Override
+    public Map preProcess(Map original) {
+        return original;
     }
 
     @Override

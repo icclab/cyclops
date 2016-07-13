@@ -10,10 +10,7 @@ import org.apache.commons.lang.math.NumberUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -38,12 +35,12 @@ public class DataConsumer extends AbstractConsumer {
     protected void consume(String content) {
         try {
             // try to map it as array
-            List array = new Gson().fromJson(content, List.class);
+            List<Map> array = new Gson().fromJson(content, List.class);
 
             // make sure there is something to be rated at all
             if (array != null && !array.isEmpty()) {
                 // now apply rates
-                List rated = rateAndCharge(array);
+                List<Map> rated = rateAndCharge(array);
 
                 // push it to the next step
                 publishOrBroadcast(rated);
@@ -58,7 +55,7 @@ public class DataConsumer extends AbstractConsumer {
                     // apply rate
                     Map rated = rateAndCharge(obj);
 
-                    publishOrBroadcast(rated);
+                    publishOrBroadcast(Collections.singletonList(rated));
                 }
             } catch (Exception ignoredAgain) {}
         }
@@ -102,7 +99,7 @@ public class DataConsumer extends AbstractConsumer {
      * @param list to be rated
      * @return rated list
      */
-    private List rateAndCharge(List<Map> list) {
+    private List<Map> rateAndCharge(List<Map> list) {
         List<Map> ratedList = new ArrayList<>();
 
         // iterate and rate all objects
@@ -128,22 +125,50 @@ public class DataConsumer extends AbstractConsumer {
         return (obj.containsKey(RatingPreferences.CLASS_FIELD_NAME))? NumberUtils.toDouble(properties.getProperty((String) obj.get(RatingPreferences.CLASS_FIELD_NAME)), rating.getDefaultRate()): rating.getDefaultRate();
     }
 
-    private void publishOrBroadcast(Object obj) {
+    private void publishOrBroadcast(List<Map> list) {
+        Messenger messenger = Messenger.getInstance();
 
-        if (obj != null) {
-            Messenger messenger = Messenger.getInstance();
-
-            // now check whether to broadcast it or dispatch with routing key
+        if (list != null && !list.isEmpty()) {
             if (publisherSettings.dispatchInsteadOfBroadcast()) {
-                String routingKey = (String) ((Map) obj).get(RatingPreferences.CLASS_FIELD_NAME);
-                if (routingKey != null && !routingKey.isEmpty()) {
-                    messenger.publish(obj, routingKey);
-                } else {
-                    messenger.publish(obj, publisherSettings.getPublisherDefaultRoutingKeyIfMissing());
+
+                // some initialisation
+                String defaultKey = publisherSettings.getPublisherDefaultRoutingKeyIfMissing();
+                Map<String, List<Object>> dispatch = new HashMap<>();
+
+                // let's iterate over individual maps
+                for (Map map: list) {
+                    String routingKey = (String) map.get(RatingPreferences.CLASS_FIELD_NAME);
+                    if (routingKey == null || routingKey.isEmpty()) {
+                        routingKey = defaultKey;
+                    }
+
+                    // check whether this list exists
+                    if (dispatch.containsKey(routingKey)) {
+
+                        // find appropriate list
+                        List<Object> tmp = dispatch.get(routingKey);
+
+                        // add new object to it
+                        tmp.add(map);
+
+                        // put it back
+                        dispatch.put(routingKey, tmp);
+                    } else {
+                        List<Object> tmp = new ArrayList<>();
+                        tmp.add(map);
+                        dispatch.put(routingKey, tmp);
+                    }
                 }
+
+                // finally dispatch it over RabbitMQ
+                for (Map.Entry<String, List<Object>> entry: dispatch.entrySet()) {
+                    messenger.publish(entry.getValue(), entry.getKey());
+                }
+
             } else {
-                messenger.broadcast(obj);
+                messenger.broadcast(list);
             }
         }
+
     }
 }

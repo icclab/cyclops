@@ -266,9 +266,7 @@ public class CloudStackPuller {
      * @param list to be broadcast
      */
     private void broadcastRecords(List<Object> list) {
-        for (Object item: list) {
-            Messenger.getInstance().broadcast(item);
-        }
+        Messenger.getInstance().broadcast(list);
     }
 
     /**

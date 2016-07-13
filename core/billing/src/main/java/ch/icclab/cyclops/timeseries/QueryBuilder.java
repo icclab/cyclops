@@ -28,13 +28,15 @@ import java.util.concurrent.TimeUnit;
 public class QueryBuilder {
 
     private final static String COLUMN_TIME = "time";
-    private final static String GREATER_THAN = ">=";
-    private final static String LESS_THAN = "<=";
+    private final static String GREATER_EQUAL = ">=";
+    private final static String LOWER_EQUAL = "<=";
+    private final static String GREATER_THAN = ">";
+    private final static String LOWER_THAN = "<";
 
     private String measurement = "";
     private List<String> selectedFields = new ArrayList<>();
     private List<String> whereFields = new ArrayList<>();
-    private String groupBy = null;
+    private List<String> groupByFields = new ArrayList<>();
     private Integer limit = null;
     private Integer offset = null;
     private ORDER order = ORDER.ASC;
@@ -106,8 +108,8 @@ public class QueryBuilder {
         }
 
         // add GROUP BY clause
-        if (groupBy != null && !groupBy.isEmpty()){
-            command.append(String.format(" GROUP BY %s", groupBy));
+        if (!groupByFields.isEmpty()){
+            command.append(String.format(" GROUP BY %s", getGroupBy(groupByFields)));
         }
 
         // if ORDERED BY DESC
@@ -137,16 +139,6 @@ public class QueryBuilder {
     }
 
     /**
-     * Add field to SELECT
-     * @param field to be selected
-     * @return QueryBuilder
-     */
-    public QueryBuilder select(String field) {
-        selectedFields.add(addDoubleQuotes(field));
-        return this;
-    }
-
-    /**
      * Add fields to SELECT
      * @param fields to be selected
      * @return QueryBuilder
@@ -165,6 +157,16 @@ public class QueryBuilder {
      */
     public QueryBuilder count(String field) {
         selectedFields.add(String.format("COUNT(%s)", addDoubleQuotes(field)));
+        return this;
+    }
+
+    /**
+     * Add SUM to selected fields
+     * @param field to perform summing on
+     * @return QueryBuilder
+     */
+    public QueryBuilder sum(String field) {
+        selectedFields.add(String.format("SUM(%s)", addDoubleQuotes(field)));
         return this;
     }
 
@@ -239,8 +241,12 @@ public class QueryBuilder {
      * @return QueryBuilder
      */
     public QueryBuilder timeFrom(Long time, TimeUnit unit) {
+        return time(time, unit, GREATER_EQUAL);
+    }
+    public QueryBuilder afterTime(Long time, TimeUnit unit) {
         return time(time, unit, GREATER_THAN);
     }
+
 
     /**
      * Add TIME TO constraint
@@ -249,8 +255,12 @@ public class QueryBuilder {
      * @return QueryBuilder
      */
     public QueryBuilder timeTo(Long time, TimeUnit unit) {
-        return time(time, unit, LESS_THAN);
+        return time(time, unit, LOWER_EQUAL);
     }
+    public QueryBuilder beforeTime(Long time, TimeUnit unit) {
+        return time(time, unit, LOWER_THAN);
+    }
+
     private QueryBuilder time(Long time, TimeUnit unit, String delimiter) {
         String from = String.format("%d%s", time, getTimeDurationLetter(unit));
         whereFields.add(String.format("%s %s %s", addDoubleQuotes(COLUMN_TIME), delimiter, from));
@@ -259,12 +269,23 @@ public class QueryBuilder {
 
     /**
      * GROUP BY clause
-     * @param key to group by
+     * @param keys to group by
      * @return QueryBuilder
      */
-    public QueryBuilder groupBy(String key) {
-        groupBy = addDoubleQuotes(key);
+    public QueryBuilder groupBy(String ... keys) {
+        for (String key : keys) {
+            groupByFields.add(addDoubleQuotes(key));
+        }
         return this;
+    }
+
+    /**
+     * Access GroupBy fields
+     * @param list to be used
+     * @return String or null
+     */
+    private String getGroupBy(List<String> list) {
+        return String.join(",", list);
     }
 
 

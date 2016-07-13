@@ -22,6 +22,7 @@ import com.google.gson.Gson;
 import org.apache.commons.beanutils.BeanUtils;
 import org.influxdb.dto.QueryResult;
 import org.joda.time.DateTime;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -37,15 +38,6 @@ public class ParseQueryResult {
     private static String TIME_FIELD = "time";
 
     public static List<Map> parse(QueryResult data) {
-        // structure of QueryResult
-        List<String> columns = new ArrayList<>();
-
-        // we need to record columns just once
-        Boolean onlyOnce = true;
-
-        // index of Time field
-        int time = -1;
-
         // container for result
         List<Map> container = new ArrayList<>();
 
@@ -55,19 +47,27 @@ public class ParseQueryResult {
         try {
             // go over all results
             for (QueryResult.Result result : data.getResults()) {
-                // every series
+
+                // go over individual series
                 for (QueryResult.Series serie : result.getSeries()) {
 
-                    // add all column names
-                    if (onlyOnce) {
-                        columns.addAll(serie.getColumns());
-                        time = columns.indexOf(TIME_FIELD);
-                        onlyOnce = false;
-                    }
+                    // store columns here
+                    List<String> columns = new ArrayList<>();
+                    columns.addAll(serie.getColumns());
+
+                    // get time field position
+                    int time = columns.indexOf(TIME_FIELD);
+
                     // iterate over values
                     for (List<Object> values : serie.getValues()) {
                         // we will store one row here
                         Map<String, Object> row = new HashMap<>();
+
+                        // add tag values if there are any
+                        Map<String, ?> tags = serie.getTags();
+                        if (tags != null && !tags.isEmpty()) {
+                            row.putAll(tags);
+                        }
 
                         // access objects
                         int i = 0;

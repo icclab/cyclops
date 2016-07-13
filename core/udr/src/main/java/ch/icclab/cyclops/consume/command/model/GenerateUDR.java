@@ -17,7 +17,6 @@ package ch.icclab.cyclops.consume.command.model;
  */
 
 import ch.icclab.cyclops.consume.command.Command;
-import ch.icclab.cyclops.publish.Messenger;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 

@@ -47,10 +47,16 @@ public class Service {
         router.attach(String.format("%s/{%s}", MeasurementEndpoint.ENDPOINT, MeasurementEndpoint.ATTRIBUTE), MeasurementEndpoint.class);
         counter.registerEndpoint(MeasurementEndpoint.ENDPOINT);
 
-        // list of measurements
         router.attach(MeasurementsEndpoint.ENDPOINT, MeasurementsEndpoint.class);
         counter.registerEndpoint(MeasurementsEndpoint.ENDPOINT);
 
+        logger.trace("Attaching data endpoint");
+        router.attach(DataEndpoint.ENDPOINT, DataEndpoint.class);
+        counter.registerEndpoint(DataEndpoint.ENDPOINT);
+
+        logger.trace("Attaching command endpoint");
+        router.attach(CommandEndpoint.ENDPOINT, CommandEndpoint.class);
+        counter.registerEndpoint(CommandEndpoint.ENDPOINT);
     }
 
     /**
