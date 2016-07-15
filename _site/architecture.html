@@ -33,15 +33,9 @@
 			<ul>
 				<li><a href="/cyclops/about.html">About</a></li>
 				<li><a href="/cyclops/architecture.html">Architecture</a></li>
-				<li>
-					<a href="" class="icon fa-angle-down">Download</a>
-					<ul>
-						<li><a target="_blank" href="https://github.com/icclab/cyclops-udr">User Data Records</a></li>
-						<li><a target="_blank" href="https://github.com/icclab/cyclops-rc">Rating & Charging</a></li>
-						<li><a target="_blank" href="https://github.com/icclab/cyclops-billing">Billing</a></li>
-						<li><a target="_blank" href="https://github.com/icclab/cyclops-dashboard">Dashboard</a></li>
-					</ul>
-				</li>
+        <li><a target="_blank" href="https://github.com/icclab/cyclops">Download</a></li>
+        <li><a target="_blank" href="https://github.com/icclab/cyclops/wiki">Wiki</a></li>
+        <li><a target="_blank" href="https://github.com/icclab/cyclops/tree/master/dev-support">Docker</a></li>
 				<!--
 					<li><a href="/cyclops/blog">News</a></li>	
 				-->
@@ -58,116 +52,60 @@
 		<h2>Cyclops: Rating-Charging-Billing</br>Architecture</h2>
 		<p>The architecture is modular in nature and made up of 3 main micro-services, communicating
 		</br>
-		with each other using REST APIs and JSON exchange format.</p>
+		with each other over AMQP and REST APIs, using JSON exchange format.</p>
 	</header>
 	<span class="image featured"><img src="/cyclops/assets/images/pic02x.jpg" alt="" /></span>
 </section>
 
 <section class="box special features">
 	<div class="features">
-		<span class="image"><img src="/cyclops/assets/images/architecture/overall.png" alt="" /></span>
+		<span class="image"><img src="/cyclops/assets/images/architecture/arch_new.png" alt="" /></span>
 	</div>
 </section>
 
 <section class="box special features">
-	<div class="paragraphs">
-	  <div class="row">
-	    <div class="col-md-4">
-	      <div class="content-heading clearfix media">
-	           <h2>UDR micro-service</h2>
-	           <a target="_blank" href="/cyclops/assets/images/architecture/udr.png"><img class="pull-left" src="/cyclops/assets/images/architecture/udr.png" width="400" height="208"/></a>
-	      </div>
-	      <p>UDR micro-service connects to cloud installation such as OpenStack, or CloudStack and autonomously collects the usage data. Harmonised data is being saved into a Time Series Based database and exposed through REST APIs.
-		  <br><br>
-		  Data collection through connectors<br>
-		  Usage data transformation and harmonisation<br>
-		  Availability of usage data records via REST APIs<br>
-		  External SaaS/PaaS usage data insertion via REST APIs<br>
-		  </p>
-	    </div>
-	  </div>
-	<ul class="actions">
-		<li><a target="_blank" href="https://github.com/icclab/cyclops-udr" class="button">Download & Install</a></li>
-		<li><a target="_blank" href="https://github.com/icclab/cyclops-udr/wiki/API-Documentation" class="button alt">API Doc</a></li>
-		<li><a target="_blank" href="https://github.com/icclab/cyclops-udr/wiki" class="button alt">Wiki</a></li>
-		<li><a target="_blank" href="https://icclab.github.io/cyclops/javadoc/udrservice/index.html" class="button alt">Java Doc</a></li>
-	</ul>
+	<div class="features-row">
+		<section>
+			<span class="icon major fa-cloud accent3"></span>
+			<h3>Usage collectors</h3>
+			<p>
+        OpenStack Ceilometer<br>
+        OpenStack Events<br>
+			  CloudStack<br>
+			</p>
+		</section>
+		<section>
+			<span class="icon major fa-codepen accent2"></span>
+			<h3>Core components</h3>
+      <p>
+        UDR - usage calculation, persistence and exposure<br>
+        RC - charge generation and meter rating<br>
+        Billing - invoice generation<br>
+      </p>
+		</section>
 	</div>
 </section>
 
 <section class="box special features">
-	<div class="paragraphs">
-	  <div class="row">
-	    <div class="col-md-4">
-	      <div class="content-heading clearfix media">
-	           <h2>RC micro-service</h2>
-	           <a target="_blank" href="/cyclops/assets/images/architecture/rc.png"><img class="pull-left" src="/cyclops/assets/images/architecture/rc.png" width="400" height="209"/></a>
-	      </div>
-	      <p>Dynamic rates are generated through a rule engine by considering the various policies, environmental factors and pricing strategies. A charge for the usage made is calculated by using the harmonised data from UDR micro-service.
-		  <br><br>
-		  Dynamic Rating and Charging<br>
-		  Rule engine based Rating engine<br>
-		  CDR persistence for data redundancy<br>
-		  Exposes CDR through REST APIs<br>
-		  </p>
-	    </div>
-	  </div>
-  	<ul class="actions">
-  		<li><a target="_blank" href="https://github.com/icclab/cyclops-rc" class="button">Download & Install</a></li>
-  		<li><a target="_blank" href="https://github.com/icclab/cyclops-rc/wiki/API-Documentation" class="button alt">API Doc</a></li>
-  		<li><a target="_blank" href="https://github.com/icclab/cyclops-rc/wiki" class="button alt">Wiki</a></li>
-  		<li><a target="_blank" href="https://icclab.github.io/cyclops/javadoc/rcservice/index.html" class="button alt">Java Doc</a></li>
-  	</ul>
+	<div class="features-row">
+		<section>
+			<span class="icon major fa-arrows-alt accent4"></span>
+			<h3>Supporting services</h3>
+      <p>
+        Static rating and Rule engine<br>
+        Autoscaler and Load balancer<br>
+        Extensible Dashboard<br>
+      </p>
+		</section>
+		<section>
+			<span class="icon major fa-terminal accent5"></span>
+			<h3>Quick deployment</h3>
+			<ul class="actions">
+				<li><a href="https://github.com/icclab/cyclops/tree/master/dev-support" target="_blank" class="button alt">Docker</a></li>
+			</ul>
+		</section>
 	</div>
 </section>
-
-<section class="box special features">
-	<div class="paragraphs">
-	  <div class="row">
-	    <div class="col-md-4">
-	      <div class="content-heading clearfix media">
-	           <h2>Billing micro-service</h2>
-	           <a target="_blank" href="/cyclops/assets/images/architecture/billing.png"><img class="pull-left" src="/cyclops/assets/images/architecture/billing.png" width="400" height="268"/></a>
-	      </div>
-	      <p>Various plans, discounts and coupons are considered through a billing engine to calculate the price to be paid by the user. Once the invoice is generated, the service connects to the payment gateway for payment fulfilment.
-		  <br><br>
-		  Rule engine based Billing engine<br>
-		  Connection to payment gateway<br>
-		  Exposes billed data through REST APIs<br>
-		  </p>
-	    </div>
-	  </div>
-	  <br>
-    	<ul class="actions">
-    		<li><a target="_blank" href="https://github.com/icclab/cyclops-billing" class="button">Download & Install</a></li>
-    		<li><a target="_blank" href="https://github.com/icclab/cyclops-billing/wiki/API-Documentation" class="button alt">API Doc</a></li>
-    		<li><a target="_blank" href="https://github.com/icclab/cyclops-billing/wiki" class="button alt">Wiki</a></li>
-    		<li><a target="_blank" href="https://icclab.github.io/cyclops/javadoc/billingservice/index.html" class="button alt">Java Doc</a></li>
-    	</ul>
-	</div>
-</section>
-
-<section class="box special features">
-	<div class="paragraphs">
-	  <div class="row">
-	    <div class="col-md-4">
-	      <div class="content-heading clearfix media">
-	           <h2>Dashboard</h2>
-	           <a target="_blank" href="/cyclops/assets/images/architecture/dashboard.png"><img class="pull-left" src="/cyclops/assets/images/architecture/dashboard.png" width="400" height="147"/></a>
-	      </div>
-	      <p>Data from the UDR, RC and Billing micro-services is presented to the end user in the form of charts, statistics and bills. Admins can manage user accounts, select what meters are being used and configure the rating details.
-		  </p>
-	    </div>
-	  </div>
-	  <br>
-  	<ul class="actions">
-  		<li><a target="_blank" href="https://github.com/icclab/cyclops-support" class="button">Download & Install</a></li>
-  		<li><a target="_blank" href="https://github.com/icclab/cyclops-support/wiki" class="button alt">Wiki</a></li>
-		<li><a target="_blank" href="https://icclab.github.io/cyclops/javadoc/dashboard/index.html" class="button alt">Java Doc</a></li>
-  	</ul>
-	</div>
-</section>
-
 		</section>
 		<!-- Footer -->
 			<footer id="footer">
