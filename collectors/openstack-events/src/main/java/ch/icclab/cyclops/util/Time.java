@@ -17,11 +17,15 @@
 package ch.icclab.cyclops.util;
 
 import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
+import org.joda.time.LocalTime;
 import org.joda.time.chrono.ISOChronology;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 
+import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 /**
  * Author: Martin Skoviera
@@ -58,14 +62,12 @@ public class Time {
      * @return UTC DateTime object
      */
     public static DateTime getDateForTime(String full) {
-        String day = (full.contains("T")) ? full.substring(0, full.indexOf("T")) : full;
-
         // convert it to time object
-        DateTimeFormatter formatter = DateTimeFormat.forPattern("yyyy-MM-dd")
+        DateTimeFormatter formatter = DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm:ss")
                 .withLocale(Locale.ROOT)
                 .withChronology(ISOChronology.getInstanceUTC());
 
-        return formatter.parseDateTime(day);
+        return formatter.parseDateTime(full);
     }
 
     /**
@@ -88,5 +90,12 @@ public class Time {
         } catch (Exception ignored) {
             return original;
         }
+    }
+
+    public static List<Map>  normaliseInfluxDB(List<Map> events) {
+        for (Map event: events){
+            event.replace("time", event.get("time").toString().replace("E9", "E12"));
+        }
+        return events;
     }
 }

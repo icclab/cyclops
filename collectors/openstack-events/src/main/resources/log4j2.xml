@@ -10,6 +10,12 @@
         <File name="dispatch" filename="/var/log/cyclops/openstack_events/dispatch.log" append="false">
             <PatternLayout pattern="[%d{yyyy-MM-dd HH:mm:ss}] %m%n"/>
         </File>
+        <File name="timeseries" filename="/var/log/cyclops/openstack_events/timeseries.log" append="false">
+            <PatternLayout pattern="[%d{yyyy-MM-dd HH:mm:ss}] %m%n"/>
+        </File>
+        <File name="scheduler" filename="/var/log/cyclops/openstack_events/scheduler.log" append="false">
+            <PatternLayout pattern="[%d{yyyy-MM-dd HH:mm:ss}] %m%n"/>
+        </File>
     </Appenders>
 
     <Loggers>
@@ -22,6 +28,13 @@
 
         <logger name="ch.icclab.cyclops.util.loggers.DispatchLogger" level="DISPATCH">
             <appender-ref ref="dispatch" level="DISPATCH"/>
+        </logger>
+        <logger name="ch.icclab.cyclops.util.loggers.SchedulerLogger" level="SCHEDULER">
+            <appender-ref ref="scheduler" level="SCHEDULER"/>
+        </logger>
+
+        <logger name="ch.icclab.cyclops.util.loggers.TimeSeriesLogger" level="TIMESERIES">
+            <appender-ref ref="timeseries" level="TIMESERIES"/>
         </logger>
 
     </Loggers>

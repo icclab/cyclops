@@ -25,7 +25,7 @@ import org.apache.logging.log4j.Level;
  */
 public class LogConstants {
     public static final Level DISPATCH = Level.forName("DISPATCH", 850);
-    public static final Level DATA = Level.forName("DATA", 900);
+    public static final Level SCHEDULER = Level.forName("SCHEDULER", 900);
     public static final Level TIMESERIES = Level.forName("TIMESERIES", 1000);
 
 }

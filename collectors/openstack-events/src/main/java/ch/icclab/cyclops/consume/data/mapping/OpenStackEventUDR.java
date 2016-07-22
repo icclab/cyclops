@@ -24,13 +24,20 @@ package ch.icclab.cyclops.consume.data.mapping;
 
 public class OpenStackEventUDR {
 
-    protected String _class = getClass().getSimpleName();
-    protected Long time;
-    protected String clientId;
-    protected String instanceId;
-    protected String productType;
-    protected String status;
-    protected Double usage;
+    public OpenStackEventUDR(Long time, String account, String instanceId, String status, Double usage){
+        this.time = time;
+        this.account = account;
+        this.instanceId = instanceId;
+        this.status = status;
+        this.usage = usage;
+    }
+
+    private String _class = getClass().getSimpleName();
+    private Long time;
+    private String account;
+    private String instanceId;
+    private String status;
+    private Double usage;
 
     public String get_class() {
         return _class;
@@ -44,12 +51,12 @@ public class OpenStackEventUDR {
         this.time = time;
     }
 
-    public String getClientId() {
-        return clientId;
+    public String getAccount() {
+        return account;
     }
 
-    public void setClientId(String clientId) {
-        this.clientId = clientId;
+    public void setAccount(String account) {
+        this.account = account;
     }
 
     public String getInstanceId() {
@@ -60,13 +67,6 @@ public class OpenStackEventUDR {
         this.instanceId = instanceId;
     }
 
-    public String getProductType() {
-        return productType;
-    }
-
-    public void setProductType(String productType) {
-        this.productType = productType;
-    }
 
     public String getStatus() {
         return status;

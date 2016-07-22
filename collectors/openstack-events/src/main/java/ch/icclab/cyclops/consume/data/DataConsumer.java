@@ -22,11 +22,10 @@ import ch.icclab.cyclops.consume.data.mapping.OpenstackEvent;
 import ch.icclab.cyclops.consume.data.mapping.OsloEvent;
 import ch.icclab.cyclops.consume.data.mapping.OsloEvent.OsloMessage.Args;
 import ch.icclab.cyclops.consume.data.mapping.OsloEvent.OsloMessage.Args.ObjInst.Nova_objectData;
+import ch.icclab.cyclops.load.Loader;
+import ch.icclab.cyclops.load.model.OpenstackSettings;
 import ch.icclab.cyclops.timeseries.InfluxDBClient;
 import com.google.gson.Gson;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import java.util.Arrays;
 import java.util.List;
 
@@ -38,67 +37,52 @@ import java.util.List;
  * Description: Event consumer
  */
 public class DataConsumer extends AbstractConsumer {
-    final static Logger logger = LogManager.getLogger(DataConsumer.class.getName());
     private static InfluxDBClient influxDBClient = InfluxDBClient.getInstance();
+    private static OpenstackSettings settings = Loader.getSettings().getOpenstackSettings();
 
     @Override
     protected void consume(String content) {
         try {
             OpenstackEvent data = manageMessage(content);
+
             if (data.isValid()){
                 influxDBClient.persistSinglePoint(data.getPoint());
             }
-
         } catch (Exception ignored) {
 
         }
     }
-
 
     private OpenstackEvent manageMessage(String content) {
         Gson mapper = new Gson();
-        OpenstackEvent openstackEvent = new OpenstackEvent();
-        List<String> listOfActions  = Arrays.asList( "pausing",
-                "unpausing", "[powering-off]",
-                "powering-on", "suspending", "resuming",
-                "deleted", "spawning", "resize_finish");
-        try {
-            String method = "";
-            OsloEvent osloEvent = mapper.fromJson(content, OsloEvent.class);
-            Args args = osloEvent.getOsloMessage().getArgs();
-            try {
-                method = args.getKwargs().getExpected_task_state().toString();
-            } catch (Exception ignored){
-
-            }
-
-            if (args.getObjmethod().equals("destroy" ))  {
-                if (args.getObjinst().getNova_objectName().equals("Instance")) {
-                    method = "deleted";
-                }
-            }
-            if(listOfActions.contains(method)) {
-                Nova_objectData novaData = args.getObjinst().getNova_objectData();
-                String instanceId = novaData.getUuid();
-                logger.trace("Instance" + instanceId + "changed a status to:" + method);
-                openstackEvent.setAction(method);
-                openstackEvent.setInstanceId(instanceId);
-                openstackEvent.setUserName(osloEvent.getOsloMessage().get_context_user_name());
-                openstackEvent.setService_type("novaInstanceUpTime");
-                openstackEvent.setMemory(novaData.getMemory_mb());
-                openstackEvent.setVcpus(novaData.getVcpus());
-
-                return openstackEvent;
-
-            }
-        } catch (Exception ignored) {
-            // this means it was not an array to begin with, just a simple object
-
+        //list of nova methods related to nova InstanceUpTime
+        List<String> listOfActions  = Arrays.asList( settings.getOpenstackCollectorEventDelete(),
+                settings.getOpenstackCollectorEventResize(), settings.getOpenstackCollectorEventSpawn(),
+                settings.getOpenstackCollectorEventStart(), settings.getOpenstackCollectorEventStop(),
+                settings.getOpenstackCollectorEventSuspend(), settings.getOpenstackCollectorEventResume(),
+                settings.getOpenstackCollectorEventUnpause(), settings.getOpenstackCollectorEventPause());
+        OsloEvent osloEvent = mapper.fromJson(content, OsloEvent.class);
+        Args args = osloEvent.getOsloMessage().getArgs();
+        String method = "";
+        try{
+            //
+            method = args.getKwargs().getExpected_task_state().toString();
+        } catch (Exception ignored){
         }
-        return openstackEvent;
-
+        if (args.getObjmethod().equals("destroy"))  {
+            if (args.getObjinst().getNova_objectName().equals("Instance")) {
+                method = settings.getOpenstackCollectorEventDelete();
+            }
+        }
+        String time = osloEvent.getOsloMessage().get_context_timestamp();
+        if(listOfActions.contains(method)) {
+            Nova_objectData novaData = args.getObjinst().getNova_objectData();
+            String instanceId = novaData.getUuid();
+            String userName = osloEvent.getOsloMessage().get_context_user_name();
+            Double memory = novaData.getMemory_mb();
+            Double vcpus = novaData.getVcpus();
+            return new OpenstackEvent(userName,instanceId, method, memory, vcpus, time);
+        }
+        return null;
     }
-
-
-
 }

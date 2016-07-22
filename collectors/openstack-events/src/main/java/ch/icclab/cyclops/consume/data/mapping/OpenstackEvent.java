@@ -17,11 +17,17 @@
 package ch.icclab.cyclops.consume.data.mapping;
 
 import ch.icclab.cyclops.load.Loader;
+import ch.icclab.cyclops.util.Time;
 import org.influxdb.dto.Point;
+import org.joda.time.DateTime;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
 
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 /**
  * Author: Oleksii
@@ -30,9 +36,16 @@ import java.util.Map;
  */
 public class OpenstackEvent {
 
+    public OpenstackEvent(String userName,String instanceId, String action, Double memory, Double vcpus, String time){
+        this.userName = userName;
+        this.instanceId = instanceId;
+        this.action = action;
+        this.memory = memory;
+        this.vcpus = vcpus;
+        this.time = time;
+    }
 
     private String userName;
-
 
     public String getUserName() {
         return userName;
@@ -44,7 +57,6 @@ public class OpenstackEvent {
 
     private String instanceId;
 
-
     public String getInstanceId() {
         return instanceId;
     }
@@ -55,7 +67,6 @@ public class OpenstackEvent {
 
     private String action;
 
-
     public String getAction() {
         return action;
     }
@@ -64,16 +75,11 @@ public class OpenstackEvent {
         this.action = action;
     }
 
-    private String service_type;
+    private String time;
 
+    public String getTime() { return time; }
 
-    public String getService_type() {
-        return service_type;
-    }
-
-    public void setService_type(String service_type) {
-        this.service_type = service_type;
-    }
+    public void setTime(String time) { this.time = time; }
 
     private Double memory;
 
@@ -93,11 +99,13 @@ public class OpenstackEvent {
      * @return db point
      */
     public Point getPoint() {
-
+        DateTimeFormatter formatter = DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm:ss.SSSSSS").withZoneUTC();
+        DateTime dt = formatter.parseDateTime(time);
         Map fields = getFields();
         removeNullValues(fields);
 
-        return Point.measurement(getMeterName())
+        return Point.measurement(getTableName())
+                .time(dt.getMillis(), MILLISECONDS)
                 .fields(fields)
                 .build();
     }
@@ -112,9 +120,9 @@ public class OpenstackEvent {
     }
 
     /**
-     * @return meter name
+     * @return table
      */
-    private String getMeterName() {
+    private String getTableName() {
         return Loader.getSettings().getOpenstackSettings().getOpenstackEventTable();
     }
 
@@ -125,14 +133,11 @@ public class OpenstackEvent {
      */
     private Map<String, Object> getFields() {
         Map<String, Object> map = new HashMap<String, Object>();
-
         map.put("instanceId", instanceId);
         map.put("clientId", userName);
-        map.put("productType", service_type);
         map.put("status", action);
         map.put("memory", memory.toString());
         map.put("cpu", vcpus.toString());
-
 
         return map;
     }

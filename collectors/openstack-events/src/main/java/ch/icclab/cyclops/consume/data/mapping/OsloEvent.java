@@ -36,13 +36,15 @@ public class OsloEvent {
             return args;
         }
 
-
         Args args;
         String _context_user_name;
+        String _context_timestamp;
 
         public String get_context_user_name() {
             return _context_user_name;
         }
+
+        public String get_context_timestamp() { return _context_timestamp; }
 
         public class Args {
             ObjInst objinst;
@@ -64,7 +66,6 @@ public class OsloEvent {
             }
 
             public class ObjInst {
-
 
                 @SerializedName("nova_object.name")
                 private String nova_objectName;
@@ -94,7 +95,6 @@ public class OsloEvent {
                 }
             }
 
-
             public class Kwargs {
                 Object expected_task_state;
 
@@ -103,16 +103,9 @@ public class OsloEvent {
                 }
             }
         }
-
-
-
-
     }
-
-
     public OsloMessage getOsloMessage() {
         return mapper.fromJson(osloMessage, OsloMessage.class);
     }
-
 }
 

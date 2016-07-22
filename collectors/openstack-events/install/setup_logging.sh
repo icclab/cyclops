@@ -23,6 +23,8 @@ find /var/log/cyclops -type d -exec sudo chmod 755 {} \;
 sudo touch /var/log/cyclops/openstack_events/errors.log
 sudo touch /var/log/cyclops/openstack_events/trace.log
 sudo touch /var/log/cyclops/openstack_events/dispatch.log
+sudo touch /var/log/cyclops/openstack_events/timeseries.log
+sudo touch /var/log/cyclops/openstack_events/scheduler.log
 
 find /var/log/cyclops/openstack_events -type f -exec sudo chmod 666 {} \;
 

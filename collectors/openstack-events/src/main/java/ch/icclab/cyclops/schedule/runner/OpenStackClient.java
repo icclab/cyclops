@@ -19,18 +19,17 @@ package ch.icclab.cyclops.schedule.runner;
 import ch.icclab.cyclops.consume.data.mapping.OpenStackEventUDR;
 import ch.icclab.cyclops.load.Loader;
 import ch.icclab.cyclops.load.model.OpenstackSettings;
+import ch.icclab.cyclops.load.model.PublisherCredentials;
 import ch.icclab.cyclops.persistence.HibernateClient;
 import ch.icclab.cyclops.persistence.LatestPullORM;
 import ch.icclab.cyclops.publish.Messenger;
 import ch.icclab.cyclops.timeseries.InfluxDBClient;
 import ch.icclab.cyclops.timeseries.QueryBuilder;
 import ch.icclab.cyclops.util.Time;
+import ch.icclab.cyclops.util.loggers.SchedulerLogger;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.joda.time.*;
-
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.*;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
@@ -40,44 +39,56 @@ import static java.util.concurrent.TimeUnit.MILLISECONDS;
  * Created on: 16-Oct-15
  * Updated by: Oleksii Serhiienko
  * Updated on: 01-July-16
- * Description: Client class for Telemetry. Asks underlying classes for CloudStack data and saves it
+ * Description: Client class for transforming events to UDR Records for Openstack events
  */
 public class OpenStackClient extends AbstractRunner {
     final static Logger logger = LogManager.getLogger(OpenStackClient.class.getName());
 
-
-    // connection to Load
-
+    //link to hibernate
     private HibernateClient hibernateClient;
+    //link to influxDB client
     private static InfluxDBClient influxDBClient;
+    //Openstack settings
     private static OpenstackSettings settings;
+    //link to database name
+    private static PublisherCredentials publisherCredentials;
     private String dbName;
+    //link to sending exchange
     private static Messenger messenger;
 
+    /**
+     * Constructor has to be hidden
+     */
     public OpenStackClient() {
         hibernateClient = HibernateClient.getInstance();
         influxDBClient = InfluxDBClient.getInstance();
         settings = Loader.getSettings().getOpenstackSettings();
+        publisherCredentials = Loader.getSettings().getPublisherCredentials();
         dbName = Loader.getSettings().getOpenstackSettings().getOpenstackEventTable();
         messenger = Messenger.getInstance();
     }
 
 
+    /**
+     * runner for openstack events scheduler
+     */
     @Override
     public void run() {
         transformEventsToUDRs();
     }
 
-    /**
+    /*
      * Transform Openstack Events to UDR records
      */
     private void transformEventsToUDRs() {
-
-        QueryBuilder parameterQuery = new QueryBuilder(dbName).select();
-        List<Map> tsdbData = influxDBClient.executeQuery(parameterQuery);
-
-        HashMap<String, ArrayList<String>> clientInstanceMap = getInstanceIdsPerClientId(tsdbData);
-
+        SchedulerLogger.log("Scheduler has been started");
+        QueryBuilder parameterQuery = new QueryBuilder(dbName);
+        SchedulerLogger.log("Fetching all events from database ...");
+        List<Map> data = influxDBClient.executeQuery(parameterQuery);
+        SchedulerLogger.log("Influxdb data is successfully fetched.");
+        SchedulerLogger.log("Making map of client and instance IDs...");
+        HashMap<String, ArrayList<String>> clientInstanceMap = getInstanceIdsPerClientId(data);
+        SchedulerLogger.log("Map of client and instance IDs is done");
         createUDRRecords(clientInstanceMap);
     }
 
@@ -86,17 +97,16 @@ public class OpenStackClient extends AbstractRunner {
      * This method takes the POJOobject that contains all events, extracts all clientIDs
      * and maps instanceIds to them which are saved to a HashMap.
      *
-     * @param tsdbData
+     * @param data
      * @return
      */
-    private HashMap<String, ArrayList<String>> getInstanceIdsPerClientId(List<Map> tsdbData) {
-        logger.trace("BEGIN HashMap<String,ArrayList<String>> getInstanceIdsPerClientId(TSDBData[] tsdbData)");
+    private HashMap<String, ArrayList<String>> getInstanceIdsPerClientId(List<Map> data) {
         HashMap<String, ArrayList<String>> map = new HashMap<String, ArrayList<String>>();
-        for (Map obj : tsdbData) {
+        for (Map obj : data) {
             String clienId = obj.get("clientId").toString();
             String instanceId = obj.get("instanceId").toString();
             if (!map.containsKey(clienId)) {
-                 map.put(clienId, new ArrayList<>());
+                map.put(clienId, new ArrayList<>());
             }
             if (!map.get(clienId).contains(instanceId)){
                 map.get(clienId).add(instanceId);
@@ -106,21 +116,37 @@ public class OpenStackClient extends AbstractRunner {
     }
 
     private void createUDRRecords(HashMap<String, ArrayList<String>> clientInstanceMap) {
+        SchedulerLogger.log("UDR creation process is started... ");
         Iterator it = clientInstanceMap.entrySet().iterator();
         DateInterval dates = new DateInterval(whenWasLastPull());
-        // get now
-        Long time = new DateTime().withZone(DateTimeZone.UTC).getMillis();
-
+        SchedulerLogger.log("The last pull was " + dates.fromDate + " " + dates.toDate);
+        Long time = Time.getMilisForTime(dates.getToDate());
+        SchedulerLogger.log("Current timestamp is " + time);
+        ArrayList<OpenStackEventUDR> eventList = new ArrayList<OpenStackEventUDR>();
         while (it.hasNext()) {
             Map.Entry pair = (Map.Entry) it.next();
             String clientId = pair.getKey().toString();
             ArrayList<String> instanceIds = (ArrayList<String>) pair.getValue();
             for (String instanceId : instanceIds) {
-                generateUDR(clientId, instanceId, dates);
+                try {
+                    ArrayList<OpenStackEventUDR> udr = generateUDR(clientId, instanceId, dates);
+                    if (udr !=null){
+                        eventList.addAll(udr);
+                    }
+                } catch (Exception e) {
+                    SchedulerLogger.log("Couldn't generate UDR " +e);
+                }
+
             }
             it.remove();
         }
 
+        if (publisherCredentials.getPublisherByDefaultDispatchInsteadOfBroadcast()) {
+            messenger.publish(eventList, OpenStackEventUDR.class.getSimpleName());
+        } else {
+            messenger.broadcast(eventList);
+        }
+        SchedulerLogger.log("All udr are published ");
         // update time stamp
         LatestPullORM pull = (LatestPullORM) hibernateClient.getObject(LatestPullORM.class, 1l);
         if (pull == null) {
@@ -128,6 +154,7 @@ public class OpenStackClient extends AbstractRunner {
         } else {
             pull.setTimeStamp(time);
         }
+        SchedulerLogger.log("The last pull set to "+pull.getTimeStamp().toString());
         hibernateClient.persistObject(pull);
 
     }
@@ -139,103 +166,78 @@ public class OpenStackClient extends AbstractRunner {
         private String fromDate;
         private String toDate;
 
-        protected DateInterval(DateTime from) {
+        DateInterval(DateTime from) {
             from.withZone(DateTimeZone.UTC);
-            fromDate = from.toString("yyyy-MM-dd'T'hh:mm:ss");
-            DateFormat formatter = new SimpleDateFormat("yyyy-MM-dd'T'hh:mm:ss");
-            formatter.setTimeZone(TimeZone.getTimeZone("GMT+00"));
-            toDate = formatter.format(Calendar.getInstance().getTime());
+            fromDate = from.toString("yyyy-MM-dd'T'HH:mm:ss");
+            toDate =  DateTime.now(DateTimeZone.UTC).toString("yyyy-MM-dd'T'HH:mm:ss");
         }
 
-        protected String getFromDate() {
+        String getFromDate() {
             return fromDate;
         }
 
-        protected String getToDate() {
+        String getToDate() {
             return toDate;
         }
     }
 
-    private boolean usageEvent(Map event) {
-        return (event.get("status").equals(settings.getOpenstackCollectorEventResume()) ||
-                event.get("status").equals(settings.getOpenstackCollectorEventSpawn()) ||
-                event.get("status").equals(settings.getOpenstackCollectorEventUnpause()) ||
-                event.get("status").equals(settings.getOpenstackCollectorEventStart()));
-    }
-
-    public void generateUDR(String clientId, String instanceId, DateInterval dates) {
+    private ArrayList<OpenStackEventUDR> generateUDR(String clientId, String instanceId, DateInterval dates) {
 
         ArrayList<Map> generatedEvents = new ArrayList<>();
         // generate first event
         Long toMills = Time.getMilisForTime(dates.getToDate());
         Long fromMills = Time.getMilisForTime(dates.getFromDate());
-
+        Boolean isItExist = true;
 
         try {
-            generatedEvents.add(getEventBeforeTime(fromMills, clientId, instanceId));
-        } catch (Exception ignored){
-        }
-        //get all events
-
-        QueryBuilder parameterQuery = new QueryBuilder(dbName).where("clientId", clientId).
-                and("instanceId", instanceId).timeTo(toMills, MILLISECONDS).timeFrom(fromMills, MILLISECONDS);
-
-        generatedEvents.addAll(influxDBClient.executeQuery(parameterQuery));
-
-        // generate last event
-
-        generatedEvents.add(getEventBeforeTime(toMills, clientId, instanceId));
-
-        Double usageValues = 0.0;
-        Map lastEventInScope = new HashMap<>();
-        for (Map event: generatedEvents){
-            if ((! lastEventInScope.isEmpty()) && (usageEvent(lastEventInScope))) {
-                Double eventTime = makeValidTime(event.get("time").toString());
-                Double eventLastTime = makeValidTime(lastEventInScope.get("time").toString());
-                usageValues = usageValues + (eventTime - eventLastTime);
+            Map lastEvent = getEventBeforeTime(fromMills, clientId, instanceId);
+            if (lastEvent.get("status").equals(settings.getOpenstackCollectorEventDelete())){
+                isItExist = false;
             }
-            lastEventInScope = event;
-
+            else {
+                generatedEvents.add(lastEvent);
+            }
+        } catch (Exception e){
+            SchedulerLogger.log("No events for " + instanceId + " before "+ dates.toDate);
         }
 
-        OpenStackEventUDR generatedEvent = fromMapToUDR(clientId, instanceId, fromMills, lastEventInScope.get("status").toString(), usageValues);
-
-        messenger.publish(generatedEvent, "");
-
-    }
-
-    public Double makeValidTime(String time){
-        Double doubleTime = new Double(time);
-        Double checkValue = new Double("1E10");
-        if (checkValue < doubleTime){
-            return doubleTime/1000;
+        if (isItExist) {
+            //get all events
+            ArrayList<OpenStackEventUDR> listOfUDRs= new ArrayList<>();
+            QueryBuilder parameterQuery = new QueryBuilder(dbName).where("clientId", clientId).
+                    and("instanceId", instanceId).timeTo(toMills, MILLISECONDS).timeFrom(fromMills, MILLISECONDS);
+            generatedEvents.addAll(Time.normaliseInfluxDB(influxDBClient.executeQuery(parameterQuery)));
+            // generate last event
+            generatedEvents.add(getEventBeforeTime(toMills, clientId, instanceId));
+            Map lastEventInScope = new HashMap<>();
+            for (Map event : generatedEvents) {
+                if ((!lastEventInScope.isEmpty())) {
+                    Long eventTime = Double.valueOf(event.get("time").toString()).longValue();
+                    Long eventLastTime = Double.valueOf(lastEventInScope.get("time").toString()).longValue();
+                    listOfUDRs.add(new OpenStackEventUDR(eventLastTime, clientId,
+                            instanceId, lastEventInScope.get("status").toString(),
+                            (double) (eventTime - eventLastTime) /1000)); //Seconds instead of milliseconds
+                }
+                lastEventInScope = event;
+            }
+            return listOfUDRs;
         }
-        return doubleTime;
+        return null;
     }
 
-    public Map getEventBeforeTime (Long time, String clientId, String instanceId){
+    private Map getEventBeforeTime(Long time, String clientId, String instanceId){
         QueryBuilder parameterQuery = new QueryBuilder(dbName).where("clientId", clientId).
                 and("instanceId", instanceId).timeTo(time, MILLISECONDS);
+        try {
+            influxDBClient.executeQuery(parameterQuery);
+        } catch (Exception e){
+            logger.error("Couldn't execute DB request " + e);
+        }
         List<Map> ListEvents = influxDBClient.executeQuery(parameterQuery);
         Map lastEvent = ListEvents.get(ListEvents.size()-1);
         lastEvent.replace("time", time);
-
         return lastEvent;
-
     }
-
-
-    public OpenStackEventUDR fromMapToUDR(String clientId, String instanceId, Long time, String action, Double usage){
-        OpenStackEventUDR udr = new OpenStackEventUDR();
-        udr.setClientId(clientId);
-        udr.setInstanceId(instanceId);
-        udr.setTime(time);
-        udr.setStatus(action);
-        udr.setUsage(usage);
-
-        return udr;
-    }
-
 
     private DateTime whenWasLastPull() {
         DateTime last;
@@ -246,28 +248,25 @@ public class OpenStackClient extends AbstractRunner {
         } else {
             last = new DateTime(pull.getTimeStamp());
         }
-
-        logger.trace("Getting the last pull date " + last.toString());
-
+        SchedulerLogger.log("Getting the last pull date " + last.toString());
         // get date specified by admin
         String date = settings.getOpenstackFirstImport();
         if (date != null && !date.isEmpty()) {
             try {
-                logger.trace("Admin provided us with import date preference " + date);
+                SchedulerLogger.log("Admin provided us with import date preference " + date);
                 DateTime selection = Time.getDateForTime(date);
 
                 // if we are first time starting and having Epoch, change it to admin's selection
                 // otherwise skip admin's selection and continue from the last DB entry time
                 if (last.getMillis() == 0) {
-                    logger.debug("Setting first import date as configuration file dictates.");
+                    SchedulerLogger.log("Setting first import date as configuration file dictates.");
                     last = selection;
                 }
             } catch (Exception ignored) {
                 // ignoring configuration preference, as admin didn't provide correct format
-                logger.debug("Import date selection for CloudStack ignored - use yyyy-MM-dd format");
+                SchedulerLogger.log("Import date selection for Openstastack ignored - use yyyy-MM-dd format");
             }
         }
-
         return last.withZone(DateTimeZone.forTimeZone(TimeZone.getTimeZone("GMT+00")));
     }
 }

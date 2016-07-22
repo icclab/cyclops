@@ -64,6 +64,11 @@ public class Settings {
         openstackSettings.setOpenstackCollectorEventSpawn(properties.getProperty("OpenstackCollectorEventSpawn"));
         openstackSettings.setOpenstackCollectorEventUnpause(properties.getProperty("OpenstackCollectorEventUnpause"));
         openstackSettings.setOpenstackCollectorEventResume( properties.getProperty("OpenstackCollectorEventResume"));
+        openstackSettings.setOpenstackCollectorEventPause( properties.getProperty("OpenstackCollectorEventPause"));
+        openstackSettings.setOpenstackCollectorEventStop( properties.getProperty("OpenstackCollectorEventStop"));
+        openstackSettings.setOpenstackCollectorEventDelete( properties.getProperty("OpenstackCollectorEventDelete"));
+        openstackSettings.setOpenstackCollectorEventResize( properties.getProperty("OpenstackCollectorEventResize"));
+        openstackSettings.setOpenstackCollectorEventSuspend( properties.getProperty("OpenstackCollectorEventSuspend"));
         openstackSettings.setOpenstackEventTable(properties.getProperty("OpenstackCollectorEventTable"));
         openstackSettings.setOpenstackScheduleTime(properties.getProperty("OpenstackCollectorScheduleTime"));
 
@@ -160,14 +165,6 @@ public class Settings {
             consumerCredentials.setConsumerDataQueue(consumer);
         } else {
             consumerCredentials.setConsumerDataQueue(ConsumerCredentials.DEFAULT_DATA_QUEUE);
-        }
-
-        // commands queue name
-        String commands = properties.getProperty("ConsumerCommandsQueue");
-        if (commands != null && !commands.isEmpty()) {
-            consumerCredentials.setConsumerCommandsQueue(commands);
-        } else {
-            consumerCredentials.setConsumerCommandsQueue(ConsumerCredentials.DEFAULT_COMMANDS_QUEUE);
         }
 
         return consumerCredentials;

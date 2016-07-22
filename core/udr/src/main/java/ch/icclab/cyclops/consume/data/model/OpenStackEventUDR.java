@@ -43,6 +43,7 @@ public class OpenStackEventUDR implements DataMapping{
     public List<String> getTagNames() {
         List<String> list = new ArrayList<>();
         list.add("account");
+        list.add("instanceId");
         return list;
     }
 
