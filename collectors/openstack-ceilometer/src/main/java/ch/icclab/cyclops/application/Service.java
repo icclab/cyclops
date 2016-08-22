@@ -1,6 +1,7 @@
 package ch.icclab.cyclops.application;
 
 import ch.icclab.cyclops.endpoint.RootEndpoint;
+import ch.icclab.cyclops.endpoint.SchedulerEndpoint;
 import ch.icclab.cyclops.endpoint.StatusEndpoint;
 import ch.icclab.cyclops.load.Loader;
 import ch.icclab.cyclops.load.Settings;
@@ -71,6 +72,9 @@ public class Service {
 
         router.attach(StatusEndpoint.ENDPOINT, StatusEndpoint.class);
         counter.registerEndpointWithoutCounting(StatusEndpoint.ENDPOINT);
+
+        router.attach(SchedulerEndpoint.ENDPOINT, SchedulerEndpoint.class);
+        counter.registerEndpoint(SchedulerEndpoint.ENDPOINT);
 
 
         logger.trace("Routes for OpenStack collector microservice successfully created");

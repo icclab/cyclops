@@ -289,7 +289,7 @@ public class Main {
             // also start collection immediately
             Scheduler scheduler = Scheduler.getInstance();
             int frequency = Loader.getSettings().getSchedulerSettings().getFrequency();
-            scheduler.addRunner(new OpenStackCeilometerClient(), 0, 600, TimeUnit.SECONDS);
+            scheduler.addRunner(new OpenStackCeilometerClient(), 0, frequency, TimeUnit.SECONDS);
             scheduler.start();
             outputProgressBar(NO_EMPTY_LINE, EMPTY_LINE);
 
