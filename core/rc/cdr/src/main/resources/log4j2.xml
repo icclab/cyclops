@@ -1,25 +1,25 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Configuration>
     <Appenders>
-        <File name="errors" filename="/var/log/cyclops/cdr/errors.log" append="false">
+        <File name="errors" filename="/var/log/cyclops/rc/cdr/errors.log" append="false">
             <PatternLayout pattern="[ %-6p] %d{yyyy-MM-dd HH:mm:ss} (%C{2}:%L) - %m%n"/>
         </File>
-        <File name="trace" filename="/var/log/cyclops/cdr/trace.log" append="false">
+        <File name="trace" filename="/var/log/cyclops/rc/cdr/trace.log" append="false">
             <PatternLayout pattern="[ %-6p] %d{yyyy-MM-dd HH:mm:ss} (%C{2}:%L) - %m%n"/>
         </File>
-        <File name="rest" filename="/var/log/cyclops/cdr/rest.log" append="false">
+        <File name="rest" filename="/var/log/cyclops/rc/cdr/rest.log" append="false">
             <PatternLayout pattern="[%d{yyyy-MM-dd HH:mm:ss}] %m%n"/>
         </File>
-        <File name="dispatch" filename="/var/log/cyclops/cdr/dispatch.log" append="false">
+        <File name="dispatch" filename="/var/log/cyclops/rc/cdr/dispatch.log" append="false">
             <PatternLayout pattern="[%d{yyyy-MM-dd HH:mm:ss}] %m%n"/>
         </File>
-        <File name="data" filename="/var/log/cyclops/cdr/data.log" append="false">
+        <File name="data" filename="/var/log/cyclops/rc/cdr/data.log" append="false">
             <PatternLayout pattern="[%d{yyyy-MM-dd HH:mm:ss}] %m%n"/>
         </File>
-        <File name="commands" filename="/var/log/cyclops/cdr/commands.log" append="false">
+        <File name="commands" filename="/var/log/cyclops/rc/cdr/commands.log" append="false">
             <PatternLayout pattern="[%d{yyyy-MM-dd HH:mm:ss}] %m%n"/>
         </File>
-        <File name="timeseries" filename="/var/log/cyclops/cdr/timeseries.log" append="false">
+        <File name="timeseries" filename="/var/log/cyclops/rc/cdr/timeseries.log" append="false">
             <PatternLayout pattern="[%d{yyyy-MM-dd HH:mm:ss}] %m%n"/>
         </File>
     </Appenders>
