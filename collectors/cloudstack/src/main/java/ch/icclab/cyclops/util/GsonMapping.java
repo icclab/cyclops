@@ -43,27 +43,31 @@ public class GsonMapping {
                     // now return corresponding classes
                     switch (usagetype) {
                         case 1:
+                            return VMRunning.class;
                         case 2:
-                            return VMUsageData.class;
+                            return VMAllocated.class;
                         case 3:
-                            return IPUsageData.class;
+                            return IP.class;
                         case 4:
+                            return NetworkSent.class;
                         case 5:
-                            return NetworkUsageData.class;
+                            return NetworkReceived.class;
                         case 6:
-                            return VolumeUsageData.class;
+                            return Volume.class;
                         case 7:
+                            return Template.class;
                         case 8:
-                            return TemplateAndIsoUsageData.class;
+                            return ISO.class;
                         case 9:
-                            return SnapshotUsageData.class;
+                            return Snapshot.class;
                         case 11:
+                            return LoadBalancer.class;
                         case 12:
-                            return PolicyOrRuleUsageData.class;
+                            return PortForwarding.class;
                         case 13:
-                            return NetworkOfferingUsageData.class;
+                            return NetworkOffering.class;
                         case 14:
-                            return VPNUserUsageData.class;
+                            return VPNUser.class;
                         default:
                             //returning null will trigger Gson's default behavior
                             logger.error("Unknown class in received JSON - using default GSON behaviour");

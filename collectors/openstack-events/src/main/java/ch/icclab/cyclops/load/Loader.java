@@ -19,8 +19,7 @@ package ch.icclab.cyclops.load;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.restlet.Context;
-import javax.servlet.ServletContext;
+
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;

@@ -60,16 +60,14 @@ public class Settings {
 
 
         openstackSettings.setOpenstackFirstImport(properties.getProperty("OpenstackFirstImportDate"));
-        openstackSettings.setOpenstackCollectorEventStart(properties.getProperty("OpenstackCollectorEventStart"));
-        openstackSettings.setOpenstackCollectorEventSpawn(properties.getProperty("OpenstackCollectorEventSpawn"));
-        openstackSettings.setOpenstackCollectorEventUnpause(properties.getProperty("OpenstackCollectorEventUnpause"));
-        openstackSettings.setOpenstackCollectorEventResume( properties.getProperty("OpenstackCollectorEventResume"));
+        openstackSettings.setOpenstackCollectorEventRun(properties.getProperty("OpenstackCollectorEventRun"));
         openstackSettings.setOpenstackCollectorEventPause( properties.getProperty("OpenstackCollectorEventPause"));
         openstackSettings.setOpenstackCollectorEventStop( properties.getProperty("OpenstackCollectorEventStop"));
         openstackSettings.setOpenstackCollectorEventDelete( properties.getProperty("OpenstackCollectorEventDelete"));
         openstackSettings.setOpenstackCollectorEventResize( properties.getProperty("OpenstackCollectorEventResize"));
         openstackSettings.setOpenstackCollectorEventSuspend( properties.getProperty("OpenstackCollectorEventSuspend"));
-        openstackSettings.setOpenstackEventTable(properties.getProperty("OpenstackCollectorEventTable"));
+        openstackSettings.setOpenstackEventNeutronTable(properties.getProperty("OpenstackCollectorEventNeutronTable"));
+        openstackSettings.setOpenstackEventNovaTable(properties.getProperty("OpenstackCollectorEventNovaTable"));
         openstackSettings.setOpenstackScheduleTime(properties.getProperty("OpenstackCollectorScheduleTime"));
 
         return openstackSettings;

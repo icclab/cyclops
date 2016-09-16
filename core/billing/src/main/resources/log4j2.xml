@@ -1,27 +1,27 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Configuration>
     <Appenders>
-        <File name="errors" filename="/var/log/cyclops/billing/errors.log" append="false">
-            <PatternLayout pattern="[ %-6p] %d{yyyy-MM-dd HH:mm:ss} (%C{2}:%L) - %m%n"/>
-        </File>
-        <File name="trace" filename="/var/log/cyclops/billing/trace.log" append="false">
-            <PatternLayout pattern="[ %-6p] %d{yyyy-MM-dd HH:mm:ss} (%C{2}:%L) - %m%n"/>
-        </File>
-        <File name="rest" filename="/var/log/cyclops/billing/rest.log" append="false">
+        <RandomAccessFile name="errors" filename="/var/log/cyclops/billing/errors.log" append="false" immediateFlush="false">
+            <PatternLayout pattern="[ %-6p] %d{yyyy-MM-dd HH:mm:ss} - %m%n"/>
+        </RandomAccessFile>
+        <RandomAccessFile name="trace" filename="/var/log/cyclops/billing/trace.log" append="false" immediateFlush="false">
+            <PatternLayout pattern="[ %-6p] %d{yyyy-MM-dd HH:mm:ss} - %m%n"/>
+        </RandomAccessFile>
+        <RandomAccessFile name="rest" filename="/var/log/cyclops/billing/rest.log" append="false" immediateFlush="false">
             <PatternLayout pattern="[%d{yyyy-MM-dd HH:mm:ss}] %m%n"/>
-        </File>
-        <File name="dispatch" filename="/var/log/cyclops/billing/dispatch.log" append="false">
+        </RandomAccessFile>
+        <RandomAccessFile name="dispatch" filename="/var/log/cyclops/billing/dispatch.log" append="false" immediateFlush="false">
             <PatternLayout pattern="[%d{yyyy-MM-dd HH:mm:ss}] %m%n"/>
-        </File>
-        <File name="data" filename="/var/log/cyclops/billing/data.log" append="false">
+        </RandomAccessFile>
+        <RandomAccessFile name="data" filename="/var/log/cyclops/billing/data.log" append="false" immediateFlush="false">
             <PatternLayout pattern="[%d{yyyy-MM-dd HH:mm:ss}] %m%n"/>
-        </File>
-        <File name="commands" filename="/var/log/cyclops/billing/commands.log" append="false">
+        </RandomAccessFile>
+        <RandomAccessFile name="commands" filename="/var/log/cyclops/billing/commands.log" append="false" immediateFlush="false">
             <PatternLayout pattern="[%d{yyyy-MM-dd HH:mm:ss}] %m%n"/>
-        </File>
-        <File name="timeseries" filename="/var/log/cyclops/billing/timeseries.log" append="false">
+        </RandomAccessFile>
+        <RandomAccessFile name="timeseries" filename="/var/log/cyclops/billing/timeseries.log" append="false" immediateFlush="false">
             <PatternLayout pattern="[%d{yyyy-MM-dd HH:mm:ss}] %m%n"/>
-        </File>
+        </RandomAccessFile>
     </Appenders>
     <Loggers>
         <Root level="ERROR">

@@ -26,4 +26,4 @@ mvn dependency:tree
 mvn package assembly:single
 
 cd target
-mv cyclops-cdr-0.0.1-jar-with-dependencies.jar ../bin/cdr.jar
+mv cyclops-cdr-2.1.0-jar-with-dependencies.jar ../bin/cdr.jar

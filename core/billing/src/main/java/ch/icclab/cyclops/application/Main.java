@@ -21,6 +21,7 @@ import ch.icclab.cyclops.consume.command.CommandConsumer;
 import ch.icclab.cyclops.consume.data.DataConsumer;
 import ch.icclab.cyclops.load.Loader;
 import ch.icclab.cyclops.load.Settings;
+import ch.icclab.cyclops.load.model.InfluxDBCredentials;
 import ch.icclab.cyclops.load.model.PublisherCredentials;
 import ch.icclab.cyclops.publish.RabbitMQPublisher;
 import ch.icclab.cyclops.timeseries.InfluxDBClient;
@@ -34,9 +35,14 @@ import org.restlet.data.Protocol;
 /**
  * Author: Skoviera
  * Created: 26/04/16
- * Description: Entry point for BOX micro service
+ * Description: Entry point for Billing micro service
  */
-public class Main extends Application{
+public class Main extends Application {
+
+    static {
+        // Nothing can appear before this initializer
+        System.setProperty("Log4jContextSelector", "org.apache.logging.log4j.core.async.AsyncLoggerContextSelector");
+    }
 
     final static Logger logger = LogManager.getLogger(Main.class.getName());
 
@@ -55,10 +61,10 @@ public class Main extends Application{
             "RCB Cyclops: Billing micro service",
             "Author: Martin Skoviera, ICCLab ZHAW", "",
             "Required parameters: path to configuration file",
-            "Optional parameters: HTTP port","",
+            "Optional parameters: HTTP port", "",
             "Example: java -jar billing.jar config.txt 4569");
 
-    public static void main(String[] args){
+    public static void main(String[] args) {
         outputProgressBar("Loading RCB Cyclops Billing micro service ");
 
         // check params and potentially stop execution
@@ -92,6 +98,7 @@ public class Main extends Application{
 
     /**
      * Check number of parameters
+     *
      * @param args as string array
      */
     private static void checkParameters(String[] args) {
@@ -107,6 +114,7 @@ public class Main extends Application{
 
     /**
      * Check whether parameter was help
+     *
      * @param param to be examined
      */
     private static void checkHelp(String param) {
@@ -120,6 +128,7 @@ public class Main extends Application{
 
     /**
      * Make sure configuration file is valid
+     *
      * @param param path
      */
     private static void checkConfigurationFile(String param) {
@@ -199,6 +208,7 @@ public class Main extends Application{
 
     /**
      * Make sure ports are valid
+     *
      * @param component to be bind
      */
     private static void bindServer(Component component) {
@@ -230,6 +240,7 @@ public class Main extends Application{
 
     /**
      * Check port specification
+     *
      * @param args to be processed
      */
     private static void checkCustomPortOption(String[] args) {
@@ -239,7 +250,8 @@ public class Main extends Application{
                 Loader.getSettings().getServerSettings().setServerHTTPPort(port);
 
                 logger.trace(String.format("Custom port specified as %d, configuration file will be ignored", port));
-            } catch (Exception ignored){}
+            } catch (Exception ignored) {
+            }
         }
 
         outputProgressBar();
@@ -250,8 +262,13 @@ public class Main extends Application{
      */
     private static void checkAndConfigureInfluxDB() {
         try {
-            logger.trace("Binding to InfluxDB");
-            InfluxDBClient.createInstance(Loader.getSettings().getInfluxDBCredentials());
+            logger.trace("Binding to InfluxDB and creating databases");
+            InfluxDBCredentials credentials = Loader.getSettings().getInfluxDBCredentials();
+            InfluxDBClient client = new InfluxDBClient(credentials);
+
+            client.ping();
+            client.createDatabases(credentials.getInfluxDBTSDB());
+
         } catch (Exception e) {
             String log = String.format("Couldn't connect to InfluxDb: %s", e.getMessage());
             logger.error(log);
@@ -282,11 +299,11 @@ public class Main extends Application{
         outputProgressBar("...");
     }
 
-    private static void outputProgressBar(Boolean ... emptyLine) {
+    private static void outputProgressBar(Boolean... emptyLine) {
         outputProgressBar("...", emptyLine);
     }
 
-    private static void outputProgressBar(String text, Boolean ... emptyLine) {
+    private static void outputProgressBar(String text, Boolean... emptyLine) {
         if (emptyLine.length > 0 && emptyLine[0]) {
             System.out.println();
         }

@@ -24,10 +24,11 @@ import ch.icclab.cyclops.load.model.HibernateCredentials;
 import ch.icclab.cyclops.persistence.HibernateClient;
 import ch.icclab.cyclops.persistence.HibernateConfiguration;
 import ch.icclab.cyclops.schedule.Scheduler;
-import ch.icclab.cyclops.schedule.runner.OpenStackClient;
 import ch.icclab.cyclops.load.Settings;
 import ch.icclab.cyclops.load.model.PublisherCredentials;
 import ch.icclab.cyclops.publish.RabbitMQPublisher;
+import ch.icclab.cyclops.schedule.runner.openstack.NeutronUDRRunner;
+import ch.icclab.cyclops.schedule.runner.openstack.NovaUDRRunner;
 import ch.icclab.cyclops.timeseries.InfluxDBClient;
 import ch.icclab.cyclops.util.ShutDownListener;
 import org.apache.logging.log4j.LogManager;
@@ -252,7 +253,8 @@ public class Main extends Application{
             // also start collection immediately
             Long time = new Long(Loader.getSettings().getOpenstackSettings().getOpenstackScheduleTime());
             Scheduler scheduler = Scheduler.getInstance();
-            scheduler.addRunner(new OpenStackClient(), 0, time, TimeUnit.MILLISECONDS);
+            scheduler.addRunner(new NovaUDRRunner(), 0, time, TimeUnit.MILLISECONDS);
+            scheduler.addRunner(new NeutronUDRRunner(), 0, time, TimeUnit.MILLISECONDS);
             scheduler.start();
 
             // and finally start the server

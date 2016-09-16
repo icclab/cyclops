@@ -29,6 +29,7 @@ import java.util.List;
  * Description: Batch session for InfluxDB
  */
 public class BatchPointsContainer {
+    // if you ever run addPoint in parallel stream, make sure points are encapsulated with Collections.synchronizedList()
     private List<Point.Builder> points = new ArrayList<>();
 
     public void addPoint(Point.Builder builder) {
@@ -37,7 +38,7 @@ public class BatchPointsContainer {
 
     public BatchPoints getPoints() {
         // get empty container
-        BatchPoints container = InfluxDBClient.getInstance().getEmptyContainer();
+        BatchPoints container = new InfluxDBClient().getEmptyContainer();
 
         // iterate over points
         for (Point.Builder builder : points) {
@@ -46,5 +47,13 @@ public class BatchPointsContainer {
         }
 
         return container;
+    }
+
+    public Integer size() {
+        return points.size();
+    }
+
+    public Point.Builder getFirstPoint() {
+        return (size() > 0) ? points.get(0): null;
     }
 }

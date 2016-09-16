@@ -16,12 +16,11 @@
  */
 package ch.icclab.cyclops.schedule.runner;
 
-import ch.icclab.cyclops.consume.data.mapping.OpenStackEventUDR;
+import ch.icclab.cyclops.consume.data.mapping.udr.OpenStackUDR;
 import ch.icclab.cyclops.load.Loader;
 import ch.icclab.cyclops.load.model.OpenstackSettings;
 import ch.icclab.cyclops.load.model.PublisherCredentials;
 import ch.icclab.cyclops.persistence.HibernateClient;
-import ch.icclab.cyclops.persistence.LatestPullORM;
 import ch.icclab.cyclops.publish.Messenger;
 import ch.icclab.cyclops.timeseries.InfluxDBClient;
 import ch.icclab.cyclops.timeseries.QueryBuilder;
@@ -29,7 +28,9 @@ import ch.icclab.cyclops.util.Time;
 import ch.icclab.cyclops.util.loggers.SchedulerLogger;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.joda.time.*;
+import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
+
 import java.util.*;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
@@ -41,11 +42,11 @@ import static java.util.concurrent.TimeUnit.MILLISECONDS;
  * Updated on: 01-July-16
  * Description: Client class for transforming events to UDR Records for Openstack events
  */
-public class OpenStackClient extends AbstractRunner {
+public  abstract class OpenStackClient extends AbstractRunner {
     final static Logger logger = LogManager.getLogger(OpenStackClient.class.getName());
 
     //link to hibernate
-    private HibernateClient hibernateClient;
+    protected HibernateClient hibernateClient;
     //link to influxDB client
     private static InfluxDBClient influxDBClient;
     //Openstack settings
@@ -64,7 +65,7 @@ public class OpenStackClient extends AbstractRunner {
         influxDBClient = InfluxDBClient.getInstance();
         settings = Loader.getSettings().getOpenstackSettings();
         publisherCredentials = Loader.getSettings().getPublisherCredentials();
-        dbName = Loader.getSettings().getOpenstackSettings().getOpenstackEventTable();
+        dbName = getDbName();
         messenger = Messenger.getInstance();
     }
 
@@ -77,6 +78,14 @@ public class OpenStackClient extends AbstractRunner {
         transformEventsToUDRs();
     }
 
+    public abstract String getDbName();
+
+    public abstract OpenStackUDR generateValue(Long eventTime, Long eventLastTime, Map lastEventInScope, String instanceId);
+
+    public abstract void updateLatestPull(Long time);
+
+    public abstract DateTime getLatestPull();
+
     /*
      * Transform Openstack Events to UDR records
      */
@@ -87,76 +96,54 @@ public class OpenStackClient extends AbstractRunner {
         List<Map> data = influxDBClient.executeQuery(parameterQuery);
         SchedulerLogger.log("Influxdb data is successfully fetched.");
         SchedulerLogger.log("Making map of client and instance IDs...");
-        HashMap<String, ArrayList<String>> clientInstanceMap = getInstanceIdsPerClientId(data);
+        ArrayList<String> instanceList = getListOfInstances(data);
         SchedulerLogger.log("Map of client and instance IDs is done");
-        createUDRRecords(clientInstanceMap);
+        createUDRRecords(instanceList);
     }
-
 
     /**
      * This method takes the POJOobject that contains all events, extracts all clientIDs
-     * and maps instanceIds to them which are saved to a HashMap.
      *
      * @param data
      * @return
      */
-    private HashMap<String, ArrayList<String>> getInstanceIdsPerClientId(List<Map> data) {
-        HashMap<String, ArrayList<String>> map = new HashMap<String, ArrayList<String>>();
+    private  ArrayList<String> getListOfInstances(List<Map> data) {
+        ArrayList<String> listOfInstances = new ArrayList<>();
         for (Map obj : data) {
-            String clienId = obj.get("clientId").toString();
-            String instanceId = obj.get("instanceId").toString();
-            if (!map.containsKey(clienId)) {
-                map.put(clienId, new ArrayList<>());
-            }
-            if (!map.get(clienId).contains(instanceId)){
-                map.get(clienId).add(instanceId);
+            String instaceId = obj.get("instanceId").toString();
+            if (!(listOfInstances.contains(instaceId))){
+                listOfInstances.add(instaceId);
             }
         }
-        return map;
+        return listOfInstances;
     }
 
-    private void createUDRRecords(HashMap<String, ArrayList<String>> clientInstanceMap) {
+    private void createUDRRecords(ArrayList<String> listOfInstances) {
         SchedulerLogger.log("UDR creation process is started... ");
-        Iterator it = clientInstanceMap.entrySet().iterator();
         DateInterval dates = new DateInterval(whenWasLastPull());
         SchedulerLogger.log("The last pull was " + dates.fromDate + " " + dates.toDate);
         Long time = Time.getMilisForTime(dates.getToDate());
         SchedulerLogger.log("Current timestamp is " + time);
-        ArrayList<OpenStackEventUDR> eventList = new ArrayList<OpenStackEventUDR>();
-        while (it.hasNext()) {
-            Map.Entry pair = (Map.Entry) it.next();
-            String clientId = pair.getKey().toString();
-            ArrayList<String> instanceIds = (ArrayList<String>) pair.getValue();
-            for (String instanceId : instanceIds) {
+        ArrayList<OpenStackUDR> eventList = new ArrayList<>();
+            for (String instanceId : listOfInstances) {
                 try {
-                    ArrayList<OpenStackEventUDR> udr = generateUDR(clientId, instanceId, dates);
+                    ArrayList<OpenStackUDR> udr = generateUDR(instanceId, dates);
                     if (udr !=null){
                         eventList.addAll(udr);
                     }
                 } catch (Exception e) {
                     SchedulerLogger.log("Couldn't generate UDR " +e);
                 }
-
-            }
-            it.remove();
         }
 
         if (publisherCredentials.getPublisherByDefaultDispatchInsteadOfBroadcast()) {
-            messenger.publish(eventList, OpenStackEventUDR.class.getSimpleName());
+            messenger.publish(eventList, OpenStackUDR.class.getSimpleName());
         } else {
             messenger.broadcast(eventList);
         }
         SchedulerLogger.log("All udr are published ");
+        updateLatestPull(time);
         // update time stamp
-        LatestPullORM pull = (LatestPullORM) hibernateClient.getObject(LatestPullORM.class, 1l);
-        if (pull == null) {
-            pull = new LatestPullORM(time);
-        } else {
-            pull.setTimeStamp(time);
-        }
-        SchedulerLogger.log("The last pull set to "+pull.getTimeStamp().toString());
-        hibernateClient.persistObject(pull);
-
     }
 
     /**
@@ -181,7 +168,7 @@ public class OpenStackClient extends AbstractRunner {
         }
     }
 
-    private ArrayList<OpenStackEventUDR> generateUDR(String clientId, String instanceId, DateInterval dates) {
+    private ArrayList<OpenStackUDR> generateUDR(String instanceId, DateInterval dates) {
 
         ArrayList<Map> generatedEvents = new ArrayList<>();
         // generate first event
@@ -190,8 +177,8 @@ public class OpenStackClient extends AbstractRunner {
         Boolean isItExist = true;
 
         try {
-            Map lastEvent = getEventBeforeTime(fromMills, clientId, instanceId);
-            if (lastEvent.get("status").equals(settings.getOpenstackCollectorEventDelete())){
+            Map lastEvent = getEventBeforeTime(fromMills, instanceId);
+            if (lastEvent.get("type").equals(settings.getOpenstackCollectorEventDelete())){
                 isItExist = false;
             }
             else {
@@ -203,20 +190,18 @@ public class OpenStackClient extends AbstractRunner {
 
         if (isItExist) {
             //get all events
-            ArrayList<OpenStackEventUDR> listOfUDRs= new ArrayList<>();
-            QueryBuilder parameterQuery = new QueryBuilder(dbName).where("clientId", clientId).
+            ArrayList<OpenStackUDR> listOfUDRs= new ArrayList<>();
+            QueryBuilder parameterQuery = new QueryBuilder(dbName).
                     and("instanceId", instanceId).timeTo(toMills, MILLISECONDS).timeFrom(fromMills, MILLISECONDS);
             generatedEvents.addAll(Time.normaliseInfluxDB(influxDBClient.executeQuery(parameterQuery)));
             // generate last event
-            generatedEvents.add(getEventBeforeTime(toMills, clientId, instanceId));
+            generatedEvents.add(getEventBeforeTime(toMills, instanceId));
             Map lastEventInScope = new HashMap<>();
             for (Map event : generatedEvents) {
                 if ((!lastEventInScope.isEmpty())) {
                     Long eventTime = Double.valueOf(event.get("time").toString()).longValue();
                     Long eventLastTime = Double.valueOf(lastEventInScope.get("time").toString()).longValue();
-                    listOfUDRs.add(new OpenStackEventUDR(eventLastTime, clientId,
-                            instanceId, lastEventInScope.get("status").toString(),
-                            (double) (eventTime - eventLastTime) /1000)); //Seconds instead of milliseconds
+                    listOfUDRs.add(generateValue(eventTime, eventLastTime, lastEventInScope, instanceId));
                 }
                 lastEventInScope = event;
             }
@@ -225,8 +210,8 @@ public class OpenStackClient extends AbstractRunner {
         return null;
     }
 
-    private Map getEventBeforeTime(Long time, String clientId, String instanceId){
-        QueryBuilder parameterQuery = new QueryBuilder(dbName).where("clientId", clientId).
+    private Map getEventBeforeTime(Long time, String instanceId){
+        QueryBuilder parameterQuery = new QueryBuilder(dbName).
                 and("instanceId", instanceId).timeTo(time, MILLISECONDS);
         try {
             influxDBClient.executeQuery(parameterQuery);
@@ -240,14 +225,7 @@ public class OpenStackClient extends AbstractRunner {
     }
 
     private DateTime whenWasLastPull() {
-        DateTime last;
-
-        LatestPullORM pull = (LatestPullORM) HibernateClient.getInstance().getObject(LatestPullORM.class, 1l);
-        if (pull == null) {
-            last = new DateTime(0);
-        } else {
-            last = new DateTime(pull.getTimeStamp());
-        }
+        DateTime last = getLatestPull();
         SchedulerLogger.log("Getting the last pull date " + last.toString());
         // get date specified by admin
         String date = settings.getOpenstackFirstImport();

@@ -31,9 +31,7 @@ public class HibernateCredentials {
     public String getHibernateURL() {
         return hibernateURL;
     }
-    public void setHibernateURL(String hibernateURL) {
-        this.hibernateURL = hibernateURL;
-    }
+    public void setHibernateURL(String hibernateURL) { this.hibernateURL = hibernateURL; }
 
     public String getHibernateUsername() {
         return hibernateUsername;

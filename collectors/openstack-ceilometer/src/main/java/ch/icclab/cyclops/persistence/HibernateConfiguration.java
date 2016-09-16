@@ -30,6 +30,7 @@ public class HibernateConfiguration {
 
         // add mandatory hibernate classes
         conf.addAnnotatedClass(LatestPullORM.class);
+        conf.addAnnotatedClass(CumulativeMeterUsage.class);
 
         // now set properties
         conf.setProperty("hibernate.connection.driver_class", credentials.getHibernateDriver())

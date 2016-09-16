@@ -36,7 +36,7 @@ public class CloudStackUsageData implements DataMapping {
 
     @Override
     public TimeUnit getTimeUnit() {
-        return TimeUnit.SECONDS;
+        return TimeUnit.MILLISECONDS;
     }
 
     @Override
@@ -53,7 +53,7 @@ public class CloudStackUsageData implements DataMapping {
 
     @Override
     public Boolean shouldPublish() {
-        return true;
+        return false;
     }
 
     @Override

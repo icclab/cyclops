@@ -18,32 +18,23 @@
 package ch.icclab.cyclops.endpoint;
 
 import ch.icclab.cyclops.consume.command.CommandConsumer;
-import ch.icclab.cyclops.publish.Messenger;
-import ch.icclab.cyclops.util.APICallCounter;
-import ch.icclab.cyclops.util.PrettyGson;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import com.google.gson.Gson;
 import org.restlet.representation.Representation;
 import org.restlet.resource.Post;
-import org.restlet.resource.ServerResource;
 
 import java.io.IOException;
-import java.util.List;
 
 /**
  * Author: Skoviera
  * Created: 08/07/16
  * Description: Handle uploading data frames (the same way as with RabbitMQ)
  */
-public class CommandEndpoint extends ServerResource {
+public class CommandEndpoint extends AbstractEndpoint {
 
-    public static String ENDPOINT = "/command";
-
-    // used as counter
-    private APICallCounter counter = APICallCounter.getInstance();
-
-    // logger
-    final static Logger logger = LogManager.getLogger(CommandEndpoint.class.getName());
+    @Override
+    public String getRoute() {
+        return "/command";
+    }
 
     /**
      * Dispatch and process POST request based on provided parameter
@@ -52,7 +43,6 @@ public class CommandEndpoint extends ServerResource {
      */
     @Post
     public String processPost(Representation entity) throws IOException {
-        counter.increment(ENDPOINT);
 
         try {
             // first access data consumer
@@ -61,20 +51,11 @@ public class CommandEndpoint extends ServerResource {
             // process the message
             consumer.consume(entity.getText());
 
-            // get execution status
+            // get execution status and response
             CommandConsumer.ExecutionStatus status = consumer.getStatus();
+            Object response = consumer.getResponse();
 
-            // was successfully executed
-            if (status.wasExecuted()) {
-
-                // request restful container
-                List<Object> list = Messenger.getInstance().retrieveRestfulContainer();
-
-                // return it if it's not empty
-                return (list != null && !list.isEmpty())? PrettyGson.toJson(list) : status.getMessage();
-            } else {
-                return status.getMessage();
-            }
+            return (status.wasExecuted() && response != null)? new Gson().toJson(response) : status.getMessage();
 
         } catch (Exception e) {
             return String.format("Error: %s", e.getMessage());

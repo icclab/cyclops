@@ -16,7 +16,7 @@
  */
 package ch.icclab.cyclops.load.model;
 
-import ch.icclab.cyclops.model.OpenStackCeilometerUsage;
+import ch.icclab.cyclops.model.ceilometerMeasurements.AbstractOpenStackCeilometerUsage;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -66,10 +66,10 @@ public class Response {
         // number of received responses
         private Integer count;
         // array of usage records
-        private List<OpenStackCeilometerUsage> usagerecord;
+        private List<AbstractOpenStackCeilometerUsage> usagerecord;
 
         // array for custom usage records
-        private List<OpenStackCeilometerUsage> customusagerecord;
+        private List<AbstractOpenStackCeilometerUsage> customusagerecord;
 
         /**
          * This method will go over every usage record and return DB Point representation
@@ -105,11 +105,11 @@ public class Response {
             this.count = count;
         }
 
-        public void setUsagerecord(List<OpenStackCeilometerUsage> usagerecord) {
+        public void setUsagerecord(List<AbstractOpenStackCeilometerUsage> usagerecord) {
             this.usagerecord = usagerecord;
         }
 
-        public void setCustomusagerecord(List<OpenStackCeilometerUsage> customusagerecord) {
+        public void setCustomusagerecord(List<AbstractOpenStackCeilometerUsage> customusagerecord) {
             this.customusagerecord = customusagerecord;
         }
     }

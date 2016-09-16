@@ -17,9 +17,13 @@
 package ch.icclab.cyclops.client;
 
 import ch.icclab.cyclops.load.model.Response;
-import ch.icclab.cyclops.model.OpenStackCeilometerUsage;
 import ch.icclab.cyclops.model.OpenStackMeter;
 import ch.icclab.cyclops.model.OpenStackUsageData;
+import ch.icclab.cyclops.model.ceilometerMeasurements.AbstractOpenStackCeilometerUsage;
+import ch.icclab.cyclops.persistence.CumulativeMeterUsage;
+import ch.icclab.cyclops.persistence.HibernateClient;
+import ch.icclab.cyclops.util.CachedCumulativeUsage;
+import ch.icclab.cyclops.util.Constant;
 import ch.icclab.cyclops.util.OpenStackClient;
 import com.google.gson.Gson;
 import org.apache.logging.log4j.LogManager;
@@ -32,7 +36,9 @@ import org.restlet.resource.ClientResource;
 import org.restlet.util.Series;
 
 import java.io.IOException;
+import java.lang.reflect.Constructor;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.Callable;
 
@@ -50,6 +56,10 @@ public class OpenStackUsageDownloader implements Callable {
 
     private OpenStackClient openStackClient;
 
+    private HashMap<String, CumulativeMeterUsage> cumulativeMap;
+
+    private HibernateClient hibernateClient;
+
     // container for usage record response
     Response.UsageRecordResponse usageRecordResponse;
 
@@ -59,8 +69,9 @@ public class OpenStackUsageDownloader implements Callable {
      * @param url that will be used for API call
      */
     public OpenStackUsageDownloader(String url) {
-        openStackClient = new OpenStackClient();
+        this.openStackClient = new OpenStackClient();
         this.url = url;
+        this.cumulativeMap = CachedCumulativeUsage.getCachedCumulativeUsage();
     }
 
     /**
@@ -73,7 +84,7 @@ public class OpenStackUsageDownloader implements Callable {
         Series<Header> headerValue;
 
         ClientResource clientResource = new ClientResource(url);
-        headerValue = new Series<Header>(Header.class);
+        headerValue = new Series<>(Header.class);
         Request request = clientResource.getRequest();
         String token;
 
@@ -117,14 +128,30 @@ public class OpenStackUsageDownloader implements Callable {
      */
     protected List<Object> performRequest(OpenStackMeter meter) {
         try {
+            hibernateClient = HibernateClient.getInstance();
+
             // first step is to pull data from OpenStack
             List<Object> genericData = new ArrayList<>();
-            if(meter != null) {
-            String data = pullData();
-            Gson gson = new Gson();
-            OpenStackUsageData[] openStackUsageData = gson.fromJson(data, OpenStackUsageData[].class);
+            if (meter != null) {
+                String data = pullData();
+                Gson gson = new Gson();
+                OpenStackUsageData[] openStackUsageData = gson.fromJson(data, OpenStackUsageData[].class);
                 for (int i = 0; i < openStackUsageData.length; i++) {
-                    genericData.add(new OpenStackCeilometerUsage(openStackUsageData[i], meter));
+                    // Construct the pojo class and add it to the generic data list
+                    Constructor constructor = Class.forName(Constant.METER_NAMES.get(meter.getName())).getConstructor(OpenStackUsageData.class, OpenStackMeter.class);
+                    AbstractOpenStackCeilometerUsage openStackUsage = (AbstractOpenStackCeilometerUsage) constructor.newInstance(openStackUsageData[i], meter);
+                    if (meter.getType().equals(Constant.CEILOMETER_CUMULATIVE_METER)) {
+                        // Get the older usage (if exists) and compute the cumulative meter out of the two measurements
+                        String usageKey = getUsageKey(openStackUsageData[i], meter);
+                        CumulativeMeterUsage cumulativeMeterUsage = new CumulativeMeterUsage(openStackUsage, usageKey);
+                        updateToExistingId(cumulativeMeterUsage);
+                        openStackUsage.setUsage(getCumulativeUsage(openStackUsageData[i].getAvg(), usageKey));
+                        // Persist the cumulativeUsage in hibernate
+                        hibernateClient.persistObject(cumulativeMeterUsage);
+                        // Get the ID from the persisted object and store it in memory (HashMap) linked to the latest usage
+                        cumulativeMap.put(usageKey, cumulativeMeterUsage);
+                    }
+                    genericData.add(openStackUsage);
                 }
             }
             // return list of points
@@ -136,8 +163,48 @@ public class OpenStackUsageDownloader implements Callable {
         }
     }
 
+    private void updateToExistingId(CumulativeMeterUsage cumulativeMeterUsage) {
+        hibernateClient = HibernateClient.getInstance();
+        ArrayList<CumulativeMeterUsage> cumulativeDataList = (ArrayList<CumulativeMeterUsage>) hibernateClient.executeQuery("FROM CumulativeMeterUsage WHERE usageKey='" + cumulativeMeterUsage.getUsageKey() + "'");
+        if(!cumulativeDataList.isEmpty()){
+            for(CumulativeMeterUsage usageData : cumulativeDataList){
+                cumulativeMeterUsage.setId(usageData.getId());
+            }
+        }
+    }
+
     @Override
     public Object call() throws Exception {
         return performRequest(new OpenStackMeter());
+    }
+
+    private Double getCumulativeUsage(Double measurementUsage, String usageKey) {
+        Double result;
+        if (cumulativeMap.containsKey(usageKey))
+            result = measurementUsage - cumulativeMap.get(usageKey).getUsageCounter();
+        else {
+            hibernateClient = HibernateClient.getInstance();
+            ArrayList<CumulativeMeterUsage> cumulativeDataList = (ArrayList<CumulativeMeterUsage>) hibernateClient.executeQuery("FROM CumulativeMeterUsage WHERE usageKey='" + usageKey + "'");
+            if (!cumulativeDataList.isEmpty()) {
+                for (CumulativeMeterUsage data : cumulativeDataList)
+                    cumulativeMap.put(data.getUsageKey(), data);
+                result = measurementUsage - cumulativeMap.get(usageKey).getUsageCounter();
+                if(result<=0){
+                    result = measurementUsage;
+                }
+            }
+            else
+            //TODO: Review
+                result = 0.0;
+        }
+        return result;
+    }
+
+    private String getUsageKey(OpenStackUsageData openStackUsageData, OpenStackMeter openStackMeter) {
+        String measurementName = openStackMeter.getName();
+        String resourceId = (String) openStackUsageData.getGroupby().get("resource_id");
+        String projectId = (String) openStackUsageData.getGroupby().get("project_id");
+        String userId = (String) openStackUsageData.getGroupby().get("user_id");
+        return measurementName.concat(resourceId).concat(projectId).concat(userId);
     }
 }

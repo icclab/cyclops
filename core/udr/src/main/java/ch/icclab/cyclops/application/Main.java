@@ -21,6 +21,7 @@ import ch.icclab.cyclops.consume.command.CommandConsumer;
 import ch.icclab.cyclops.consume.data.DataConsumer;
 import ch.icclab.cyclops.load.Loader;
 import ch.icclab.cyclops.load.Settings;
+import ch.icclab.cyclops.load.model.InfluxDBCredentials;
 import ch.icclab.cyclops.load.model.PublisherCredentials;
 import ch.icclab.cyclops.publish.RabbitMQPublisher;
 import ch.icclab.cyclops.timeseries.InfluxDBClient;
@@ -37,6 +38,11 @@ import org.restlet.data.Protocol;
  * Description: Entry point for UDR micro service
  */
 public class Main extends Application{
+
+    static {
+        // Nothing can appear before this initializer
+        System.setProperty("Log4jContextSelector", "org.apache.logging.log4j.core.async.AsyncLoggerContextSelector");
+    }
 
     final static Logger logger = LogManager.getLogger(Main.class.getName());
 
@@ -250,8 +256,13 @@ public class Main extends Application{
      */
     private static void checkAndConfigureInfluxDB() {
         try {
-            logger.trace("Binding to InfluxDB");
-            InfluxDBClient.createInstance(Loader.getSettings().getInfluxDBCredentials());
+            logger.trace("Binding to InfluxDB and creating databases");
+            InfluxDBCredentials credentials = Loader.getSettings().getInfluxDBCredentials();
+            InfluxDBClient client = new InfluxDBClient(credentials);
+
+            client.ping();
+            client.createDatabases(credentials.getInfluxDBTSDB());
+
         } catch (Exception e) {
             String log = String.format("Couldn't connect to InfluxDb: %s", e.getMessage());
             logger.error(log);

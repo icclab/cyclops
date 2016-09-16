@@ -26,4 +26,4 @@ mvn dependency:tree
 mvn package assembly:single
 
 cd target
-mv cyclops-billing-0.0.1-jar-with-dependencies.jar ../bin/billing.jar
+mv cyclops-billing-2.1.0-jar-with-dependencies.jar ../bin/billing.jar

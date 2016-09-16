@@ -27,8 +27,9 @@ public abstract class Command {
 
     /**
      * Every command has to implement execute method
+     * @return Object of your selection or Null
      */
-    protected abstract void execute();
+    protected abstract Object execute();
 
     //===== Getters and Setters
     public String get_class() {

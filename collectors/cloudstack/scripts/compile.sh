@@ -26,4 +26,4 @@ mvn dependency:tree
 mvn package assembly:single
 
 cd target
-mv cyclops-cloudstack-collector-0.0.1-jar-with-dependencies.jar ../bin/cloudstack.jar
+mv cyclops-cloudstack-collector-1.1.0-jar-with-dependencies.jar ../bin/cloudstack.jar

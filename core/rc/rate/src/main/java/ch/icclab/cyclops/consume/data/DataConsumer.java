@@ -11,7 +11,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.util.*;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Author: Skoviera
@@ -40,10 +39,12 @@ public class DataConsumer extends AbstractConsumer {
             // make sure there is something to be rated at all
             if (array != null && !array.isEmpty()) {
                 // now apply rates
-                List<Map> rated = rateAndCharge(array);
+                List<Map> rated = process(array);
 
                 // push it to the next step
-                publishOrBroadcast(rated);
+                if (rated != null && !rated.isEmpty()) {
+                    publishOrBroadcast(rated);
+                }
             }
 
         } catch (Exception ignored) {
@@ -53,9 +54,11 @@ public class DataConsumer extends AbstractConsumer {
 
                 if (obj != null) {
                     // apply rate
-                    Map rated = rateAndCharge(obj);
+                    Map rated = process(obj);
 
-                    publishOrBroadcast(Collections.singletonList(rated));
+                    if (rated != null && !rated.isEmpty()) {
+                        publishOrBroadcast(Collections.singletonList(rated));
+                    }
                 }
             } catch (Exception ignoredAgain) {}
         }
@@ -66,47 +69,117 @@ public class DataConsumer extends AbstractConsumer {
      * @param obj as Map
      * @return object or null
      */
-    private Map rateAndCharge(Map obj) {
-        // make sure we have usage field present
-        if (obj.containsKey(rating.getUsageField())) {
+    private Map process(Map obj) {
 
-            // normalise usage object
-            Double usage = getUsage(obj.get(rating.getUsageField()));
+        if (obj.containsKey(RatingPreferences.CLASS_FIELD_NAME) && obj.get(RatingPreferences.CLASS_FIELD_NAME).equals(RatingPreferences.NEW_UDR_CLASS_NAME)) {
+            // rate new UDR format
+            return rateNewUDREnvelopeFormat(obj);
 
-            // find correct rate or use default one
-            Double rate = getRate(obj);
-
-            // calculate charge
-            Double charge = usage * rate;
-
-            // put rate and charge back
-            obj.put(rating.getRateField(), rate);
-            obj.put(rating.getChargeField(), charge);
-
-            // add string prefix to charge record
-            if (obj.containsKey(RatingPreferences.CLASS_FIELD_NAME)) {
-                obj.put(RatingPreferences.CLASS_FIELD_NAME, String.format("%s%s", obj.get(RatingPreferences.CLASS_FIELD_NAME), rating.getChargeSuffix()));
-            }
-
+        } else if (obj.containsKey(rating.getUsageField())) {
+            // rate record
+            rateIndividualItem(obj, true);
+            // return updated hashmap
             return obj;
+
         } else {
             return null;
         }
     }
+
+    private Map rateNewUDREnvelopeFormat(Map obj) {
+        try {
+            HashMap<String, Object> map = new HashMap<>(obj);
+            HashMap<String, Object> result = new HashMap<>();
+
+            Double charge = 0d;
+            Boolean found = false;
+
+            // find field that is of a List type
+            Iterator<Map.Entry<String, Object>> iterator = map.entrySet().iterator();
+            while (iterator.hasNext()) {
+                Map.Entry<String, Object> entry = iterator.next();
+
+                if (entry.getValue() instanceof List) {
+                    List list = (List) entry.getValue();
+                    List container = new ArrayList<>();
+
+                    Boolean update = false;
+
+                    for (Object item: list) {
+                        // now we know we can rate it
+                        if (item instanceof Map && ((Map) item).containsKey(RatingPreferences.CLASS_FIELD_NAME)
+                                && ((Map) item).containsKey(RatingPreferences.DEFAULT_USAGE_FIELD)) {
+
+                            // rate and return calculated charge
+                            charge += rateIndividualItem((Map) item, false);
+
+                            update = true;
+                            found = true;
+                        }
+
+                        // add it to container
+                        container.add(item);
+                    }
+
+                    if (update) {
+                        // set entry to contain list of updated Charge Records
+                        result.put(entry.getKey(), container);
+                        // also update overall charge of the whole CDR
+                        result.put(rating.getChargeField(), charge);
+                    }
+                }
+                else {
+                    // we still need to copy values
+                    result.put(entry.getKey(), entry.getValue());
+                }
+            }
+
+            // update _class name to CDR
+            result.put(RatingPreferences.CLASS_FIELD_NAME, RatingPreferences.DEFAULT_CHARGE_SUFFIX);
+
+            // make sure we are returning updated map only if something has changed
+            return (found)? result: null;
+        } catch (Exception e) {
+            return null;
+        }
+
+    }
+
+    private Double rateIndividualItem(Map obj, Boolean suffix) {
+        // normalise usage object
+        Double usage = getUsage(obj.get(rating.getUsageField()));
+
+        // find correct rate or use default one
+        Double rate = getRate(obj);
+
+        // calculate charge
+        Double charge = usage * rate;
+
+        // put rate and charge back
+        obj.put(rating.getChargeField(), charge);
+
+        // add string suffix to charge record
+        if (suffix && obj.containsKey(RatingPreferences.CLASS_FIELD_NAME)) {
+            obj.put(RatingPreferences.CLASS_FIELD_NAME, String.format("%s%s", obj.get(RatingPreferences.CLASS_FIELD_NAME), rating.getChargeSuffix()));
+        }
+
+        return charge;
+    }
+
 
     /**
      * Rate and Charge list of UDR records
      * @param list to be rated
      * @return rated list
      */
-    private List<Map> rateAndCharge(List<Map> list) {
+    private List<Map> process(List<Map> list) {
         List<Map> ratedList = new ArrayList<>();
 
         // iterate and rate all objects
         for (Map obj: list) {
 
             // rate the object
-            Map rated = rateAndCharge(obj);
+            Map rated = process(obj);
 
             // only add to the list if it was successfully rated
             if (rated != null) {

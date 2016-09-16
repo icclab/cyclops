@@ -18,11 +18,15 @@
 package ch.icclab.cyclops.application;
 
 import ch.icclab.cyclops.endpoint.*;
-import ch.icclab.cyclops.util.APICallCounter;
+import ch.icclab.cyclops.util.RegexParser;
+import com.metapossum.utils.scanner.reflect.ClassesInPackageScanner;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.restlet.Restlet;
 import org.restlet.routing.Router;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Author: Skoviera
@@ -36,63 +40,46 @@ public class Service {
     // Router for registering api endpoints
     private Router router;
 
-    // API counter
-    private APICallCounter counter;
-
-    /**
-     * Attaching endpoints to router
-     */
-    private void attachTheRest() {
-        logger.trace("Attaching measurement endpoint");
-        router.attach(String.format("%s/{%s}", MeasurementEndpoint.ENDPOINT, MeasurementEndpoint.ATTRIBUTE), MeasurementEndpoint.class);
-        counter.registerEndpoint(MeasurementEndpoint.ENDPOINT);
-
-        router.attach(MeasurementsEndpoint.ENDPOINT, MeasurementsEndpoint.class);
-        counter.registerEndpoint(MeasurementsEndpoint.ENDPOINT);
-
-        logger.trace("Attaching data endpoint");
-        router.attach(DataEndpoint.ENDPOINT, DataEndpoint.class);
-        counter.registerEndpoint(DataEndpoint.ENDPOINT);
-
-        logger.trace("Attaching command endpoint");
-        router.attach(CommandEndpoint.ENDPOINT, CommandEndpoint.class);
-        counter.registerEndpoint(CommandEndpoint.ENDPOINT);
-    }
-
-    /**
-     * Construct application by accessing context, creating router and counter
-     */
-    private void initialiseApplication() {
-        logger.trace("Initialising UDR microservice");
-
-        router = new Router();
-        counter = APICallCounter.getInstance();
-    }
-
     /**
      * This method handles the incoming request and routes it to the appropriate resource class
      */
     public Restlet createInboundRoot() throws Exception {
 
-        // let's start by initialising and loading configuration settings
-        initialiseApplication();
+        logger.trace("Initialising UDR microservice and creating routes");
 
-        logger.trace("Creating routes for UDR microservice");
-
-        // root, status and list endpoints
-        router.attach(RootEndpoint.ENDPOINT, RootEndpoint.class);
-        counter.registerEndpoint(RootEndpoint.ENDPOINT);
-
-        router.attach(StatusEndpoint.ENDPOINT, StatusEndpoint.class);
-        counter.registerEndpointWithoutCounting(StatusEndpoint.ENDPOINT);
-
-        router.attach(ListEndpoint.ENDPOINT, ListEndpoint.class);
-        counter.registerEndpointWithoutCounting(ListEndpoint.ENDPOINT);
-
-        // attach other endpoints
-        attachTheRest();
+        router = attachRoutes();
 
         logger.trace("Routes for UDR microservice successfully created");
+
+        return router;
+    }
+
+    /**
+     * Attach routes that extend AbstractEndpoint class
+     * @return router
+     */
+    private Router attachRoutes() {
+        Router router = new Router();
+
+        List<Class> list = new ArrayList<>();
+
+        try {
+            // find all endpoints and add them to the list
+            list.addAll(new ClassesInPackageScanner().setResourceNameFilter((packageName, fileName) -> !AbstractEndpoint.class.getSimpleName().
+                    equals(RegexParser.getFileName(fileName))).scan(AbstractEndpoint.class.getPackage().getName()));
+        } catch (Exception ignored) {}
+
+        // create routes
+        for (Class clazz : list) {
+            // only those which extend Endpoint
+            if (AbstractEndpoint.class.isAssignableFrom(clazz)) {
+                try {
+                    // get endpoint's route path
+                    String route = ((AbstractEndpoint) clazz.newInstance()).getRoute();
+                    router.attach(route, clazz);
+                } catch (Exception ignored) {}
+            }
+        }
 
         return router;
     }

@@ -1,0 +1,7 @@
+Version:   2.1.0
+Date:      16/September/2016
+Notes:     Data ingestion and query execution optimisations, new UDR output format (part of GenerateUDR command)
+
+Version:   2.0.0
+Date:      1/July/2016
+Notes:     Initial release of the RCB Cyclops UDR micro service

@@ -37,25 +37,25 @@ public class CommandMapping {
     final static Logger logger = LogManager.getLogger(CommandMapping.class.getName());
 
     private static final Gson gson = new GsonFireBuilder()
-        .registerTypeSelector(Command.class, new TypeSelector<Command>() {
-            @Override
-            public Class<? extends Command> getClassForElement(JsonElement jsonElement) {
-                try {
+            .registerTypeSelector(Command.class, new TypeSelector<Command>() {
+                @Override
+                public Class<? extends Command> getClassForElement(JsonElement jsonElement) {
+                    try {
 
-                    String clazz = jsonElement.getAsJsonObject().get(Command.FIELD_FOR_MAPPING).getAsString();
+                        String clazz = jsonElement.getAsJsonObject().get(Command.FIELD_FOR_MAPPING).getAsString();
 
-                    // recursively find correct classes
-                    List<Class> list = new ArrayList<>();
-                    list.addAll(new ClassesInPackageScanner().setResourceNameFilter((packageName, fileName)
-                            -> clazz.equals(RegexParser.getFileName(fileName))).scan(CommandMapping.class.getPackage().getName()));
+                        // recursively find correct classes
+                        List<Class> list = new ArrayList<>();
+                        list.addAll(new ClassesInPackageScanner().setResourceNameFilter((packageName, fileName)
+                                -> clazz.equals(RegexParser.getFileName(fileName))).scan(CommandMapping.class.getPackage().getName()));
 
-                    // and use the first one
-                    return (Class<? extends Command>) Class.forName(list.get(0).getName());
-                } catch (Exception e) {
-                    return null;
+                        // and use the first one
+                        return (Class<? extends Command>) Class.forName(list.get(0).getName());
+                    } catch (Exception e) {
+                        return null;
+                    }
                 }
-            }
-        }).createGson();
+            }).createGson();
 
     /**
      * Map object to provided class

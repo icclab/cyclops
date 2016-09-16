@@ -16,6 +16,7 @@
  */
 package ch.icclab.cyclops.model;
 
+import com.google.gson.annotations.Expose;
 import org.joda.time.DateTime;
 import org.joda.time.chrono.ISOChronology;
 import org.joda.time.format.DateTimeFormat;
@@ -33,11 +34,34 @@ import java.util.Map;
  */
 public abstract class UsageData {
 
-    private String _class;
     private static String PREFIX = "CloudStack";
 
+    @Expose
+    private String _class;
+
     // Name of the account
+    @Expose
     private String account;
+
+    // Measurement's timestamp
+    @Expose
+    private Long time;
+
+    // Measurement's usage
+    @Expose
+    private Object usage;
+
+    // Measurement's unit
+    @Expose
+    private Object unit = "h";
+
+    // Metadata container
+    @Expose
+    private Map metadata;
+
+    //////////////////////////////////////////////////////
+    //==== everything below this goes into metadata ====//
+    //////////////////////////////////////////////////////
 
     // ID of the account
     private String accountid;
@@ -51,10 +75,6 @@ public abstract class UsageData {
     // The range of time for which the usage is aggregated
     private String startdate;
     private String enddate;
-    private Long time;
-
-    // String representation of the usage, including the units of usage (e.g. "Hrs" for VM running time)
-    private Object usage;
 
     // Virtual machine
     private String usageid;
@@ -120,7 +140,34 @@ public abstract class UsageData {
 
     public void prepareForSending() {
         usage = Double.parseDouble(rawusage);
-        time = getMilisForTime(startdate) / 1000;
+        time = getMilisForTime(startdate);
+
+        // add global metadata
+        addToMetadata("accountId", accountid);
+        addToMetadata("accountId", accountid);
+        addToMetadata("domainId", domainid);
+        addToMetadata("usageId", usageid);
+        addToMetadata("description", description);
+        addToMetadata("zoneId", zoneid);
+        addToMetadata("project", project);
+        addToMetadata("projectId", projectid);
+        addToMetadata("offeringId", offeringid);
+
+        // ask children to add their metadata
+        additionalMetadata(metadata);
+    }
+
+    protected abstract void additionalMetadata(Map map);
+
+    protected void addToMetadata(String str, Object obj) {
+        if (metadata == null) {
+            metadata = new HashMap<>();
+        }
+
+        // don't add null objects
+        if (str != null && !str.isEmpty() && obj != null) {
+            metadata.put(str, obj);
+        }
     }
 
     /////////////////////////////
@@ -242,5 +289,17 @@ public abstract class UsageData {
 
     public void setOfferingid(String offeringid) {
         this.offeringid = offeringid;
+    }
+
+    public Map getMetadata() {
+        return metadata;
+    }
+
+    public Object getUnit() {
+        return unit;
+    }
+
+    public void setUnit(Object unit) {
+        this.unit = unit;
     }
 }

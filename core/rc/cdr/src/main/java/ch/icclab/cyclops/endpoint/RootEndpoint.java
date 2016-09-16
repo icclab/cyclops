@@ -17,25 +17,22 @@
 
 package ch.icclab.cyclops.endpoint;
 
-import ch.icclab.cyclops.util.APICallCounter;
 import org.restlet.resource.Get;
-import org.restlet.resource.ServerResource;
 
 /**
  * Author: Skoviera
  * Created: 21/01/16
  * Description: Serve application's version over root endpoint
  */
-public class RootEndpoint extends ServerResource {
-
-    // used as counter
-    private APICallCounter counter = APICallCounter.getInstance();
-
-    public static String ENDPOINT = "/";
+public class RootEndpoint extends AbstractEndpoint {
 
     @Get
     public String root(){
-        counter.increment(ENDPOINT);
-        return "RCB CDR micro service - version 1.0.1";
+        return "RCB BOX micro service - version 2.1.0";
+    }
+
+    @Override
+    public String getRoute() {
+        return "/";
     }
 }

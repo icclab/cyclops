@@ -10,6 +10,8 @@ import ch.icclab.cyclops.util.loggers.CommandLogger;
  */
 public class CommandConsumer extends AbstractConsumer {
 
+    private Object response;
+
     private ExecutionStatus status;
     public class ExecutionStatus {
         private Boolean executed;
@@ -42,7 +44,7 @@ public class CommandConsumer extends AbstractConsumer {
 
         if (command != null) {
             try {
-                command.execute();
+                response = command.execute();
 
                 status = new ExecutionStatus(true, String.format("[OK] command \"%s\" successfully executed", command.get_class()));
                 CommandLogger.log(status.getMessage());
@@ -58,5 +60,8 @@ public class CommandConsumer extends AbstractConsumer {
 
     public ExecutionStatus getStatus() {
         return status;
+    }
+    public Object getResponse() {
+        return response;
     }
 }

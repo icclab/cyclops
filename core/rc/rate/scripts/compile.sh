@@ -26,4 +26,4 @@ mvn dependency:tree
 mvn package assembly:single
 
 cd target
-mv cyclops-rate-0.0.1-jar-with-dependencies.jar ../bin/rate.jar
+mv cyclops-rate-1.1.0-jar-with-dependencies.jar ../bin/rate.jar

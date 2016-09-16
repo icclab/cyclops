@@ -19,6 +19,7 @@ package ch.icclab.cyclops.publish;
 import ch.icclab.cyclops.util.loggers.DispatchLogger;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
 import java.util.ArrayList;
 import java.util.List;
 

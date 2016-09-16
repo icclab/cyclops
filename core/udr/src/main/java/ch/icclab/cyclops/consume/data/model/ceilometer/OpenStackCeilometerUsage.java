@@ -31,7 +31,8 @@ public class OpenStackCeilometerUsage implements DataMapping{
     private long time;
     private Double usage;
     private String account;
-    private String meter_name;
+    private String measurementId;
+    private String unit;
     private Map metadata;
 
     @Override
@@ -48,7 +49,7 @@ public class OpenStackCeilometerUsage implements DataMapping{
     public List<String> getTagNames() {
         List<String> list = new ArrayList<>();
         list.add("account");
-        list.add("meter_name");
+        list.add("measurementId");
         return list;
     }
 
@@ -99,19 +100,27 @@ public class OpenStackCeilometerUsage implements DataMapping{
         this.account = account;
     }
 
-    public String getMeter_name() {
-        return meter_name;
-    }
-
-    public void setMeter_name(String meter_name) {
-        this.meter_name = meter_name;
-    }
-
     public Map getMetadata() {
         return metadata;
     }
 
     public void setMetadata(Map metadata) {
         this.metadata = metadata;
+    }
+
+    public String getUnit() {
+        return unit;
+    }
+
+    public void setUnit(String unit) {
+        this.unit = unit;
+    }
+
+    public String getMeasurementId() {
+        return measurementId;
+    }
+
+    public void setMeasurementId(String measurementId) {
+        this.measurementId = measurementId;
     }
 }

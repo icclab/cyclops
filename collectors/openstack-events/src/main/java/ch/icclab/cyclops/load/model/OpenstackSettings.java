@@ -24,38 +24,23 @@ package ch.icclab.cyclops.load.model;
  */
 
 public class OpenstackSettings {
-    private String OpenstackCollectorEventSpawn;
-    private String OpenstackCollectorEventUnpause;
-    private String OpenstackCollectorEventResume;
-    private String OpenstackCollectorEventStart;
+    private String OpenstackCollectorEventRun;
     private String OpenstackCollectorEventStop;
     private String OpenstackCollectorEventPause;
     private String OpenstackCollectorEventDelete;
     private String OpenstackCollectorEventResize;
     private String OpenstackCollectorEventSuspend;
 
-
     private String OpenstackFirstImport;
 
-    private String OpenstackEventTable;
+    private String OpenstackEventNovaTable;
+
+    private String OpenstackEventNeutronTable;
 
     private String OpenstackScheduleTime;
 
-
-    public void setOpenstackCollectorEventSpawn(String openstackCollectorEventSpawn) {
-        OpenstackCollectorEventSpawn = openstackCollectorEventSpawn;
-    }
-
-    public void setOpenstackCollectorEventUnpause(String openstackCollectorEventUnpause) {
-        OpenstackCollectorEventUnpause = openstackCollectorEventUnpause;
-    }
-
-    public void setOpenstackCollectorEventResume(String openstackCollectorEventResume) {
-        OpenstackCollectorEventResume = openstackCollectorEventResume;
-    }
-
-    public void setOpenstackCollectorEventStart(String openstackCollectorEventStart) {
-        OpenstackCollectorEventStart = openstackCollectorEventStart;
+    public void setOpenstackCollectorEventRun(String openstackCollectorEventRun) {
+        OpenstackCollectorEventRun = openstackCollectorEventRun;
     }
 
     public void setOpenstackCollectorEventStop(String openstackCollectorEventStop) {
@@ -83,25 +68,22 @@ public class OpenstackSettings {
 
     }
 
-    public void setOpenstackEventTable(String openstackEventTable) {
-        OpenstackEventTable = openstackEventTable;
-    }
-
     public void setOpenstackScheduleTime(String openstackScheduleTime) {
         OpenstackScheduleTime = openstackScheduleTime;
     }
 
-    public String getOpenstackCollectorEventSpawn() {
-        return OpenstackCollectorEventSpawn;
+    public void setOpenstackEventNeutronTable(String openstackEventNeutronTable) {
+        OpenstackEventNeutronTable = openstackEventNeutronTable;
     }
-    public String getOpenstackCollectorEventUnpause() {
-        return OpenstackCollectorEventUnpause;
+
+    public void setOpenstackEventNovaTable(String openstackEventNovaTable) {
+        OpenstackEventNovaTable = openstackEventNovaTable;
     }
-    public String getOpenstackCollectorEventResume() {
-        return OpenstackCollectorEventResume;
-    }
-    public String getOpenstackCollectorEventStart() {
-        return OpenstackCollectorEventStart;
+
+    public String getOpenstackEventNeutronTable() { return OpenstackEventNeutronTable; }
+    public String getOpenstackEventNovaTable() { return OpenstackEventNovaTable; }
+    public String getOpenstackCollectorEventRun() {
+        return OpenstackCollectorEventRun;
     }
     public String getOpenstackCollectorEventStop() { return OpenstackCollectorEventStop; }
     public String getOpenstackCollectorEventPause() { return OpenstackCollectorEventPause; }
@@ -111,10 +93,6 @@ public class OpenstackSettings {
 
     public String getOpenstackFirstImport() {
         return OpenstackFirstImport;
-    }
-
-    public String getOpenstackEventTable() {
-        return OpenstackEventTable;
     }
 
     public String getOpenstackScheduleTime() {

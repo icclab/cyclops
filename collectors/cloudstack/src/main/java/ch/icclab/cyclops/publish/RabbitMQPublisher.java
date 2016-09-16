@@ -20,6 +20,7 @@ import ch.icclab.cyclops.load.model.PublisherCredentials;
 import ch.icclab.cyclops.util.PrettyGson;
 import ch.icclab.cyclops.util.loggers.DispatchLogger;
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
@@ -132,7 +133,7 @@ public class RabbitMQPublisher {
     private void send(String exchange, Object content, String routing) {
         try {
             // first format
-            String message = new Gson().toJson(content);
+            String message = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().create().toJson(content);
 
             // then send
             channel.basicPublish(exchange, routing, null, message.getBytes());

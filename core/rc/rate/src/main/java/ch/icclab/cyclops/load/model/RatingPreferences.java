@@ -25,8 +25,9 @@ public class RatingPreferences {
 
     public static String DEFAULT_USAGE_FIELD = "usage";
     public static String DEFAULT_CHARGE_FIELD = "charge";
-    public static String DEFAULT_RATE_FIELD = "rate";
+
     public static String DEFAULT_CHARGE_SUFFIX = "CDR";
+    public static String NEW_UDR_CLASS_NAME = "UDR";
 
     public static Double DEFAULT_RATE_VALUE = 1.0d;
     public static String CLASS_FIELD_NAME = "_class";
@@ -34,7 +35,6 @@ public class RatingPreferences {
     // These fields correspond with the configuration file
     private String usageField;
     private String chargeField;
-    private String rateField;
     private Double defaultRate;
     private String chargeSuffix;
 
@@ -54,14 +54,6 @@ public class RatingPreferences {
 
     public void setChargeField(String chargeField) {
         this.chargeField = chargeField;
-    }
-
-    public String getRateField() {
-        return rateField;
-    }
-
-    public void setRateField(String rateField) {
-        this.rateField = rateField;
     }
 
     public Double getDefaultRate() {

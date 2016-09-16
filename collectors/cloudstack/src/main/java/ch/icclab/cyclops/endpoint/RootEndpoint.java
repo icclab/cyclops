@@ -36,6 +36,6 @@ public class RootEndpoint extends ServerResource {
     @Get
     public String root(){
         counter.increment(ENDPOINT);
-        return "RCB CloudStack collector micro service - version 1.0.1";
+        return "RCB CloudStack collector micro service - version 1.1.0";
     }
 }

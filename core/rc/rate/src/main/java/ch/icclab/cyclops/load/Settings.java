@@ -175,12 +175,6 @@ public class Settings {
         }
         ratingPreferences.setChargeSuffix(chargeSuffix);
 
-        String rate = properties.getProperty("RateField");
-        if (rate == null || rate.isEmpty()) {
-            rate = RatingPreferences.DEFAULT_RATE_FIELD;
-        }
-        ratingPreferences.setRateField(rate);
-
         ratingPreferences.setDefaultRate(NumberUtils.toDouble(properties.getProperty("DefaultRate"), RatingPreferences.DEFAULT_RATE_VALUE));
 
         return ratingPreferences;
