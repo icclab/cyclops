@@ -27,13 +27,6 @@ import java.util.concurrent.TimeUnit;
  */
 
 public class OpenStackCeilometerUsage implements DataMapping{
-    private String _class = this.getClass().getSimpleName();
-    private long time;
-    private Double usage;
-    private String account;
-    private String measurementId;
-    private String unit;
-    private Map metadata;
 
     @Override
     public String getTimeField() {
@@ -42,14 +35,15 @@ public class OpenStackCeilometerUsage implements DataMapping{
 
     @Override
     public TimeUnit getTimeUnit() {
-        return TimeUnit.SECONDS;
+        return TimeUnit.MILLISECONDS;
     }
 
     @Override
     public List<String> getTagNames() {
         List<String> list = new ArrayList<>();
         list.add("account");
-        list.add("measurementId");
+        list.add("metadata.project_id");
+        list.add("metadata.resource_id");
         return list;
     }
 
@@ -68,59 +62,4 @@ public class OpenStackCeilometerUsage implements DataMapping{
         return false;
     }
 
-    public Double getUsage() {
-        return usage;
-    }
-
-    public void setUsage(Double usage) {
-        this.usage = usage;
-    }
-
-    public String get_class() {
-        return _class;
-    }
-
-    public void set_class(String _class) {
-        this._class = _class;
-    }
-
-    public long getTime() {
-        return time;
-    }
-
-    public void setTime(long time) {
-        this.time = time;
-    }
-
-    public String getAccount() {
-        return account;
-    }
-
-    public void setAccount(String account) {
-        this.account = account;
-    }
-
-    public Map getMetadata() {
-        return metadata;
-    }
-
-    public void setMetadata(Map metadata) {
-        this.metadata = metadata;
-    }
-
-    public String getUnit() {
-        return unit;
-    }
-
-    public void setUnit(String unit) {
-        this.unit = unit;
-    }
-
-    public String getMeasurementId() {
-        return measurementId;
-    }
-
-    public void setMeasurementId(String measurementId) {
-        this.measurementId = measurementId;
-    }
 }

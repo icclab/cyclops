@@ -16,7 +16,7 @@
  */
 package ch.icclab.cyclops.schedule.runner;
 
-import ch.icclab.cyclops.consume.data.mapping.udr.OpenStackUDR;
+import ch.icclab.cyclops.consume.data.mapping.usage.OpenStackUsage;
 import ch.icclab.cyclops.load.Loader;
 import ch.icclab.cyclops.load.model.OpenstackSettings;
 import ch.icclab.cyclops.load.model.PublisherCredentials;
@@ -62,7 +62,7 @@ public  abstract class OpenStackClient extends AbstractRunner {
      */
     public OpenStackClient() {
         hibernateClient = HibernateClient.getInstance();
-        influxDBClient = InfluxDBClient.getInstance();
+        influxDBClient = new InfluxDBClient();
         settings = Loader.getSettings().getOpenstackSettings();
         publisherCredentials = Loader.getSettings().getPublisherCredentials();
         dbName = getDbName();
@@ -80,7 +80,7 @@ public  abstract class OpenStackClient extends AbstractRunner {
 
     public abstract String getDbName();
 
-    public abstract OpenStackUDR generateValue(Long eventTime, Long eventLastTime, Map lastEventInScope, String instanceId);
+    public abstract ArrayList generateValue(Long eventTime, Long eventLastTime, Map lastEventInScope, String resource);
 
     public abstract void updateLatestPull(Long time);
 
@@ -93,12 +93,17 @@ public  abstract class OpenStackClient extends AbstractRunner {
         SchedulerLogger.log("Scheduler has been started");
         QueryBuilder parameterQuery = new QueryBuilder(dbName);
         SchedulerLogger.log("Fetching all events from database ...");
-        List<Map> data = influxDBClient.executeQuery(parameterQuery);
+        List<Map> data = new ArrayList<>();
+        try {
+            data = influxDBClient.executeQuery(parameterQuery).getListOfObjects();
+        } catch (Exception e){
+            SchedulerLogger.log("Influxdb data cannot be fetched. " + e);
+        }
         SchedulerLogger.log("Influxdb data is successfully fetched.");
-        SchedulerLogger.log("Making map of client and instance IDs...");
-        ArrayList<String> instanceList = getListOfInstances(data);
-        SchedulerLogger.log("Map of client and instance IDs is done");
-        createUDRRecords(instanceList);
+        SchedulerLogger.log("Making map of client and resources IDs...");
+        ArrayList<String> resourceList = getListOfResources(data);
+        SchedulerLogger.log("Map of client and resource IDs is done");
+        createUDRRecords(resourceList);
     }
 
     /**
@@ -107,27 +112,27 @@ public  abstract class OpenStackClient extends AbstractRunner {
      * @param data
      * @return
      */
-    private  ArrayList<String> getListOfInstances(List<Map> data) {
-        ArrayList<String> listOfInstances = new ArrayList<>();
+    private  ArrayList<String> getListOfResources(List<Map> data) {
+        ArrayList<String> listOfResources = new ArrayList<>();
         for (Map obj : data) {
-            String instaceId = obj.get("instanceId").toString();
-            if (!(listOfInstances.contains(instaceId))){
-                listOfInstances.add(instaceId);
+            String resourceId = obj.get("resourceId").toString();
+            if (!(listOfResources.contains(resourceId))){
+                listOfResources.add(resourceId);
             }
         }
-        return listOfInstances;
+        return listOfResources;
     }
 
-    private void createUDRRecords(ArrayList<String> listOfInstances) {
+    private void createUDRRecords(ArrayList<String> listOfResources) {
         SchedulerLogger.log("UDR creation process is started... ");
         DateInterval dates = new DateInterval(whenWasLastPull());
         SchedulerLogger.log("The last pull was " + dates.fromDate + " " + dates.toDate);
         Long time = Time.getMilisForTime(dates.getToDate());
         SchedulerLogger.log("Current timestamp is " + time);
-        ArrayList<OpenStackUDR> eventList = new ArrayList<>();
-            for (String instanceId : listOfInstances) {
+        ArrayList<OpenStackUsage> eventList = new ArrayList<>();
+            for (String resourceId : listOfResources) {
                 try {
-                    ArrayList<OpenStackUDR> udr = generateUDR(instanceId, dates);
+                    ArrayList<OpenStackUsage> udr = generateUDR(resourceId, dates);
                     if (udr !=null){
                         eventList.addAll(udr);
                     }
@@ -137,11 +142,11 @@ public  abstract class OpenStackClient extends AbstractRunner {
         }
 
         if (publisherCredentials.getPublisherByDefaultDispatchInsteadOfBroadcast()) {
-            messenger.publish(eventList, OpenStackUDR.class.getSimpleName());
+            messenger.publish(eventList, OpenStackUsage.class.getSimpleName());
         } else {
             messenger.broadcast(eventList);
         }
-        SchedulerLogger.log("All udr are published ");
+        SchedulerLogger.log("All usage are published ");
         updateLatestPull(time);
         // update time stamp
     }
@@ -168,7 +173,7 @@ public  abstract class OpenStackClient extends AbstractRunner {
         }
     }
 
-    private ArrayList<OpenStackUDR> generateUDR(String instanceId, DateInterval dates) {
+    private ArrayList<OpenStackUsage> generateUDR(String resourceId, DateInterval dates) {
 
         ArrayList<Map> generatedEvents = new ArrayList<>();
         // generate first event
@@ -177,7 +182,7 @@ public  abstract class OpenStackClient extends AbstractRunner {
         Boolean isItExist = true;
 
         try {
-            Map lastEvent = getEventBeforeTime(fromMills, instanceId);
+            Map lastEvent = getEventBeforeTime(fromMills, resourceId);
             if (lastEvent.get("type").equals(settings.getOpenstackCollectorEventDelete())){
                 isItExist = false;
             }
@@ -185,23 +190,27 @@ public  abstract class OpenStackClient extends AbstractRunner {
                 generatedEvents.add(lastEvent);
             }
         } catch (Exception e){
-            SchedulerLogger.log("No events for " + instanceId + " before "+ dates.toDate);
+            SchedulerLogger.log("No events for " + resourceId + " before "+ dates.toDate);
         }
 
         if (isItExist) {
             //get all events
-            ArrayList<OpenStackUDR> listOfUDRs= new ArrayList<>();
+            ArrayList<OpenStackUsage> listOfUDRs= new ArrayList<>();
             QueryBuilder parameterQuery = new QueryBuilder(dbName).
-                    and("instanceId", instanceId).timeTo(toMills, MILLISECONDS).timeFrom(fromMills, MILLISECONDS);
-            generatedEvents.addAll(Time.normaliseInfluxDB(influxDBClient.executeQuery(parameterQuery)));
+                    and("resourceId", resourceId).timeTo(toMills, MILLISECONDS).timeFrom(fromMills, MILLISECONDS);
+            try{
+                generatedEvents.addAll(Time.normaliseInfluxDB(influxDBClient.executeQuery(parameterQuery).getListOfObjects()));
+            } catch (Exception e){
+                SchedulerLogger.log("Influxdb data cannot be fetched. " + e);
+            }
             // generate last event
-            generatedEvents.add(getEventBeforeTime(toMills, instanceId));
+            generatedEvents.add(getEventBeforeTime(toMills, resourceId));
             Map lastEventInScope = new HashMap<>();
             for (Map event : generatedEvents) {
                 if ((!lastEventInScope.isEmpty())) {
                     Long eventTime = Double.valueOf(event.get("time").toString()).longValue();
                     Long eventLastTime = Double.valueOf(lastEventInScope.get("time").toString()).longValue();
-                    listOfUDRs.add(generateValue(eventTime, eventLastTime, lastEventInScope, instanceId));
+                    listOfUDRs.addAll(generateValue(eventTime, eventLastTime, lastEventInScope, resourceId));
                 }
                 lastEventInScope = event;
             }
@@ -210,15 +219,20 @@ public  abstract class OpenStackClient extends AbstractRunner {
         return null;
     }
 
-    private Map getEventBeforeTime(Long time, String instanceId){
+    private Map getEventBeforeTime(Long time, String resourceId){
         QueryBuilder parameterQuery = new QueryBuilder(dbName).
-                and("instanceId", instanceId).timeTo(time, MILLISECONDS);
+                and("resourceId", resourceId).timeTo(time, MILLISECONDS);
         try {
             influxDBClient.executeQuery(parameterQuery);
         } catch (Exception e){
             logger.error("Couldn't execute DB request " + e);
         }
-        List<Map> ListEvents = influxDBClient.executeQuery(parameterQuery);
+        List<Map> ListEvents = new ArrayList<>();
+        try{
+            ListEvents = influxDBClient.executeQuery(parameterQuery).getListOfObjects();
+        } catch (Exception e){
+            SchedulerLogger.log("Influxdb data cannot be fetched. " + e);
+        }
         Map lastEvent = ListEvents.get(ListEvents.size()-1);
         lastEvent.replace("time", time);
         return lastEvent;

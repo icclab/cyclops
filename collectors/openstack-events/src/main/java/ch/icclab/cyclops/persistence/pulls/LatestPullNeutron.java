@@ -25,7 +25,7 @@ import javax.persistence.*;
  * Description:
  */
 @Entity
-public class LatestPullNeutron  {
+public class LatestPullNeutron{
     @Id
     @GeneratedValue(strategy= GenerationType.IDENTITY)
     private Long id;

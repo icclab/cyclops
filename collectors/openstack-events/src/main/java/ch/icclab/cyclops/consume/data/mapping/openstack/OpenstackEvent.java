@@ -16,15 +16,16 @@
  */
 package ch.icclab.cyclops.consume.data.mapping.openstack;
 
+import ch.icclab.cyclops.timeseries.GenerateDBPoint;
 import org.influxdb.dto.Point;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 
-import java.util.Collections;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
 
-import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 /**
  * Author: Oleksii Serhiienko
@@ -41,12 +42,12 @@ public abstract class OpenstackEvent {
         this.account = account;
     }
 
-    public String getInstanceId() {
-        return instanceId;
+    public String getResourceId() {
+        return resourceId;
     }
 
-    public void setInstanceId(String instanceId) {
-        this.instanceId = instanceId;
+    public void setResourceId(String resourceId) {
+        this.resourceId = resourceId;
     }
 
     public String getType() {
@@ -57,11 +58,11 @@ public abstract class OpenstackEvent {
         this.type = type;
     }
 
-    public String getTime() {
+    public Long getTime() {
         return time;
     }
 
-    public void setTime(String time) {
+    public void setTime(Long time) {
         this.time = time;
     }
 
@@ -70,40 +71,18 @@ public abstract class OpenstackEvent {
     }
 
     public String account;
-    public String instanceId;
+    public String resourceId;
     public String type;
-    public String time;
+    public Long time;
 
-    /**
-     * This public method will access data and create db Point
-     *
-     * @return db point
-     */
-    public Point getPoint() {
-        DateTimeFormatter formatter = DateTimeFormat.forPattern(getDateFormat()).withZoneUTC();
-        DateTime dt = formatter.parseDateTime(time);
-        Map fields = getFields();
-        removeNullValues(fields);
 
-        return Point.measurement(getTableName())
-                .time(dt.getMillis(), MILLISECONDS)
-                .fields(fields)
-                .build();
+
+    public Point.Builder getPoint() {
+        List<String> tags = new ArrayList<>();
+        tags.add("resourceId");
+
+        return GenerateDBPoint.fromObjectWithTimeAndTags(this, "time", TimeUnit.MILLISECONDS, tags);
+
     }
-
-    /**
-     * Make sure we are not having any null values
-     *
-     * @param map original container that has to be changed
-     */
-    private void removeNullValues(Map<Object, Object> map) {
-        map.values().removeAll(Collections.singleton(null));
-    }
-
-    protected abstract String getTableName();
-
-    protected abstract  Map<String, Object> getFields();
-
-    protected abstract String getDateFormat();
 
 }

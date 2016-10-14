@@ -18,20 +18,24 @@
 package ch.icclab.cyclops.consume.data;
 
 import ch.icclab.cyclops.consume.AbstractConsumer;
+import ch.icclab.cyclops.consume.data.mapping.messages.CinderEvent;
 import ch.icclab.cyclops.consume.data.mapping.messages.NeutronEvent;
-import ch.icclab.cyclops.consume.data.mapping.messages.OsloEvent;
-import ch.icclab.cyclops.consume.data.mapping.messages.OsloEvent.OsloMessage.Args;
-import ch.icclab.cyclops.consume.data.mapping.messages.OsloEvent.OsloMessage.Args.ObjInst.Nova_objectData;
+import ch.icclab.cyclops.consume.data.mapping.messages.NovaEvent;
+import ch.icclab.cyclops.consume.data.mapping.messages.NovaEvent.OsloMessage.Args;
+import ch.icclab.cyclops.consume.data.mapping.messages.NovaEvent.OsloMessage.Args.ObjInst.Nova_objectData;
 import ch.icclab.cyclops.consume.data.mapping.openstack.OpenstackEvent;
+import ch.icclab.cyclops.consume.data.mapping.openstack.events.OpenstackCinderEvent;
 import ch.icclab.cyclops.consume.data.mapping.openstack.events.OpenstackNeutronEvent;
 import ch.icclab.cyclops.consume.data.mapping.openstack.events.OpenstackNovaEvent;
 import ch.icclab.cyclops.load.Loader;
 import ch.icclab.cyclops.load.model.OpenstackSettings;
 import ch.icclab.cyclops.timeseries.InfluxDBClient;
+import ch.icclab.cyclops.timeseries.QueryBuilder;
+import ch.icclab.cyclops.util.Time;
+import ch.icclab.cyclops.util.loggers.SchedulerLogger;
 import com.google.gson.Gson;
 
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 
 /**
@@ -41,7 +45,7 @@ import java.util.List;
  * Description: Event consumer
  */
 public class DataConsumer extends AbstractConsumer {
-    private static InfluxDBClient influxDBClient = InfluxDBClient.getInstance();
+    private static InfluxDBClient influxDBClient = new InfluxDBClient();
     private static OpenstackSettings settings = Loader.getSettings().getOpenstackSettings();
 
     @Override
@@ -56,6 +60,11 @@ public class DataConsumer extends AbstractConsumer {
         }catch (Exception ignored) {
         }
 
+        try{
+            data = manageCinderMessage(content);
+        }catch (Exception ignored) {
+        }
+
         if (data != null) influxDBClient.persistSinglePoint(data.getPoint());
     }
 
@@ -63,10 +72,9 @@ public class DataConsumer extends AbstractConsumer {
         Gson mapper = new Gson();
         //list of nova methods related to nova InstanceUpTime
         List<String> listOfActions  = Arrays.asList( settings.getOpenstackCollectorEventDelete(),
-                settings.getOpenstackCollectorEventResize(), settings.getOpenstackCollectorEventStop(),
-                settings.getOpenstackCollectorEventSuspend(), settings.getOpenstackCollectorEventPause(),
-                settings.getOpenstackCollectorEventRun());
-        OsloEvent osloEvent = mapper.fromJson(content, OsloEvent.class);
+                settings.getOpenstackCollectorEventStop(), settings.getOpenstackCollectorEventSuspend(),
+                settings.getOpenstackCollectorEventPause(), settings.getOpenstackCollectorEventRun());
+        NovaEvent osloEvent = mapper.fromJson(content, NovaEvent.class);
         Args args = osloEvent.getOsloMessage().getArgs();
         String method = "";
         try{
@@ -83,10 +91,12 @@ public class DataConsumer extends AbstractConsumer {
         if(listOfActions.contains(type)) {
             Nova_objectData novaData = args.getObjinst().getNova_objectData();
             String instanceId = novaData.getUuid();
-            String account = osloEvent.getOsloMessage().get_context_project_name();
+            String account = osloEvent.getOsloMessage().get_context_project_id();
             Double memory = novaData.getMemory_mb();
             Double vcpus = novaData.getVcpus();
-            return new OpenstackNovaEvent(account,instanceId, type, memory, vcpus, time);
+            String image = novaData.getSystem_metadata().getImage_description();
+            Double disk = novaData.getEphemeral_gb() + novaData.getRoot_gb();
+            return new OpenstackNovaEvent(account, instanceId, type, memory, vcpus, Time.fromNovaTimeToMills(time), image, disk);
         }
         return null;
     }
@@ -103,32 +113,53 @@ public class DataConsumer extends AbstractConsumer {
         }
         String type = getType(neutronEvent.getEvent_type());
         if (listOfActions.contains(type)){
-            return new OpenstackNeutronEvent(neutronEvent.get_context_tenant_name(), id, type, neutronEvent.get_context_timestamp());
+            String tenant = neutronEvent.get_context_tenant_id();
+            String timestamp = neutronEvent.get_context_timestamp();
+            return new OpenstackNeutronEvent(tenant, id, type, Time.fromOpenstackTimeToMills(timestamp));
+        }
+
+        return null;
+    }
+
+    private OpenstackCinderEvent manageCinderMessage(String content) {
+        Gson mapper = new Gson();
+        List<String> listOfActions  = Arrays.asList( settings.getOpenstackCollectorEventDelete(), settings.getOpenstackCollectorEventRun());
+        CinderEvent.OsloMessage cinderEvent = mapper.fromJson(content, CinderEvent.class).getOsloMessage();
+        String id = cinderEvent.getPayload().getVolume_id();
+
+        String type = getType(cinderEvent.getEvent_type());
+        if (listOfActions.contains(type)){
+            String tenant = cinderEvent.get_context_tenant();
+            Double size = cinderEvent.getPayload().getSize();
+            String contextTime = cinderEvent.get_timestamp();
+            Long timestamp = Time.fromOpenstackTimeToMills(contextTime);
+            return new OpenstackCinderEvent(tenant, id, type, size, timestamp, null);
         }
 
         return null;
     }
 
     private String getType(String method){
-        List<String> listOfRunningActions = Arrays.asList("spawning", "powering-on", "unpausing", "resuming", "floatingip.create.end");
+        List<String> listOfActiveActions = Arrays.asList("spawning", "powering-on", "unpausing", "resuming",
+                "floatingip.create.end", "volume.create.end", "resize_finish", "volume.resize.end");
         String paused = "pausing";
-        String poweredOff="[powering-off]";
-        String suspend = "suspending";
-        String deleted = "floatingip.delete.end";
+        String stopped="[powering-off]";
+        String suspended = "suspending";
+        List<String> listOfDeletedActions = Arrays.asList ("floatingip.delete.end", "volume.delete.end");
 
-        if (listOfRunningActions.contains(method)){
+        if (listOfActiveActions.contains(method)){
             return settings.getOpenstackCollectorEventRun();
         }
         if (method.equals(paused)){
             return settings.getOpenstackCollectorEventPause();
         }
-        if (method.equals(poweredOff)){
+        if (method.equals(stopped)){
             return settings.getOpenstackCollectorEventStop();
         }
-        if (method.equals(suspend)){
+        if (method.equals(suspended)){
             return settings.getOpenstackCollectorEventSuspend();
         }
-        if (method.equals(deleted)){
+        if (listOfDeletedActions.contains(method)){
             return settings.getOpenstackCollectorEventDelete();
         }
         return method;

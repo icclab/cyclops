@@ -64,10 +64,7 @@ public class Settings {
         openstackSettings.setOpenstackCollectorEventPause( properties.getProperty("OpenstackCollectorEventPause"));
         openstackSettings.setOpenstackCollectorEventStop( properties.getProperty("OpenstackCollectorEventStop"));
         openstackSettings.setOpenstackCollectorEventDelete( properties.getProperty("OpenstackCollectorEventDelete"));
-        openstackSettings.setOpenstackCollectorEventResize( properties.getProperty("OpenstackCollectorEventResize"));
         openstackSettings.setOpenstackCollectorEventSuspend( properties.getProperty("OpenstackCollectorEventSuspend"));
-        openstackSettings.setOpenstackEventNeutronTable(properties.getProperty("OpenstackCollectorEventNeutronTable"));
-        openstackSettings.setOpenstackEventNovaTable(properties.getProperty("OpenstackCollectorEventNovaTable"));
         openstackSettings.setOpenstackScheduleTime(properties.getProperty("OpenstackCollectorScheduleTime"));
 
         return openstackSettings;

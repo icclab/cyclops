@@ -22,71 +22,44 @@ package ch.icclab.cyclops.consume.data.mapping.messages;
  * Description: This class holds the Neutron event data
  */
 public class NeutronEvent {
+    private String event_type;
+    private String _context_timestamp;
+    private String _context_tenant_id;
+    private Payload payload;
+
     public String getEvent_type() {
         return event_type;
-    }
-
-    public void setEvent_type(String event_type) {
-        this.event_type = event_type;
     }
 
     public String get_context_timestamp() {
         return _context_timestamp;
     }
 
-    public void set_context_timestamp(String _context_timestamp) {
-        this._context_timestamp = _context_timestamp;
-    }
-
-    public String get_context_tenant_name() {
-        return _context_tenant_name;
-    }
-
-    public void set_context_tenant_name(String _context_tenant_name) {
-        this._context_tenant_name = _context_tenant_name;
+    public String get_context_tenant_id() {
+        return _context_tenant_id;
     }
 
     public Payload getPayload() {
         return payload;
     }
 
-    public void setPayload(Payload payload) {
-        this.payload = payload;
-    }
-
-    public String event_type;
-    public String _context_timestamp;
-    public String _context_tenant_name;
-    public Payload payload;
     public class Payload  {
+        String floatingip_id;
+        FloatingIP floatingip;
+
         public String getFloatingip_id() {
             return floatingip_id;
         }
-
-        public void setFloatingip_id(String floatingip_id) {
-            this.floatingip_id = floatingip_id;
-        }
-
-        public String floatingip_id;
 
         public FloatingIP getFloatingip() {
             return floatingip;
         }
 
-        public void setFloatingip(FloatingIP floatingip) {
-            this.floatingip = floatingip;
-        }
-
-        public FloatingIP floatingip;
         public class FloatingIP {
+            String id;
             public String getId() {
                 return id;
             }
-
-            public void setId(String id) {
-                this.id = id;
-            }
-            public String id;
         }
     }
 }

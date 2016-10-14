@@ -29,52 +29,76 @@ import java.util.Map;
  */
 public class OpenstackNovaEvent extends OpenstackEvent{
 
-    public OpenstackNovaEvent(String account, String instanceId, String type, Double memory, Double vcpus, String time){
+    public OpenstackNovaEvent(){
+
+    }
+
+    public OpenstackNovaEvent(String account, String resourceId, String type, Double memory, Double vcpus, Long time, String image, Double disk){
         this.account = account;
-        this.instanceId = instanceId;
+        this.resourceId = resourceId;
         this.type = type;
         this.memory = memory;
         this.vcpus = vcpus;
         this.time = time;
+        this.image = image;
+        this.disk = disk;
     }
 
     private Double memory;
 
     private Double vcpus;
 
-    public void setMemory(Double memory) {this.memory = memory;}
+    private String image;
 
-    public void setVcpus(Double vcpus) {this.vcpus = vcpus;}
+    private Double disk;
 
-    public Double getMemory() { return memory; }
+    private Boolean valueAttached = false;
 
-    public Double getVcpus() { return vcpus; }
-
-    /**
-     * @return table
-     */
-    public  String getTableName() {
-        return Loader.getSettings().getOpenstackSettings().getOpenstackEventNovaTable();
+    public void attachValue(){
+        this.valueAttached = true;
     }
 
-    /**
-     * Get fields for point generation
-     *
-     * @return hashmap
-     */
-    public Map<String, Object> getFields() {
-        Map<String, Object> map = new HashMap<String, Object>();
-        map.put("instanceId", instanceId);
-        map.put("account", account);
-        map.put("type", type);
-        map.put("memory", memory.toString());
-        map.put("cpu", vcpus.toString());
-
-        return map;
-    }
-    public String getDateFormat(){
-        return "yyyy-MM-dd'T'HH:mm:ss.SSSSSS";
+    public void deattachValue(){
+        this.valueAttached = false;
     }
 
+    public Double getMemory() {
+        return memory;
+    }
 
+    public void setMemory(Double memory) {
+        this.memory = memory;
+    }
+
+    public Double getVcpus() {
+        return vcpus;
+    }
+
+    public void setVcpus(Double vcpus) {
+        this.vcpus = vcpus;
+    }
+
+    public String getImage() {
+        return image;
+    }
+
+    public void setImage(String image) {
+        this.image = image;
+    }
+
+    public Double getDisk() {
+        return disk;
+    }
+
+    public void setDisk(Double disk) {
+        this.disk = disk;
+    }
+
+    public Boolean getValueAttached() {
+        return valueAttached;
+    }
+
+    public void setValueAttached(Boolean valueAttached) {
+        this.valueAttached = valueAttached;
+    }
 }

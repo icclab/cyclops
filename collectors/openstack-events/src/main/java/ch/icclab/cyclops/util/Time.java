@@ -98,4 +98,18 @@ public class Time {
         }
         return events;
     }
+
+    public static Long fromNovaTimeToMills(String time){
+        DateTimeFormatter format = DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm:ss.SSSSSS").withZoneUTC();
+        DateTime date = format.parseDateTime(time);
+
+        return date.getMillis();
+    }
+
+    public static Long fromOpenstackTimeToMills(String time){
+        DateTimeFormatter format = DateTimeFormat.forPattern("yyyy-MM-dd' 'HH:mm:ss.SSSSSS").withZoneUTC();
+        DateTime date = format.parseDateTime(time);
+
+        return date.getMillis();
+    }
 }

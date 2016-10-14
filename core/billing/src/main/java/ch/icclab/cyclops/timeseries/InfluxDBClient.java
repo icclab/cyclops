@@ -117,7 +117,7 @@ public class InfluxDBClient {
         Point point = builder.addField(InfluxDBCredentials.COUNTER_FIELD_NAME, true).build();
 
         // depending on whether batch processing for single points is enabled store immediately or wait for flush
-        session.write(credentials.getInfluxDBTSDB(), "default", point);
+        session.write(credentials.getInfluxDBTSDB(), "autogen", point);
     }
 
     /**
