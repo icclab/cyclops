@@ -17,6 +17,7 @@
 
 package ch.icclab.cyclops.load;
 
+import com.google.gson.Gson;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.restlet.Context;
@@ -41,6 +42,7 @@ public class Loader {
 
     // loaded settings and environment
     private Settings settings;
+    private Properties properties;
 
     /**
      * Constructor has to be private, as we are using singleton
@@ -49,7 +51,7 @@ public class Loader {
         // only if object is created by createInstance (which gives it context)
         if (!path.isEmpty()) {
             // start with loading config file
-            Properties properties = loadAndParseConfigurationFile(path);
+            properties = loadAndParseConfigurationFile(path);
 
             if (properties == null) {
                 throw new Exception();
@@ -103,6 +105,23 @@ public class Loader {
             return null;
         } catch (IOException e) {
             logger.error("Couldn't load configuration file: " + e.getMessage());
+            return null;
+        }
+    }
+
+    /**
+     * Map configuration file to specified POJO class
+     * @param clazz for mapping
+     * @return mapped POJO or null
+     */
+    public static < T > T extractProperties(Class clazz) {
+        try {
+            // convert it to JSON string
+            String tmp = new Gson().toJson(singleton.properties);
+
+            // and now to specified class
+            return (T) new Gson().fromJson(tmp, clazz);
+        } catch (Exception ignored) {
             return null;
         }
     }

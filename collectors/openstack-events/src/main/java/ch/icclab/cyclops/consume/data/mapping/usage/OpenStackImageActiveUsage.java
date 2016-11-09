@@ -22,11 +22,11 @@ package ch.icclab.cyclops.consume.data.mapping.usage;
  * Description: This class holds the OpenStackImageActiveUsage response
  */
 public class OpenStackImageActiveUsage extends OpenStackUsage {
-    public OpenStackImageActiveUsage(Long time, String account, String resourceId, Double usage, String imageId){
+    public OpenStackImageActiveUsage(Long time, String account, String source, Double usage, String imageId){
         this.account = account;
         this.usage = usage;
         this.time = time;
-        this.metadata = new OpenStackImageActiveUsage.ImageMetadata(resourceId, imageId);
+        this.metadata = new OpenStackImageActiveUsage.ImageMetadata(source, imageId);
     }
 
     private String unit = "sec";
@@ -34,10 +34,10 @@ public class OpenStackImageActiveUsage extends OpenStackUsage {
     private OpenStackImageActiveUsage.ImageMetadata metadata;
 
     private class ImageMetadata {
-        private String  resourceId;
+        private String  source;
         private String imageId;
-        ImageMetadata(String resourceId, String imageId){
-            this.resourceId = resourceId;
+        ImageMetadata(String source, String imageId){
+            this.source = source;
             this.imageId = imageId;
         }
     }

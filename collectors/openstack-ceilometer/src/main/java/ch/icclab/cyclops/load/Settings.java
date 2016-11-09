@@ -69,6 +69,7 @@ public class Settings {
             openStackSettings.setKeystoneTenant(properties.getProperty("KeystoneTenant"));
             openStackSettings.setKeystoneUrl(properties.getProperty("KeystoneUrl"));
             openStackSettings.setMeterUrl(properties.getProperty("MetersUrl"));
+            openStackSettings.setSupportedMeterList(properties.getProperty("SupportedMeterList"));
             logger.debug("OpenStack settings loaded.");
         } catch (Exception e) {
             logger.error("Error while loading the OpenStack settings.");

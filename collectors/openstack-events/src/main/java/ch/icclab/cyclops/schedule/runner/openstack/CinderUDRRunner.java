@@ -39,10 +39,10 @@ public class CinderUDRRunner extends OpenStackClient {
         return OpenstackCinderEvent.class.getSimpleName();
     }
 
-    public ArrayList<OpenStackVolumeActiveUsage> generateValue(Long eventTime, Long eventLastTime, Map lastEventInScope, String resourceId) {
+    public ArrayList<OpenStackVolumeActiveUsage> generateValue(Long eventTime, Long eventLastTime, Map lastEventInScope, String source) {
         ArrayList<OpenStackVolumeActiveUsage> generatedUsages = new ArrayList<>();
-        generatedUsages.add(new OpenStackVolumeActiveUsage(eventLastTime / 1000, lastEventInScope.get("account").toString(),
-                resourceId, (double) (eventTime - eventLastTime) / 1000, (double) lastEventInScope.get("disk"))); //Seconds instead of milliseconds;
+        generatedUsages.add(new OpenStackVolumeActiveUsage(eventLastTime, lastEventInScope.get("account").toString(),
+                source, (double) (eventTime - eventLastTime) / 1000, (double) lastEventInScope.get("disk"))); //Seconds instead of milliseconds;
         return generatedUsages;
     }
 

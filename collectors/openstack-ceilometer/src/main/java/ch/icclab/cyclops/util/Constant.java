@@ -21,6 +21,9 @@ import java.util.Map;
 
 public class Constant {
 
+    // Full meter selection support keyword
+    public static final String FULL_METER_SELECTION = "*";
+
     // Ceilometer field name
     public static final String CEILOMETER_METER_NAME = "name";
 
@@ -37,50 +40,50 @@ public class Constant {
     // Initialization of the metername map
     private static Map<String, String> initializeMeternameMap() {
         HashMap<String, String> map = new HashMap<>();
-        map.put("cpu", modelPath + "Cpu");
-        map.put("cpu.delta", modelPath + "CpuDelta");
-        map.put("cpu_util", modelPath + "CpuUtil");
-        map.put("disk.allocation", modelPath + "DiskAllocation");
-        map.put("disk.capacity", modelPath + "DiskCapacity");
-        map.put("disk.device.allocation", modelPath + "DiskDeviceAllocation");
-        map.put("disk.device.capacity", modelPath + "DiskDeviceCapacity");
-        map.put("disk.device.read.bytes", modelPath + "DiskDeviceReadBytes");
-        map.put("disk.device.read.bytes.rate", modelPath + "DiskDeviceReadBytesRate");
-        map.put("disk.device.read.requests", modelPath + "DiskDeviceReadRequest");
-        map.put("disk.device.read.requests.rate", modelPath + "DiskDeviceReadRequestRate");
-        map.put("disk.device.usage", modelPath + "DiskDeviceUsage");
-        map.put("disk.device.write.bytes", modelPath + "DiskDeviceWriteBytes");
-        map.put("disk.device.write.bytes.rate", modelPath + "DiskDeviceWriteBytesRate");
-        map.put("disk.device.write.requests", modelPath + "DiskDeviceWriteRequests");
-        map.put("disk.device.write.requests.rate", modelPath + "DiskDeviceWriteRequestsRate");
-        map.put("disk.read.bytes", modelPath + "DiskReadBytes");
-        map.put("disk.read.bytes.rate", modelPath + "DiskReadBytesRate");
-        map.put("disk.read.requests", modelPath + "DiskReadRequests");
-        map.put("disk.read.requests.rate", modelPath + "DiskReadRequestsRate");
-        map.put("disk.usage", modelPath + "DiskUsage");
-        map.put("disk.write.bytes", modelPath + "DiskWriteBytes");
-        map.put("disk.write.bytes.rate", modelPath + "DiskWriteBytesRate");
-        map.put("disk.write.requests", modelPath + "DiskWriteRequests");
-        map.put("disk.write.requests.rate", modelPath + "DiskWriteRequestsRate");
-        map.put("image", modelPath + "Image");
-        map.put("image.download", modelPath + "ImageDownload");
-        map.put("image.serve", modelPath + "ImageServe");
-        map.put("image.size", modelPath + "ImageSize");
-        map.put("instance", modelPath + "Instance");
-        map.put("ip.floating", modelPath + "IpFloating");
-        map.put("memory.resident", modelPath + "MemoryResident");
-        map.put("memory.usage", modelPath + "MemoryUsage");
-        map.put("network.incoming.bytes", modelPath + "NetworkIncomingBytes");
-        map.put("network.incoming.bytes.rate", modelPath + "NetworkIncomingBytesRate");
-        map.put("network.incoming.packets", modelPath + "NetworkIncomingPackets");
-        map.put("network.incoming.packets.rate", modelPath + "NetworkIncomingPacketsRate");
-        map.put("network.outgoing.bytes", modelPath + "NetworkOutgoingBytes");
-        map.put("network.outgoing.bytes.rate", modelPath + "NetworkOutgoingBytesRate");
-        map.put("network.outgoing.packets", modelPath + "NetworkOutgoingPackets");
-        map.put("network.outgoing.packets.rate", modelPath + "NetworkOutgoingPacketsRate");
-        map.put("storage.objects", modelPath + "StorageObjects");
-        map.put("storage.objects.containers", modelPath + "StorageObjectsContainers");
-        map.put("storage.objects.size", modelPath + "StorageObjectsSize");
+        map.put("cpu", modelPath + "OpenStackCeilometerCpu");
+        map.put("cpu.delta", modelPath + "OpenStackCeilometerCpuDelta");
+        map.put("cpu_util", modelPath + "OpenStackCeilometerCpuUtil");
+        map.put("disk.allocation", modelPath + "OpenStackCeilometerDiskAllocation");
+        map.put("disk.capacity", modelPath + "OpenStackCeilometerDiskCapacity");
+        map.put("disk.device.allocation", modelPath + "OpenStackCeilometerDiskDeviceAllocation");
+        map.put("disk.device.capacity", modelPath + "OpenStackCeilometerDiskDeviceCapacity");
+        map.put("disk.device.read.bytes", modelPath + "OpenStackCeilometerDiskDeviceReadBytes");
+        map.put("disk.device.read.bytes.rate", modelPath + "OpenStackCeilometerDiskDeviceReadBytesRate");
+        map.put("disk.device.read.requests", modelPath + "OpenStackCeilometerDiskDeviceReadRequest");
+        map.put("disk.device.read.requests.rate", modelPath + "OpenStackCeilometerDiskDeviceReadRequestRate");
+        map.put("disk.device.usage", modelPath + "OpenStackCeilometerDiskDeviceUsage");
+        map.put("disk.device.write.bytes", modelPath + "OpenStackCeilometerDiskDeviceWriteBytes");
+        map.put("disk.device.write.bytes.rate", modelPath + "OpenStackCeilometerDiskDeviceWriteBytesRate");
+        map.put("disk.device.write.requests", modelPath + "OpenStackCeilometerDiskDeviceWriteRequests");
+        map.put("disk.device.write.requests.rate", modelPath + "OpenStackCeilometerDiskDeviceWriteRequestsRate");
+        map.put("disk.read.bytes", modelPath + "OpenStackCeilometerDiskReadBytes");
+        map.put("disk.read.bytes.rate", modelPath + "OpenStackCeilometerDiskReadBytesRate");
+        map.put("disk.read.requests", modelPath + "OpenStackCeilometerDiskReadRequests");
+        map.put("disk.read.requests.rate", modelPath + "OpenStackCeilometerDiskReadRequestsRate");
+        map.put("disk.usage", modelPath + "OpenStackCeilometerDiskUsage");
+        map.put("disk.write.bytes", modelPath + "OpenStackCeilometerDiskWriteBytes");
+        map.put("disk.write.bytes.rate", modelPath + "OpenStackCeilometerDiskWriteBytesRate");
+        map.put("disk.write.requests", modelPath + "OpenStackCeilometerDiskWriteRequests");
+        map.put("disk.write.requests.rate", modelPath + "OpenStackCeilometerDiskWriteRequestsRate");
+        map.put("image", modelPath + "OpenStackCeilometerImage");
+        map.put("image.download", modelPath + "OpenStackCeilometerImageDownload");
+        map.put("image.serve", modelPath + "OpenStackCeilometerImageServe");
+        map.put("image.size", modelPath + "OpenStackCeilometerImageSize");
+        map.put("instance", modelPath + "OpenStackCeilometerInstance");
+        map.put("ip.floating", modelPath + "OpenStackCeilometerIpFloating");
+        map.put("memory.resident", modelPath + "OpenStackCeilometerMemoryResident");
+        map.put("memory.usage", modelPath + "OpenStackCeilometerMemoryUsage");
+        map.put("network.incoming.bytes", modelPath + "OpenStackCeilometerNetworkIncomingBytes");
+        map.put("network.incoming.bytes.rate", modelPath + "OpenStackCeilometerNetworkIncomingBytesRate");
+        map.put("network.incoming.packets", modelPath + "OpenStackCeilometerNetworkIncomingPackets");
+        map.put("network.incoming.packets.rate", modelPath + "OpenStackCeilometerNetworkIncomingPacketsRate");
+        map.put("network.outgoing.bytes", modelPath + "OpenStackCeilometerNetworkOutgoingBytes");
+        map.put("network.outgoing.bytes.rate", modelPath + "OpenStackCeilometerNetworkOutgoingBytesRate");
+        map.put("network.outgoing.packets", modelPath + "OpenStackCeilometerNetworkOutgoingPackets");
+        map.put("network.outgoing.packets.rate", modelPath + "OpenStackCeilometerNetworkOutgoingPacketsRate");
+        map.put("storage.objects", modelPath + "OpenStackCeilometerStorageObjects");
+        map.put("storage.objects.containers", modelPath + "OpenStackCeilometerStorageObjectsContainers");
+        map.put("storage.objects.size", modelPath + "OpenStackCeilometerStorageObjectsSize");
         return map;
     }
 

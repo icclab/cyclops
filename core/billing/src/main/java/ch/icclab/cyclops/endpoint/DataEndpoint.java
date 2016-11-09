@@ -17,7 +17,7 @@
 
 package ch.icclab.cyclops.endpoint;
 
-import ch.icclab.cyclops.consume.command.model.generic.model.Bill;
+import ch.icclab.cyclops.consume.command.model.generic.local.Bill;
 import ch.icclab.cyclops.consume.data.DataConsumer;
 import ch.icclab.cyclops.consume.data.DataProcess;
 import ch.icclab.cyclops.dto.Measurement;

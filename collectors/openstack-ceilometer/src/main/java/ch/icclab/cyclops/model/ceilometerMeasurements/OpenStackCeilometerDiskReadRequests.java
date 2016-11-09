@@ -27,7 +27,6 @@ public class OpenStackCeilometerDiskReadRequests extends AbstractOpenStackCeilom
 
     public OpenStackCeilometerDiskReadRequests(OpenStackUsageData udr, OpenStackMeter meter) {
         super(udr, meter);
-        this.setChartType(Constant.NUMBER_GRAPH);
     }
 
     @Override

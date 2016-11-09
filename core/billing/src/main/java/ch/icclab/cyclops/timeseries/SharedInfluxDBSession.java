@@ -34,4 +34,11 @@ public class SharedInfluxDBSession {
 
         return session;
     }
+
+    public static void shutDown(){
+        if (session != null) {
+            session.close();
+            session = null;
+        }
+    }
 }

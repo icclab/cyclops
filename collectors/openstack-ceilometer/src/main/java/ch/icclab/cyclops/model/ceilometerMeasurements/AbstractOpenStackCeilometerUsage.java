@@ -1,5 +1,6 @@
 package ch.icclab.cyclops.model.ceilometerMeasurements;
 
+import ch.icclab.cyclops.client.OpenStackPuller;
 import ch.icclab.cyclops.model.OpenStackMeter;
 import ch.icclab.cyclops.model.OpenStackUsageData;
 import ch.icclab.cyclops.persistence.CumulativeMeterUsage;
@@ -45,9 +46,6 @@ public abstract class AbstractOpenStackCeilometerUsage {
     //Measurement time as a timestamp
     private Long time;
 
-    // Dashboard graph representation
-    private String chartType;
-
     //Meter Unit
     private String unit;
 
@@ -65,7 +63,7 @@ public abstract class AbstractOpenStackCeilometerUsage {
 
         account = (String) usageData.getGroupby().get("user_id");
         unit = usageData.getUnit();
-        time = getMilisForTime(usageData.getDuration_start()) / 1000;
+        time = getMilisForTime(usageData.getDuration_end());// / 1000;
         metadata = fillMetaData(usageData, meter);
         unit = usageData.getUnit();
     }
@@ -97,7 +95,10 @@ public abstract class AbstractOpenStackCeilometerUsage {
         HashMap<String, Object> meta = new HashMap<String, Object>();
         meta.put("project_id", udr.getGroupby().get("project_id"));
         meta.put("resource_id", udr.getGroupby().get("resource_id"));
-
+        String resourceId = (String) udr.getGroupby().get("resource_id");
+        OpenStackPuller openStackPuller = new OpenStackPuller();
+//        meta.put("instance_name", openStackPuller.getResourceIdName(resourceId));
+        meta.put("source", openStackPuller.getResourceIdName(resourceId));
         return meta;
     }
 
@@ -153,14 +154,6 @@ public abstract class AbstractOpenStackCeilometerUsage {
 
     public void setAccount(String account) {
         this.account = account;
-    }
-
-    public String getChartType() {
-        return chartType;
-    }
-
-    public void setChartType(String chartType) {
-        this.chartType = chartType;
     }
 
     public String getUnit() {

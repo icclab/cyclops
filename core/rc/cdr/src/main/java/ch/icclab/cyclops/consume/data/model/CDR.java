@@ -36,7 +36,7 @@ public class CDR implements DataMapping {
 
     @Override
     public TimeUnit getTimeUnit() {
-        return TimeUnit.SECONDS;
+        return TimeUnit.MILLISECONDS;
     }
 
     @Override

@@ -27,7 +27,6 @@ public class OpenStackCeilometerNetworkIncomingPackets extends AbstractOpenStack
 
     public OpenStackCeilometerNetworkIncomingPackets(OpenStackUsageData udr, OpenStackMeter meter) {
         super(udr, meter);
-        this.setChartType(Constant.NUMBER_GRAPH);
     }
 
     @Override

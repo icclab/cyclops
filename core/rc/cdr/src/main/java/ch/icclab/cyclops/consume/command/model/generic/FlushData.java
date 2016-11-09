@@ -18,6 +18,7 @@ package ch.icclab.cyclops.consume.command.model.generic;
 
 import ch.icclab.cyclops.consume.command.Command;
 import ch.icclab.cyclops.consume.command.model.generic.model.CDR;
+import ch.icclab.cyclops.load.Loader;
 import ch.icclab.cyclops.publish.APICaller;
 import ch.icclab.cyclops.timeseries.InfluxDBClient;
 import ch.icclab.cyclops.timeseries.InfluxDBResponse;
@@ -37,8 +38,16 @@ import java.util.stream.Collectors;
  */
 public class FlushData extends Command{
 
-    // TODO add service discovery
-    private static String URL = "localhost:4571";
+    private class URLs {
+        String BillingRuleEngineURL;
+
+        public URLs() {
+        }
+
+        public boolean isValid() {
+            return BillingRuleEngineURL != null && !BillingRuleEngineURL.isEmpty();
+        }
+    }
 
     // mandatory
     private Long from;
@@ -86,19 +95,26 @@ public class FlushData extends Command{
 
                     // do we want to push it to the next micro service or not
                     if (sync == null || sync) {
-                        CommandLogger.log(String.format("Flushing data (%d items) to Billing Rule engine (%s)", list.size(), URL));
+                        // load URLS from configuration file
+                        URLs urls = Loader.extractProperties(URLs.class);
 
-                        new APICaller().post(new URL(String.format("http://%s/ruleengine/facts", URL)), list);
+                        if (urls != null && urls.isValid()) {
+                            CommandLogger.log(String.format("Flushing data (%d items) to Billing Rule engine (%s)", list.size(), urls.BillingRuleEngineURL));
+
+                            new APICaller().post(new URL(String.format("http://%s/ruleengine/facts", urls.BillingRuleEngineURL)), list);
+                        } else {
+                            return "Check configuration file, command endpoints are not valid";
+                        }
                     }
 
                     // should we simply return the data set?
                     return (output != null && output)? list: String.format("Flushed %d items", list.size());
                 } else {
                     CommandLogger.log("No data to be pushed into Billing Rule engine, as list of records received from underlying database is zero");
-                    return "No data";
+                    return "No data in measurements";
                 }
             } else {
-                return "No data";
+                return "No measurements";
             }
 
         } catch (Exception e) {

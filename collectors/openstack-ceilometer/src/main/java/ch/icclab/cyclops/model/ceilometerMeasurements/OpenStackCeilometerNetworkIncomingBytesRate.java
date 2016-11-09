@@ -27,7 +27,6 @@ public class OpenStackCeilometerNetworkIncomingBytesRate extends AbstractOpenSta
 
     public OpenStackCeilometerNetworkIncomingBytesRate(OpenStackUsageData udr, OpenStackMeter meter) {
         super(udr, meter);
-        this.setChartType(Constant.GAUGE_GRAPH);
     }
 
     @Override

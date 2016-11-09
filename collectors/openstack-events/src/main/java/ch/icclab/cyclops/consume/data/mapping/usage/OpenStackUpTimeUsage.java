@@ -24,12 +24,12 @@ package ch.icclab.cyclops.consume.data.mapping.usage;
 
 public class OpenStackUpTimeUsage extends OpenStackUsage {
 
-    public OpenStackUpTimeUsage(Long time, String account, String resourceId, Double usage, Double value, String className){
+    public OpenStackUpTimeUsage(Long time, String account, String source, Double usage, Double value, String className){
         this.account = account;
         this.usage = usage;
         this.time = time;
         this._class = className;
-        this.metadata = new NovaMetadata(resourceId, value);
+        this.metadata = new NovaMetadata(source, value);
     }
     private String _class;
     private String unit = "sec";
@@ -37,9 +37,9 @@ public class OpenStackUpTimeUsage extends OpenStackUsage {
 
     private class NovaMetadata {
         private Double value;
-        private String  resourceId;
-        NovaMetadata(String resourceId, Double value){
-            this.resourceId = resourceId;
+        private String  source;
+        NovaMetadata(String source, Double value){
+            this.source = source;
             this.value = value;
         }
     }

@@ -136,7 +136,51 @@ public class DataConsumer extends AbstractConsumer {
             return new OpenstackCinderEvent(tenant, id, type, size, timestamp, null);
         }
 
+        if (cinderEvent.getEvent_type().equals("volume.attach.end")){
+            updateVolumeStatus(cinderEvent, true);
+        }
+
+        if (cinderEvent.getEvent_type().equals("volume.detach.end")){
+            updateVolumeStatus(cinderEvent, false);
+        }
+
         return null;
+    }
+
+    private void updateVolumeStatus(CinderEvent.OsloMessage cinderEvent, Boolean valueStatus ){
+        try {
+            String source;
+            QueryBuilder cinderQuery = new QueryBuilder(OpenstackCinderEvent.class.getSimpleName());
+            String volumeId = cinderEvent.getPayload().getVolume_id();
+            cinderQuery.where("source", volumeId ).orderDesc().limit(1);
+            OpenstackCinderEvent cinderData = (OpenstackCinderEvent) influxDBClient
+                    .executeQuery(cinderQuery)
+                    .getAsListOfType(OpenstackCinderEvent.class)
+                    .get(0);
+            cinderData.setTime(Time.fromOpenstackTimeToMills(cinderEvent.get_timestamp()));
+            if (valueStatus){
+                source =  cinderEvent.getPayload().getVolume_attachment().get(0).getInstance_uuid();
+                cinderData.setInstanceId(source);
+            } else {
+                source = cinderData.getInstanceId();
+                cinderData.setInstanceId(null);
+            }
+            influxDBClient.persistSinglePoint(cinderData.getPoint());
+
+            QueryBuilder novaQuery = new QueryBuilder(OpenstackNovaEvent.class.getSimpleName());
+            novaQuery.where("source", source).orderDesc().limit(1);
+            OpenstackNovaEvent novaData =(OpenstackNovaEvent) influxDBClient
+                    .executeQuery(novaQuery)
+                    .getAsListOfType(OpenstackNovaEvent.class)
+                    .get(0);
+            novaData.setTime(Time.fromOpenstackTimeToMills(cinderEvent.get_timestamp()));
+            novaData.setValueAttached(valueStatus);
+            influxDBClient.persistSinglePoint(novaData.getPoint());
+
+        } catch (Exception e){
+            SchedulerLogger.log("Influxdb data cannot be fetched. " + e);
+        }
+
     }
 
     private String getType(String method){

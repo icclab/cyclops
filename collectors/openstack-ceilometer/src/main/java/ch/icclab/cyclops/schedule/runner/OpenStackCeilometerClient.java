@@ -21,6 +21,7 @@ import ch.icclab.cyclops.load.Loader;
 import ch.icclab.cyclops.load.model.OpenStackSettings;
 import ch.icclab.cyclops.persistence.HibernateClient;
 import ch.icclab.cyclops.persistence.LatestPullORM;
+import ch.icclab.cyclops.util.DateInterval;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.joda.time.DateTime;
@@ -56,24 +57,30 @@ public class OpenStackCeilometerClient extends AbstractRunner {
         logger.debug("Started with updating Usage Records from OpenStack");
         HibernateClient hibernateClient = HibernateClient.getInstance();
 
-        // get data from Ceilometer
-        Boolean status = openStackPuller.pullUsageRecords();
-
-        if (!status) {
-            logger.error("Couldn't update OpenStack Usage data");
-        }else{
+        try {
             // get now
-            Long time = new DateTime(DateTimeZone.UTC).getMillis();
+            DateInterval dates = new DateInterval();
+//            Long time = new DateTime(DateTimeZone.UTC).getMillis();
+            Long time = dates.getToLong();
+            // get data from Ceilometer
+            Boolean status = openStackPuller.pullUsageRecords();
 
-            // update time stamp
-            LatestPullORM pull = (LatestPullORM) hibernateClient.getObject(LatestPullORM.class, 1l);
-            if (pull == null) {
-                pull = new LatestPullORM(time);
+            if (!status) {
+                logger.error("Couldn't update OpenStack Usage data");
             } else {
-                pull.setTimeStamp(time);
-            }
 
-            hibernateClient.persistObject(pull);
+                // update time stamp
+                LatestPullORM pull = (LatestPullORM) hibernateClient.getObject(LatestPullORM.class, 1l);
+                if (pull == null) {
+                    pull = new LatestPullORM(time);
+                } else {
+                    pull.setTimeStamp(time);
+                }
+                hibernateClient.persistObject(pull);
+
+            }
+        } catch (Exception e) {
+            logger.error("Error while saving the last Data Pull dates: " + e.getMessage());
         }
     }
 

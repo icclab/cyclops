@@ -17,8 +17,8 @@
 # Author: Piyush Harsh, Martin Skoviera
 
 ### Installing InfluxDB database
-wget https://dl.influxdata.com/influxdb/releases/influxdb_0.13.0_amd64.deb
-sudo dpkg -i influxdb_0.13.0_amd64.deb
+wget https://dl.influxdata.com/influxdb/releases/influxdb_1.0.2_amd64.deb
+sudo dpkg -i influxdb_1.0.2_amd64.deb
 sudo /etc/init.d/influxdb restart
 
 ### Installing InfluxDB Java client

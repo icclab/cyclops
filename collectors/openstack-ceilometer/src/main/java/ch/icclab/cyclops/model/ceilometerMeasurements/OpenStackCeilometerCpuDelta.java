@@ -27,7 +27,6 @@ public class OpenStackCeilometerCpuDelta extends AbstractOpenStackCeilometerUsag
 
     public OpenStackCeilometerCpuDelta(OpenStackUsageData udr, OpenStackMeter meter) {
         super(udr, meter);
-        this.setChartType(Constant.NUMBER_GRAPH);
     }
 
     @Override

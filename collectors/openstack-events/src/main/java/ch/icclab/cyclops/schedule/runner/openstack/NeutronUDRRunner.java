@@ -37,10 +37,10 @@ public class NeutronUDRRunner extends OpenStackClient {
         return OpenstackNeutronEvent.class.getSimpleName();
     }
 
-    public ArrayList<OpenStackFloatingIpActiveUsage> generateValue(Long eventTime, Long eventLastTime, Map lastEventInScope, String resourceId) {
+    public ArrayList<OpenStackFloatingIpActiveUsage> generateValue(Long eventTime, Long eventLastTime, Map lastEventInScope, String source) {
         ArrayList<OpenStackFloatingIpActiveUsage> generatedUsages = new ArrayList<>();
-        generatedUsages.add( new OpenStackFloatingIpActiveUsage(eventLastTime / 1000, lastEventInScope.get("account").toString(),
-                resourceId, (double) (eventTime - eventLastTime) / 1000)); //Seconds instead of milliseconds;
+        generatedUsages.add( new OpenStackFloatingIpActiveUsage(eventLastTime, lastEventInScope.get("account").toString(),
+                source, (double) (eventTime - eventLastTime) / 1000)); //Seconds instead of milliseconds;
         return generatedUsages;
     }
 

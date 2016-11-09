@@ -23,11 +23,11 @@ package ch.icclab.cyclops.consume.data.mapping.usage;
  */
 
 public class OpenStackFloatingIpActiveUsage extends OpenStackUsage {
-    public OpenStackFloatingIpActiveUsage(Long time, String account, String resourceId, Double usage){
+    public OpenStackFloatingIpActiveUsage(Long time, String account, String source, Double usage){
         this.account = account;
         this.usage = usage;
         this.time = time;
-        this.metadata = new NeutronMetadata(resourceId);
+        this.metadata = new NeutronMetadata(source);
     }
 
     private String unit = "sec";
@@ -35,9 +35,9 @@ public class OpenStackFloatingIpActiveUsage extends OpenStackUsage {
     private NeutronMetadata metadata;
 
     private class NeutronMetadata {
-        private String  resourceId;
-        NeutronMetadata(String resourceId){
-            this.resourceId = resourceId;
+        private String  source;
+        NeutronMetadata(String source){
+            this.source = source;
         }
     }
 }

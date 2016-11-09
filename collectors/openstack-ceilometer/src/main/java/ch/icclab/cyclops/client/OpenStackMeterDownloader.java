@@ -16,6 +16,7 @@ import org.restlet.util.Series;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.concurrent.Callable;
 
 /**
@@ -84,12 +85,12 @@ public class OpenStackMeterDownloader implements Callable {
      * Will perform request and pull meter data from OpenStack
      *
      */
-    protected ArrayList<OpenStackMeter> performRequest() {
+    protected HashSet<OpenStackMeter> performRequest() {
         try {
             // first step is to pull data from OpenStack
             String data = pullData();
             Gson gson = new Gson();
-            ArrayList<OpenStackMeter> meters = new ArrayList<>();
+            HashSet<OpenStackMeter> meters = new HashSet<>();
             //Create an array of OpenStackMeters
             OpenStackMeter[] metersArray = gson.fromJson(data, OpenStackMeter[].class);
             for(int i = 0; i<metersArray.length; i++){

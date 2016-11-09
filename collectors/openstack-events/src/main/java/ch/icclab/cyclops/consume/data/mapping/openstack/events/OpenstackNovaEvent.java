@@ -33,9 +33,9 @@ public class OpenstackNovaEvent extends OpenstackEvent{
 
     }
 
-    public OpenstackNovaEvent(String account, String resourceId, String type, Double memory, Double vcpus, Long time, String image, Double disk){
+    public OpenstackNovaEvent(String account, String source, String type, Double memory, Double vcpus, Long time, String image, Double disk){
         this.account = account;
-        this.resourceId = resourceId;
+        this.source = source;
         this.type = type;
         this.memory = memory;
         this.vcpus = vcpus;

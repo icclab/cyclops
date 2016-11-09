@@ -42,12 +42,12 @@ public abstract class OpenstackEvent {
         this.account = account;
     }
 
-    public String getResourceId() {
-        return resourceId;
+    public String getSource() {
+        return source;
     }
 
-    public void setResourceId(String resourceId) {
-        this.resourceId = resourceId;
+    public void setSource(String source) {
+        this.source = source;
     }
 
     public String getType() {
@@ -71,7 +71,7 @@ public abstract class OpenstackEvent {
     }
 
     public String account;
-    public String resourceId;
+    public String source;
     public String type;
     public Long time;
 
@@ -79,7 +79,7 @@ public abstract class OpenstackEvent {
 
     public Point.Builder getPoint() {
         List<String> tags = new ArrayList<>();
-        tags.add("resourceId");
+        tags.add("source");
 
         return GenerateDBPoint.fromObjectWithTimeAndTags(this, "time", TimeUnit.MILLISECONDS, tags);
 

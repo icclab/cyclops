@@ -20,6 +20,7 @@ package ch.icclab.cyclops.load.model;
  */
 
 public class OpenStackSettings {
+    private String supportedMeterList;
     private String ceilometerUrl;
     private String keystoneUrl;
     private String keystoneDomain;
@@ -28,6 +29,14 @@ public class OpenStackSettings {
     private String password;
     private String meterUrl;
     private String firstImport;
+
+    public String getSupportedMeterList() {
+        return supportedMeterList;
+    }
+
+    public void setSupportedMeterList(String supportedMeterList) {
+        this.supportedMeterList = supportedMeterList;
+    }
 
     public String getFirstImport() {
         return firstImport;

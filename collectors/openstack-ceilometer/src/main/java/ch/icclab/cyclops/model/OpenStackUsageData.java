@@ -24,7 +24,7 @@ import java.util.Map;
 
 public class OpenStackUsageData {
     private String _class;
-    private static String PREFIX = "OpenStack";
+//    private static String PREFIX = "OpenStack";
 
     //Data output count
     private Integer count;
@@ -88,18 +88,18 @@ public class OpenStackUsageData {
     }
 
     protected void setClassName() {
-        this.set_class(String.format("%s%s", OpenStackUsageData.PREFIX, this.getClass().getSimpleName()));
+        this.set_class(String.format(this.getClass().getSimpleName()));
     }
     //Getters and Setters
-
-
-    public static String getPREFIX() {
-        return PREFIX;
-    }
-
-    public static void setPREFIX(String PREFIX) {
-        OpenStackUsageData.PREFIX = PREFIX;
-    }
+//
+//
+//    public static String getPREFIX() {
+//        return PREFIX;
+//    }
+//
+//    public static void setPREFIX(String PREFIX) {
+//        OpenStackUsageData.PREFIX = PREFIX;
+//    }
 
     public Integer getCount() {
         return count;

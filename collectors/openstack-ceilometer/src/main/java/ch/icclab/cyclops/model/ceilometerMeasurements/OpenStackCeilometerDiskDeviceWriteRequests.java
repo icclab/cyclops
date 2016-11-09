@@ -27,7 +27,6 @@ public class OpenStackCeilometerDiskDeviceWriteRequests extends AbstractOpenStac
 
     public OpenStackCeilometerDiskDeviceWriteRequests(OpenStackUsageData udr, OpenStackMeter meter) {
         super(udr, meter);
-        this.setChartType(Constant.NUMBER_GRAPH);
     }
 
     @Override

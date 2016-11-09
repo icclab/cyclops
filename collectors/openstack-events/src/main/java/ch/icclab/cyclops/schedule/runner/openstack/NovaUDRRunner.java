@@ -41,7 +41,7 @@ public  class NovaUDRRunner extends OpenStackClient {
         return OpenstackNovaEvent.class.getSimpleName();
     }
 
-    public ArrayList<OpenStackUsage> generateValue(Long eventTime, Long eventLastTime, Map lastEventInScope, String resourceId){
+    public ArrayList<OpenStackUsage> generateValue(Long eventTime, Long eventLastTime, Map lastEventInScope, String source){
         String type  = lastEventInScope.get("type").toString();
         String _classCPU = null;
         String _classMemory = null;
@@ -70,20 +70,22 @@ public  class NovaUDRRunner extends OpenStackClient {
         }
 
         ArrayList<OpenStackUsage> generatedUsages = new ArrayList<>();
-        generatedUsages.add(new OpenStackUpTimeUsage(eventLastTime /1000, lastEventInScope.get("account").toString(),
-                resourceId, (double) (eventTime - eventLastTime) /1000, //Seconds instead of milliseconds
+        generatedUsages.add(new OpenStackUpTimeUsage(eventLastTime, lastEventInScope.get("account").toString(),
+                source, (double) (eventTime - eventLastTime) /1000, //Seconds instead of milliseconds
                 new Double (lastEventInScope.get("vcpus").toString()), _classCPU));
-        generatedUsages.add((new OpenStackUpTimeUsage(eventLastTime /1000, lastEventInScope.get("account").toString(),
-                resourceId, (double) (eventTime - eventLastTime) /1000, //Seconds instead of milliseconds
+        generatedUsages.add((new OpenStackUpTimeUsage(eventLastTime, lastEventInScope.get("account").toString(),
+                source, (double) (eventTime - eventLastTime) /1000, //Seconds instead of milliseconds
                 new Double (lastEventInScope.get("memory").toString()), _classMemory)));
-        generatedUsages.add((new OpenStackUpTimeUsage(eventLastTime /1000, lastEventInScope.get("account").toString(),
-                resourceId, (double) (eventTime - eventLastTime) /1000, //Seconds instead of milliseconds
-                new Double (lastEventInScope.get("disk").toString()), _classDisk)));
+        Boolean status = (Boolean) lastEventInScope.get("valueAttached");
+        if (!status){
+            generatedUsages.add((new OpenStackUpTimeUsage(eventLastTime, lastEventInScope.get("account").toString(),
+                    source, (double) (eventTime - eventLastTime) /1000, //Seconds instead of milliseconds
+                    new Double (lastEventInScope.get("disk").toString()), _classDisk)));}
 
         String image = null;
         if (lastEventInScope.get("image")!=null){image = lastEventInScope.get("image").toString();}
-        generatedUsages.add ((new OpenStackImageActiveUsage(eventLastTime /1000, lastEventInScope.get("account").toString(),
-                resourceId, (double) (eventTime - eventLastTime) /1000, //Seconds instead of milliseconds
+        generatedUsages.add ((new OpenStackImageActiveUsage(eventLastTime, lastEventInScope.get("account").toString(),
+                source, (double) (eventTime - eventLastTime) /1000, //Seconds instead of milliseconds
                 image)));
 
         return generatedUsages;

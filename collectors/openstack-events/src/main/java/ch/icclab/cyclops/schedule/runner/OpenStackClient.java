@@ -115,9 +115,9 @@ public  abstract class OpenStackClient extends AbstractRunner {
     private  ArrayList<String> getListOfResources(List<Map> data) {
         ArrayList<String> listOfResources = new ArrayList<>();
         for (Map obj : data) {
-            String resourceId = obj.get("resourceId").toString();
-            if (!(listOfResources.contains(resourceId))){
-                listOfResources.add(resourceId);
+            String source = obj.get("source").toString();
+            if (!(listOfResources.contains(source))){
+                listOfResources.add(source);
             }
         }
         return listOfResources;
@@ -130,9 +130,9 @@ public  abstract class OpenStackClient extends AbstractRunner {
         Long time = Time.getMilisForTime(dates.getToDate());
         SchedulerLogger.log("Current timestamp is " + time);
         ArrayList<OpenStackUsage> eventList = new ArrayList<>();
-            for (String resourceId : listOfResources) {
+            for (String source : listOfResources) {
                 try {
-                    ArrayList<OpenStackUsage> udr = generateUDR(resourceId, dates);
+                    ArrayList<OpenStackUsage> udr = generateUDR(source, dates);
                     if (udr !=null){
                         eventList.addAll(udr);
                     }
@@ -173,7 +173,7 @@ public  abstract class OpenStackClient extends AbstractRunner {
         }
     }
 
-    private ArrayList<OpenStackUsage> generateUDR(String resourceId, DateInterval dates) {
+    private ArrayList<OpenStackUsage> generateUDR(String source, DateInterval dates) {
 
         ArrayList<Map> generatedEvents = new ArrayList<>();
         // generate first event
@@ -182,7 +182,7 @@ public  abstract class OpenStackClient extends AbstractRunner {
         Boolean isItExist = true;
 
         try {
-            Map lastEvent = getEventBeforeTime(fromMills, resourceId);
+            Map lastEvent = getEventBeforeTime(fromMills, source);
             if (lastEvent.get("type").equals(settings.getOpenstackCollectorEventDelete())){
                 isItExist = false;
             }
@@ -190,27 +190,27 @@ public  abstract class OpenStackClient extends AbstractRunner {
                 generatedEvents.add(lastEvent);
             }
         } catch (Exception e){
-            SchedulerLogger.log("No events for " + resourceId + " before "+ dates.toDate);
+            SchedulerLogger.log("No events for " + source + " before "+ dates.toDate);
         }
 
         if (isItExist) {
             //get all events
             ArrayList<OpenStackUsage> listOfUDRs= new ArrayList<>();
             QueryBuilder parameterQuery = new QueryBuilder(dbName).
-                    and("resourceId", resourceId).timeTo(toMills, MILLISECONDS).timeFrom(fromMills, MILLISECONDS);
+                    and("source", source).timeTo(toMills, MILLISECONDS).timeFrom(fromMills, MILLISECONDS);
             try{
                 generatedEvents.addAll(Time.normaliseInfluxDB(influxDBClient.executeQuery(parameterQuery).getListOfObjects()));
             } catch (Exception e){
                 SchedulerLogger.log("Influxdb data cannot be fetched. " + e);
             }
             // generate last event
-            generatedEvents.add(getEventBeforeTime(toMills, resourceId));
+            generatedEvents.add(getEventBeforeTime(toMills, source));
             Map lastEventInScope = new HashMap<>();
             for (Map event : generatedEvents) {
                 if ((!lastEventInScope.isEmpty())) {
                     Long eventTime = Double.valueOf(event.get("time").toString()).longValue();
                     Long eventLastTime = Double.valueOf(lastEventInScope.get("time").toString()).longValue();
-                    listOfUDRs.addAll(generateValue(eventTime, eventLastTime, lastEventInScope, resourceId));
+                    listOfUDRs.addAll(generateValue(eventTime, eventLastTime, lastEventInScope, source));
                 }
                 lastEventInScope = event;
             }
@@ -219,9 +219,9 @@ public  abstract class OpenStackClient extends AbstractRunner {
         return null;
     }
 
-    private Map getEventBeforeTime(Long time, String resourceId){
+    private Map getEventBeforeTime(Long time, String source){
         QueryBuilder parameterQuery = new QueryBuilder(dbName).
-                and("resourceId", resourceId).timeTo(time, MILLISECONDS);
+                and("source", source).timeTo(time, MILLISECONDS);
         try {
             influxDBClient.executeQuery(parameterQuery);
         } catch (Exception e){

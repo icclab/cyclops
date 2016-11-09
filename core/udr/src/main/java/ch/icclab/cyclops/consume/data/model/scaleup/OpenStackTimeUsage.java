@@ -33,12 +33,13 @@ public class OpenStackTimeUsage implements DataMapping {
     public String getTimeField() { return "time"; }
 
     @Override
-    public TimeUnit getTimeUnit() { return TimeUnit.SECONDS; }
+    public TimeUnit getTimeUnit() { return TimeUnit.MILLISECONDS; }
 
     @Override
     public List<String> getTagNames() {
         List<String> list = new ArrayList<>();
         list.add("account");
+        list.add("metadata.source");
         return list;
     }
 

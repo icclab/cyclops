@@ -27,7 +27,6 @@ public class OpenStackCeilometerDiskCapacity extends AbstractOpenStackCeilometer
 
     public OpenStackCeilometerDiskCapacity(OpenStackUsageData udr, OpenStackMeter meter) {
         super(udr, meter);
-        this.setChartType(Constant.GAUGE_GRAPH);
     }
 
     @Override

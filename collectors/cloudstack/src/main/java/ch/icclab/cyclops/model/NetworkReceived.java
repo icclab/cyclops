@@ -31,6 +31,12 @@ public class NetworkReceived extends UsageData {
     // Its network ID
     private String networkid;
 
+    public NetworkReceived() {
+        super();
+
+        setUnit("bytes");
+    }
+
     /////////////////////////////
     // Getters and Setters
 

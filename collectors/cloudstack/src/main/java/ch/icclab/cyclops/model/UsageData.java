@@ -53,7 +53,7 @@ public abstract class UsageData {
 
     // Measurement's unit
     @Expose
-    private Object unit = "h";
+    private Object unit = "hours";
 
     // Metadata container
     @Expose
@@ -144,9 +144,8 @@ public abstract class UsageData {
 
         // add global metadata
         addToMetadata("accountId", accountid);
-        addToMetadata("accountId", accountid);
         addToMetadata("domainId", domainid);
-        addToMetadata("usageId", usageid);
+        addToMetadata("source", usageid);
         addToMetadata("description", description);
         addToMetadata("zoneId", zoneid);
         addToMetadata("project", project);

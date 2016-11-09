@@ -30,9 +30,9 @@ public class OpenstackCinderEvent extends OpenstackEvent {
 
     }
 
-    public OpenstackCinderEvent(String account, String resourceId, String type, Double disk, Long time, String instanceId) {
+    public OpenstackCinderEvent(String account, String source, String type, Double disk, Long time, String instanceId) {
         this.account = account;
-        this.resourceId = resourceId;
+        this.source = source;
         this.type = type;
         this.disk = disk;
         this.time = time;

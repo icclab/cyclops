@@ -31,6 +31,12 @@ public class NetworkSent extends UsageData {
     // Its network ID
     private String networkid;
 
+    public NetworkSent() {
+        super();
+
+        setUnit("bytes");
+    }
+
     /////////////////////////////
     // Getters and Setters
 
