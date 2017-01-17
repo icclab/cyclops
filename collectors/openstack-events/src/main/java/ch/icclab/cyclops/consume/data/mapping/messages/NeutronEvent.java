@@ -57,9 +57,12 @@ public class NeutronEvent {
 
         public class FloatingIP {
             String id;
+            String floating_ip_address;
             public String getId() {
                 return id;
             }
+            public String getFloating_ip_address() { return floating_ip_address; }
+
         }
     }
 }

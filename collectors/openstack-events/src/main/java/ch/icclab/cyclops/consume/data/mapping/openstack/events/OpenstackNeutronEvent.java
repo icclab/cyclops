@@ -34,10 +34,19 @@ import static java.util.concurrent.TimeUnit.MILLISECONDS;
  * Description: This class holds the OpenstackNeutronEvent data
  */
 public class OpenstackNeutronEvent extends OpenstackEvent {
-    public OpenstackNeutronEvent(String account, String source, String type, Long time) {
+    public OpenstackNeutronEvent(){
+    }
+    public OpenstackNeutronEvent(String account, String source, String ip_adress, String type, Long time) {
         this.account = account;
         this.source = source;
+        this.ip_adress = ip_adress;
         this.type = type;
         this.time = time;
     }
+
+    private String ip_adress;
+
+    public String getIp_adress() { return ip_adress; }
+
+    public void setIp_adress(String ip_adress) { this.ip_adress = ip_adress; }
 }

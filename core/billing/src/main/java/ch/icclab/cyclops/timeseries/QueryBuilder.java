@@ -34,6 +34,7 @@ public class QueryBuilder {
     private final static String LOWER_THAN = "<";
 
     private String measurement = "";
+    private String tagValuesKey = "";
     private List<String> selectedFields = new ArrayList<>();
     private List<String> whereFields = new ArrayList<>();
     private List<String> groupByFields = new ArrayList<>();
@@ -46,7 +47,7 @@ public class QueryBuilder {
 
     private TYPE type;
     private enum TYPE {
-        SELECT, MEASUREMENTS
+        SELECT, MEASUREMENTS, TAGVALUES
     }
 
     /**
@@ -54,8 +55,8 @@ public class QueryBuilder {
      * @param mes to be selected on
      */
     public QueryBuilder(String mes) {
-        type = TYPE.SELECT;
-        measurement = addDoubleQuotes(mes);
+        this.type = TYPE.SELECT;
+        this.setMeasurement(mes);
     }
 
     /**
@@ -66,13 +67,37 @@ public class QueryBuilder {
         this.type = type;
     }
 
-
     /**
      * Get QueryBuilder for list of Measurements
      * @return QueryBuilder
      */
     public static QueryBuilder getMeasurementsQuery() {
         return new QueryBuilder(TYPE.MEASUREMENTS);
+    }
+
+    /**
+     * Get QueryBuilder for tag values
+     * @param from measurement
+     * @param key for tag values
+     * @return QueryBuilder
+     */
+    public static QueryBuilder getShowTagValuesQuery(String from, String key) {
+        QueryBuilder queryBuilder = new QueryBuilder(TYPE.TAGVALUES);
+        queryBuilder.setMeasurement(from);
+        queryBuilder.setTagValuesKey(key);
+        return queryBuilder;
+    }
+
+    /**
+     * Set measurement
+     * @param mes measurement
+     */
+    private void setMeasurement(String mes) {
+        measurement = addDoubleQuotes(mes);
+    }
+
+    private void setTagValuesKey(String key) {
+        tagValuesKey = addDoubleQuotes(key);
     }
 
     /**
@@ -89,6 +114,10 @@ public class QueryBuilder {
 
             case MEASUREMENTS:
                 query = buildShowMeasurements();
+                break;
+
+            case TAGVALUES:
+                query = buildShowTagValues();
                 break;
         }
 
@@ -136,6 +165,14 @@ public class QueryBuilder {
      */
     private String buildShowMeasurements() {
         return "SHOW MEASUREMENTS";
+    }
+
+    /**
+     * Build query for showing tag values
+     * @return String
+     */
+    private String buildShowTagValues() {
+        return String.format("SHOW TAG VALUES FROM %s WITH KEY = %s", measurement, tagValuesKey);
     }
 
     /**

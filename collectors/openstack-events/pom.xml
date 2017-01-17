@@ -19,7 +19,7 @@
         <servlet-version>2.5</servlet-version>
         <rabbitmq-version>3.6.1</rabbitmq-version>
         <slf4j-version>1.7.12</slf4j-version>
-        <influxdb-version>2.3</influxdb-version>
+        <influxdb-version>2.5</influxdb-version>
     </properties>
 
     <prerequisites>

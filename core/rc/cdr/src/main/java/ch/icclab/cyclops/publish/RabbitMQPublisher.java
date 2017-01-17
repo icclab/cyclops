@@ -87,6 +87,7 @@ public class RabbitMQPublisher {
             factory.setHost(credentials.getPublisherHost());
             factory.setPort(credentials.getPublisherPort());
             factory.setVirtualHost(credentials.getPublisherVirtualHost());
+            factory.setAutomaticRecoveryEnabled(true);
 
             connection = factory.newConnection();
             channel = connection.createChannel();

@@ -17,7 +17,10 @@ package ch.icclab.cyclops.schedule.runner.openstack;
  *     under the License.
  */
 
+import ch.icclab.cyclops.consume.data.mapping.openstack.OpenstackEvent;
 import ch.icclab.cyclops.consume.data.mapping.openstack.events.OpenstackCinderEvent;
+import ch.icclab.cyclops.consume.data.mapping.openstack.events.OpenstackNeutronEvent;
+import ch.icclab.cyclops.consume.data.mapping.openstack.events.OpenstackNovaEvent;
 import ch.icclab.cyclops.consume.data.mapping.usage.OpenStackVolumeActiveUsage;
 import ch.icclab.cyclops.persistence.HibernateClient;
 
@@ -35,18 +38,29 @@ import java.util.Map;
  * Description: Runner to generate Cinder usage records out of events and send to the queue
  */
 public class CinderUDRRunner extends OpenStackClient {
+
+    @Override
     public String getDbName() {
         return OpenstackCinderEvent.class.getSimpleName();
     }
 
-    public ArrayList<OpenStackVolumeActiveUsage> generateValue(Long eventTime, Long eventLastTime, Map lastEventInScope, String source) {
+    @Override
+    public Class getUsageFormat(){
+        return OpenstackCinderEvent.class;
+    }
+
+    @Override
+    public ArrayList<OpenStackVolumeActiveUsage> generateValue(Long eventTime, OpenstackEvent lastEventInScope) {
+        OpenstackCinderEvent transformedEvent = (OpenstackCinderEvent) lastEventInScope;
+        Long eventLastTime = transformedEvent.getTime();
         ArrayList<OpenStackVolumeActiveUsage> generatedUsages = new ArrayList<>();
-        generatedUsages.add(new OpenStackVolumeActiveUsage(eventLastTime, lastEventInScope.get("account").toString(),
-                source, (double) (eventTime - eventLastTime) / 1000, (double) lastEventInScope.get("disk"))); //Seconds instead of milliseconds;
+        generatedUsages.add(new OpenStackVolumeActiveUsage(eventLastTime, transformedEvent.getAccount(),
+                transformedEvent.getVolumeName(), transformedEvent.getSource(),
+                (double) (eventTime - eventLastTime) / 1000, transformedEvent.getDisk())); //Seconds instead of milliseconds;
         return generatedUsages;
     }
 
-
+    @Override
     public void updateLatestPull(Long time) {
         LatestPullCinder pull = (LatestPullCinder) hibernateClient.getObject(LatestPullCinder.class, 1l);
         if (pull == null) {
@@ -58,6 +72,7 @@ public class CinderUDRRunner extends OpenStackClient {
         hibernateClient.persistObject(pull);
     }
 
+    @Override
     public DateTime getLatestPull() {
         DateTime last;
         LatestPullCinder pull = (LatestPullCinder) HibernateClient.getInstance().getObject(LatestPullCinder.class, 1l);

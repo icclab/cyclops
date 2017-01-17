@@ -27,6 +27,8 @@ public class InfluxDBCredentials {
     public static String DEFAULT_DATABASE_NAME = "cyclops.box";
     public static String DEFAULT_MEASUREMENT_NAME = "unknown";
     public static Integer DEFAULT_PAGE_SIZE_LIMIT = 500;
+    public static Integer DEFAULT_QUERY_TIMEOUT = 10;
+
 
     private String influxDBURL;
     private String influxDBUsername;
@@ -34,6 +36,8 @@ public class InfluxDBCredentials {
     private String influxDBTSDB;
     private String influxDBDefaultMeasurement;
     private Integer influxDBPageSizeLimit;
+    private Integer influxDBQueryTimeout;
+
 
     public String getInfluxDBURL() {
         return influxDBURL;
@@ -75,5 +79,12 @@ public class InfluxDBCredentials {
     }
     public void setInfluxDBPageSizeLimit(Integer influxDBPageSizeLimit) {
         this.influxDBPageSizeLimit = influxDBPageSizeLimit;
+    }
+
+    public Integer getInfluxDBQueryTimeout() {
+        return influxDBQueryTimeout;
+    }
+    public void setInfluxDBQueryTimeout(Integer influxDBQueryTimeout) {
+        this.influxDBQueryTimeout = influxDBQueryTimeout;
     }
 }

@@ -23,11 +23,11 @@ package ch.icclab.cyclops.consume.data.mapping.usage;
  * Description: This class holds the OpenStackVolumeActiveUsage response
  */
 public class OpenStackVolumeActiveUsage extends OpenStackUsage {
-    public OpenStackVolumeActiveUsage(Long time, String account, String source, Double usage, Double value){
+    public OpenStackVolumeActiveUsage(Long time, String account, String source, String sourceId,  Double usage, Double value){
         this.account = account;
         this.usage = usage;
         this.time = time;
-        this.metadata = new CinderMetadata(source, value);
+        this.metadata = new CinderMetadata(source, sourceId, value);
     }
 
     private String unit = "sec";
@@ -36,9 +36,11 @@ public class OpenStackVolumeActiveUsage extends OpenStackUsage {
 
     private class CinderMetadata {
         private String  source;
+        private String  sourceId;
         private Double value;
-        CinderMetadata(String source, Double value){
+        CinderMetadata(String source, String sourceId, Double value){
             this.source = source;
+            this.sourceId = sourceId;
             this.value = value;
         }
     }

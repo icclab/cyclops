@@ -225,6 +225,7 @@ public class RabbitMQListener {
         factory.setHost(credentials.getConsumerHost());
         factory.setPort(credentials.getConsumerPort());
         factory.setVirtualHost(credentials.getConsumerVirtualHost());
+        factory.setAutomaticRecoveryEnabled(true);
 
         Channel chan;
 

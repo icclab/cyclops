@@ -18,7 +18,9 @@
 package ch.icclab.cyclops.application;
 
 import ch.icclab.cyclops.consume.RabbitMQListener;
-import ch.icclab.cyclops.consume.data.DataConsumer;
+import ch.icclab.cyclops.consume.data.consumer.CinderConsumer;
+import ch.icclab.cyclops.consume.data.consumer.NeutronConsumer;
+import ch.icclab.cyclops.consume.data.consumer.NovaConsumer;
 import ch.icclab.cyclops.load.Loader;
 import ch.icclab.cyclops.load.model.HibernateCredentials;
 import ch.icclab.cyclops.load.model.InfluxDBCredentials;
@@ -178,8 +180,11 @@ public class Main extends Application{
                 if (consumer != null) {
 
                     // bind consumers
-                    Boolean con = consumer.addConsumer(settings.getConsumerCredentials().getConsumerDataQueue(), new DataConsumer());
-                    if (con) {
+                    Boolean conNova = consumer.addConsumer(settings.getConsumerCredentials().getConsumerNovaQueue(), new NovaConsumer());
+                    Boolean conCinder = consumer.addConsumer(settings.getConsumerCredentials().getConsumerCinderQueue(), new CinderConsumer());
+                    Boolean conNeutron = consumer.addConsumer(settings.getConsumerCredentials().getConsumerNeutronQueue(), new NeutronConsumer());
+
+                    if (conNova && conCinder && conNeutron) {
                         logger.trace("RabbitMQ Consumer successfully initialised");
                         consumer.start();
                     } else {

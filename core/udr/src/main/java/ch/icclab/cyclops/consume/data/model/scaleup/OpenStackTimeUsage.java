@@ -39,7 +39,7 @@ public class OpenStackTimeUsage implements DataMapping {
     public List<String> getTagNames() {
         List<String> list = new ArrayList<>();
         list.add("account");
-        list.add("metadata.source");
+        list.add("metadata.sourceId");
         return list;
     }
 

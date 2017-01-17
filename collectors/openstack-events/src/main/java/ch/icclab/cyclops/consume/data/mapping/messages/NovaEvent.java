@@ -82,6 +82,7 @@ public class NovaEvent {
 
                 public class Nova_objectData{
                     String uuid;
+                    String display_name;
                     Double memory_mb;
                     Double vcpus;
                     Double root_gb;
@@ -89,6 +90,8 @@ public class NovaEvent {
                     SystemMetadata system_metadata;
 
                     public String getUuid(){ return uuid; }
+
+                    public String getDisplay_name(){ return display_name; }
 
                     public Double getMemory_mb(){ return memory_mb; }
 
@@ -103,7 +106,16 @@ public class NovaEvent {
                     public class SystemMetadata {
                         String image_description;
 
+                        String image_base_image_ref;
+
+                        String image_os_version;
+
                         public String getImage_description() { return image_description; }
+
+                        public String getImage_os_version() { return image_os_version; }
+
+                        public String getImage_base_image_ref() { return image_base_image_ref; }
+
                     }
                 }
             }

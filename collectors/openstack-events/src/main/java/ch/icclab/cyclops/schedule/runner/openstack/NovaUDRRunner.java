@@ -16,6 +16,7 @@
  */
 package ch.icclab.cyclops.schedule.runner.openstack;
 
+import ch.icclab.cyclops.consume.data.mapping.openstack.OpenstackEvent;
 import ch.icclab.cyclops.consume.data.mapping.openstack.events.OpenstackNovaEvent;
 import ch.icclab.cyclops.consume.data.mapping.usage.OpenStackImageActiveUsage;
 import ch.icclab.cyclops.consume.data.mapping.usage.OpenStackUpTimeUsage;
@@ -29,7 +30,8 @@ import ch.icclab.cyclops.util.loggers.SchedulerLogger;
 import org.joda.time.DateTime;
 
 import java.util.ArrayList;
-import java.util.Map;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * Author: Oleksii Serhiienko
@@ -37,12 +39,20 @@ import java.util.Map;
  * Description: Runner to generate Nova usage records out of events and send to the queue
  */
 public  class NovaUDRRunner extends OpenStackClient {
+    @Override
     public String getDbName() {
         return OpenstackNovaEvent.class.getSimpleName();
     }
 
-    public ArrayList<OpenStackUsage> generateValue(Long eventTime, Long eventLastTime, Map lastEventInScope, String source){
-        String type  = lastEventInScope.get("type").toString();
+    @Override
+    public Class getUsageFormat(){
+        return OpenstackNovaEvent.class;
+    }
+
+    @Override
+    public ArrayList<OpenStackUsage> generateValue(Long eventTime, OpenstackEvent lastEventInScope){
+        OpenstackNovaEvent transformedEvent = (OpenstackNovaEvent) lastEventInScope;
+        String type  = transformedEvent.getType();
         String _classCPU = null;
         String _classMemory = null;
         String _classDisk = null;
@@ -70,27 +80,28 @@ public  class NovaUDRRunner extends OpenStackClient {
         }
 
         ArrayList<OpenStackUsage> generatedUsages = new ArrayList<>();
-        generatedUsages.add(new OpenStackUpTimeUsage(eventLastTime, lastEventInScope.get("account").toString(),
-                source, (double) (eventTime - eventLastTime) /1000, //Seconds instead of milliseconds
-                new Double (lastEventInScope.get("vcpus").toString()), _classCPU));
-        generatedUsages.add((new OpenStackUpTimeUsage(eventLastTime, lastEventInScope.get("account").toString(),
-                source, (double) (eventTime - eventLastTime) /1000, //Seconds instead of milliseconds
-                new Double (lastEventInScope.get("memory").toString()), _classMemory)));
-        Boolean status = (Boolean) lastEventInScope.get("valueAttached");
-        if (!status){
-            generatedUsages.add((new OpenStackUpTimeUsage(eventLastTime, lastEventInScope.get("account").toString(),
-                    source, (double) (eventTime - eventLastTime) /1000, //Seconds instead of milliseconds
-                    new Double (lastEventInScope.get("disk").toString()), _classDisk)));}
+        List<String> meters = Arrays.asList(_classCPU, _classMemory, _classDisk);
+        Long eventLastTime = transformedEvent.getTime();
+        for (String meter: meters){
+            generatedUsages.add(new OpenStackUpTimeUsage(eventLastTime, transformedEvent.getAccount(),
+                    transformedEvent.getSource(), transformedEvent.getSource_name(),
+                    (double) (eventTime - eventLastTime) /1000, //Seconds instead of milliseconds
+                    transformedEvent.getVcpus(), meter));
+        }
 
-        String image = null;
-        if (lastEventInScope.get("image")!=null){image = lastEventInScope.get("image").toString();}
-        generatedUsages.add ((new OpenStackImageActiveUsage(eventLastTime, lastEventInScope.get("account").toString(),
-                source, (double) (eventTime - eventLastTime) /1000, //Seconds instead of milliseconds
-                image)));
+        String description = "";
+        if (transformedEvent.getImage_description()!=null){ description = transformedEvent.getImage_description();}
+        generatedUsages.add (new OpenStackImageActiveUsage(eventLastTime, transformedEvent.getAccount(),
+                transformedEvent.getImage(), transformedEvent.getSource(),
+                description, (double) (eventTime - eventLastTime) /1000 //Seconds instead of milliseconds
+                )
+        );
 
         return generatedUsages;
+
     }
 
+    @Override
     public void updateLatestPull(Long time){
         LatestPullNova pull = (LatestPullNova) hibernateClient.getObject(LatestPullNova.class, 1l);
         if (pull == null) {
@@ -102,6 +113,7 @@ public  class NovaUDRRunner extends OpenStackClient {
         hibernateClient.persistObject(pull);
     }
 
+    @Override
     public DateTime getLatestPull(){
         DateTime last;
         LatestPullNova pull = (LatestPullNova) HibernateClient.getInstance().getObject(LatestPullNova.class, 1l);
@@ -113,3 +125,4 @@ public  class NovaUDRRunner extends OpenStackClient {
         return last;
     }
 }
+

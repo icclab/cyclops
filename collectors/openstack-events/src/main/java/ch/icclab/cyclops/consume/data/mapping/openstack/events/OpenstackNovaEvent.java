@@ -33,20 +33,27 @@ public class OpenstackNovaEvent extends OpenstackEvent{
 
     }
 
-    public OpenstackNovaEvent(String account, String source, String type, Double memory, Double vcpus, Long time, String image, Double disk){
+    public OpenstackNovaEvent(String account, String source, String source_name, String type, Double memory,
+                              Double vcpus, Long time, String image, String image_description, Double disk){
         this.account = account;
         this.source = source;
+        this.source_name = source_name;
         this.type = type;
         this.memory = memory;
         this.vcpus = vcpus;
         this.time = time;
         this.image = image;
+        this.image_description = image_description;
         this.disk = disk;
     }
 
     private Double memory;
 
+    private String image_description;
+
     private Double vcpus;
+
+    private String source_name;
 
     private String image;
 
@@ -70,9 +77,11 @@ public class OpenstackNovaEvent extends OpenstackEvent{
         this.memory = memory;
     }
 
-    public Double getVcpus() {
-        return vcpus;
-    }
+    public String getSource_name() { return source_name; }
+
+    public void setSource_name(String source_name) { this.source_name = source_name; }
+
+    public Double getVcpus() { return vcpus; }
 
     public void setVcpus(Double vcpus) {
         this.vcpus = vcpus;
@@ -85,6 +94,10 @@ public class OpenstackNovaEvent extends OpenstackEvent{
     public void setImage(String image) {
         this.image = image;
     }
+
+    public String getImage_description() { return image_description; }
+
+    public void setImage_description(String image_description) { this.image_description = image_description; }
 
     public Double getDisk() {
         return disk;

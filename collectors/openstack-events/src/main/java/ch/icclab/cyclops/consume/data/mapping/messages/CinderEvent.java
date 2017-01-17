@@ -58,6 +58,7 @@ public class CinderEvent {
         public class Payload  {
             private Double size;
             private String volume_id;
+            private String display_name;
             private ArrayList<InstanceAttachment> volume_attachment;
 
             public ArrayList<InstanceAttachment> getVolume_attachment() { return volume_attachment; }
@@ -69,6 +70,8 @@ public class CinderEvent {
             public String getVolume_id() {
                 return volume_id;
             }
+
+            public String getDisplay_name() { return display_name; }
 
             public class InstanceAttachment{
                 private String instance_uuid;

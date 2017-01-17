@@ -27,18 +27,26 @@ import ch.icclab.cyclops.consume.data.mapping.openstack.OpenstackEvent;
 public class OpenstackCinderEvent extends OpenstackEvent {
 
     public OpenstackCinderEvent(){
-
     }
 
-    public OpenstackCinderEvent(String account, String source, String type, Double disk, Long time, String instanceId) {
+    public OpenstackCinderEvent(String account, String source, String type, Double disk, Long time, String volumeName) {
         this.account = account;
         this.source = source;
+        this.volumeName = volumeName;
         this.type = type;
         this.disk = disk;
         this.time = time;
-        this.instanceId = instanceId;
+
     }
     private Double disk;
+
+    private String volumeName;
+
+    private String instanceId;
+
+    public String getVolumeName() { return volumeName; }
+
+    public void setVolumeName(String volumeName) { this.volumeName = volumeName; }
 
     public String getInstanceId() {
         return instanceId;
@@ -55,6 +63,4 @@ public class OpenstackCinderEvent extends OpenstackEvent {
     public void setDisk(Double disk) {
         this.disk = disk;
     }
-
-    private String instanceId;
 }

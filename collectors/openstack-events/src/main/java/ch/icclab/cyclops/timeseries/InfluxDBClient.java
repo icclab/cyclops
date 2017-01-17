@@ -20,6 +20,7 @@ package ch.icclab.cyclops.timeseries;
 import ch.icclab.cyclops.load.Loader;
 import ch.icclab.cyclops.load.model.InfluxDBCredentials;
 import ch.icclab.cyclops.util.loggers.TimeSeriesLogger;
+import okhttp3.OkHttpClient;
 import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -64,7 +65,16 @@ public class InfluxDBClient {
      * @return session
      */
     private InfluxDB obtainSession() {
-        return InfluxDBFactory.connect(credentials.getInfluxDBURL(), credentials.getInfluxDBUsername(), credentials.getInfluxDBPassword());
+        // http client builder
+        OkHttpClient.Builder builder = new OkHttpClient().newBuilder();
+
+        // preferred time outs
+        builder.connectTimeout(credentials.getInfluxDBQueryTimeout(), TimeUnit.SECONDS);
+        builder.writeTimeout(credentials.getInfluxDBQueryTimeout(), TimeUnit.SECONDS);
+        builder.readTimeout(credentials.getInfluxDBQueryTimeout(), TimeUnit.SECONDS);
+
+        // establish influxDB connection with our own builder
+        return InfluxDBFactory.connect(credentials.getInfluxDBURL(), credentials.getInfluxDBUsername(), credentials.getInfluxDBPassword(), builder);
     }
 
     /**
@@ -139,11 +149,11 @@ public class InfluxDBClient {
     }
     public InfluxDBResponse executeQuery(List<QueryBuilder> builders) {
         try {
-            TimeSeriesLogger.log(String.format("About to execute %d %s", builders.size(), English.plural("query", builders.size())));
-
             // concatenate multiple queries into one
             List<String> queries = builders.stream().map(QueryBuilder::build).collect(Collectors.toList());
             String multipleQuery = StringUtils.join(queries, ";");
+
+            TimeSeriesLogger.log(String.format("About to execute %d %s: %s", builders.size(), English.plural("query", builders.size()), multipleQuery));
 
             // connect to InfluxDB and execute query
             QueryResult result = session.query(new Query(multipleQuery, credentials.getInfluxDBTSDB()));
@@ -155,5 +165,12 @@ public class InfluxDBClient {
             TimeSeriesLogger.log(String.format("Query execution failed: %s", ignored.getMessage()));
             return null;
         }
+    }
+
+    /**
+     * Shut down InfluxDB Client (flush and disable batch)
+     */
+    public void close() {
+        session.disableBatch();
     }
 }

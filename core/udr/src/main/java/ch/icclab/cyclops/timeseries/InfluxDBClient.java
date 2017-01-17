@@ -27,10 +27,7 @@ import org.apache.logging.log4j.Logger;
 import org.atteo.evo.inflector.English;
 import org.influxdb.InfluxDB;
 import org.influxdb.InfluxDBFactory;
-import org.influxdb.dto.BatchPoints;
-import org.influxdb.dto.Point;
-import org.influxdb.dto.Query;
-import org.influxdb.dto.QueryResult;
+import org.influxdb.dto.*;
 
 import java.util.Collections;
 import java.util.List;
@@ -76,11 +73,8 @@ public class InfluxDBClient {
         builder.writeTimeout(credentials.getInfluxDBQueryTimeout(), TimeUnit.SECONDS);
         builder.readTimeout(credentials.getInfluxDBQueryTimeout(), TimeUnit.SECONDS);
 
-        // TODO once InfluxDB java client is fixed, uncomment this line
-        // return InfluxDBFactory.connect(credentials.getInfluxDBURL(), credentials.getInfluxDBUsername(), credentials.getInfluxDBPassword(), builder)
-
-        // connect to InfluxDB with this connection
-        return InfluxDBFactory.connect(credentials.getInfluxDBURL(), credentials.getInfluxDBUsername(), credentials.getInfluxDBPassword());
+        // establish influxDB connection with our own builder
+        return InfluxDBFactory.connect(credentials.getInfluxDBURL(), credentials.getInfluxDBUsername(), credentials.getInfluxDBPassword(), builder);
     }
 
     /**
@@ -155,11 +149,11 @@ public class InfluxDBClient {
     }
     public InfluxDBResponse executeQuery(List<QueryBuilder> builders) {
         try {
-            TimeSeriesLogger.log(String.format("About to execute %d %s", builders.size(), English.plural("query", builders.size())));
-
             // concatenate multiple queries into one
             List<String> queries = builders.stream().map(QueryBuilder::build).collect(Collectors.toList());
             String multipleQuery = StringUtils.join(queries, ";");
+
+            TimeSeriesLogger.log(String.format("About to execute %d %s: %s", builders.size(), English.plural("query", builders.size()), multipleQuery));
 
             // connect to InfluxDB and execute query
             QueryResult result = session.query(new Query(multipleQuery, credentials.getInfluxDBTSDB()));
