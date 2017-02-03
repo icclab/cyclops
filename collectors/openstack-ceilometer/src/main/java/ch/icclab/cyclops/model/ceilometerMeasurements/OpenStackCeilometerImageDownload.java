@@ -27,7 +27,6 @@ public class OpenStackCeilometerImageDownload extends AbstractOpenStackCeilomete
 
     public OpenStackCeilometerImageDownload(OpenStackUsageData udr, OpenStackMeter meter) {
         super(udr, meter);
-        this.setChartType(Constant.NUMBER_GRAPH);
     }
 
     @Override

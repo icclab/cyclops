@@ -129,7 +129,6 @@ public class OpenStackUsageDownloader implements Callable {
     protected List<Object> performRequest(OpenStackMeter meter) {
         try {
             hibernateClient = HibernateClient.getInstance();
-
             // first step is to pull data from OpenStack
             List<Object> genericData = new ArrayList<>();
             if (meter != null) {

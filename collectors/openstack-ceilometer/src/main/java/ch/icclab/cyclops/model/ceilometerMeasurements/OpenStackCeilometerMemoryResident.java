@@ -27,7 +27,6 @@ public class OpenStackCeilometerMemoryResident extends AbstractOpenStackCeilomet
 
     public OpenStackCeilometerMemoryResident(OpenStackUsageData udr, OpenStackMeter meter) {
         super(udr, meter);
-        this.setChartType(Constant.GAUGE_GRAPH);
     }
 
     @Override

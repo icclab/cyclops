@@ -16,7 +16,10 @@
  */
 package ch.icclab.cyclops.schedule.runner;
 
-import ch.icclab.cyclops.consume.data.mapping.udr.OpenStackUDR;
+import ch.icclab.cyclops.consume.data.mapping.openstack.OpenstackEvent;
+import ch.icclab.cyclops.consume.data.mapping.openstack.OpenstackTag;
+import ch.icclab.cyclops.consume.data.mapping.openstack.events.OpenstackNovaEvent;
+import ch.icclab.cyclops.consume.data.mapping.usage.OpenStackUsage;
 import ch.icclab.cyclops.load.Loader;
 import ch.icclab.cyclops.load.model.OpenstackSettings;
 import ch.icclab.cyclops.load.model.PublisherCredentials;
@@ -26,8 +29,6 @@ import ch.icclab.cyclops.timeseries.InfluxDBClient;
 import ch.icclab.cyclops.timeseries.QueryBuilder;
 import ch.icclab.cyclops.util.Time;
 import ch.icclab.cyclops.util.loggers.SchedulerLogger;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 
@@ -43,8 +44,6 @@ import static java.util.concurrent.TimeUnit.MILLISECONDS;
  * Description: Client class for transforming events to UDR Records for Openstack events
  */
 public  abstract class OpenStackClient extends AbstractRunner {
-    final static Logger logger = LogManager.getLogger(OpenStackClient.class.getName());
-
     //link to hibernate
     protected HibernateClient hibernateClient;
     //link to influxDB client
@@ -56,95 +55,80 @@ public  abstract class OpenStackClient extends AbstractRunner {
     private String dbName;
     //link to sending exchange
     private static Messenger messenger;
+    //custom event POJO
+    private Class classStructure;
 
     /**
      * Constructor has to be hidden
      */
     public OpenStackClient() {
         hibernateClient = HibernateClient.getInstance();
-        influxDBClient = InfluxDBClient.getInstance();
+        influxDBClient = new InfluxDBClient();
         settings = Loader.getSettings().getOpenstackSettings();
         publisherCredentials = Loader.getSettings().getPublisherCredentials();
         dbName = getDbName();
         messenger = Messenger.getInstance();
+        classStructure=getUsageFormat();
     }
 
-
-    /**
-     * runner for openstack events scheduler
-     */
     @Override
     public void run() {
-        transformEventsToUDRs();
+        transformEventsToUsageRecords();
     }
 
     public abstract String getDbName();
 
-    public abstract OpenStackUDR generateValue(Long eventTime, Long eventLastTime, Map lastEventInScope, String instanceId);
+    public abstract ArrayList generateValue(Long eventTime, OpenstackEvent lastEventInScope);
 
     public abstract void updateLatestPull(Long time);
 
     public abstract DateTime getLatestPull();
 
-    /*
-     * Transform Openstack Events to UDR records
-     */
-    private void transformEventsToUDRs() {
-        SchedulerLogger.log("Scheduler has been started");
-        QueryBuilder parameterQuery = new QueryBuilder(dbName);
-        SchedulerLogger.log("Fetching all events from database ...");
-        List<Map> data = influxDBClient.executeQuery(parameterQuery);
-        SchedulerLogger.log("Influxdb data is successfully fetched.");
-        SchedulerLogger.log("Making map of client and instance IDs...");
-        ArrayList<String> instanceList = getListOfInstances(data);
-        SchedulerLogger.log("Map of client and instance IDs is done");
-        createUDRRecords(instanceList);
-    }
+    public abstract Class getUsageFormat();
+
 
     /**
-     * This method takes the POJOobject that contains all events, extracts all clientIDs
-     *
-     * @param data
-     * @return
+     * Openstack event transformer
+     * Generating Usage record
+     * sending the message to the queue
      */
-    private  ArrayList<String> getListOfInstances(List<Map> data) {
-        ArrayList<String> listOfInstances = new ArrayList<>();
-        for (Map obj : data) {
-            String instaceId = obj.get("instanceId").toString();
-            if (!(listOfInstances.contains(instaceId))){
-                listOfInstances.add(instaceId);
-            }
+    private void transformEventsToUsageRecords() {
+        SchedulerLogger.log("Scheduler has been started");
+        QueryBuilder parameterQuery = QueryBuilder.getShowTagValuesQuery(dbName, "source");
+        SchedulerLogger.log("Fetching all events from database ...");
+        List<OpenstackTag> resourceList = new ArrayList<>();
+        try {
+            resourceList = influxDBClient.executeQuery(parameterQuery).getAsListOfType(OpenstackTag.class);
+        } catch (Exception e){
+            SchedulerLogger.log("Influxdb data cannot be fetched. " + e);
         }
-        return listOfInstances;
-    }
-
-    private void createUDRRecords(ArrayList<String> listOfInstances) {
         SchedulerLogger.log("UDR creation process is started... ");
         DateInterval dates = new DateInterval(whenWasLastPull());
         SchedulerLogger.log("The last pull was " + dates.fromDate + " " + dates.toDate);
         Long time = Time.getMilisForTime(dates.getToDate());
         SchedulerLogger.log("Current timestamp is " + time);
-        ArrayList<OpenStackUDR> eventList = new ArrayList<>();
-            for (String instanceId : listOfInstances) {
-                try {
-                    ArrayList<OpenStackUDR> udr = generateUDR(instanceId, dates);
-                    if (udr !=null){
-                        eventList.addAll(udr);
-                    }
-                } catch (Exception e) {
-                    SchedulerLogger.log("Couldn't generate UDR " +e);
+        ArrayList<OpenStackUsage> eventList = new ArrayList<>();
+        for (OpenstackTag source : resourceList) {
+            try {
+                ArrayList<OpenStackUsage> udr = generateUDR(source.getValue(), dates);
+                if (udr !=null){
+                    eventList.addAll(udr);
                 }
+            } catch (Exception e) {
+                SchedulerLogger.log("Couldn't generate UDR " +e);
+            }
         }
-
-        if (publisherCredentials.getPublisherByDefaultDispatchInsteadOfBroadcast()) {
-            messenger.publish(eventList, OpenStackUDR.class.getSimpleName());
-        } else {
-            messenger.broadcast(eventList);
+        if (!eventList.isEmpty()) {
+            if (publisherCredentials.getPublisherByDefaultDispatchInsteadOfBroadcast()) {
+                messenger.publish(eventList, OpenStackUsage.class.getSimpleName());
+            } else {
+                messenger.broadcast(eventList);
+            }
+            SchedulerLogger.log("All usage are published ");
+            updateLatestPull(time);
         }
-        SchedulerLogger.log("All udr are published ");
-        updateLatestPull(time);
-        // update time stamp
     }
+
 
     /**
      * This class is being used to generate interval either from last point or epoch
@@ -168,40 +152,50 @@ public  abstract class OpenStackClient extends AbstractRunner {
         }
     }
 
-    private ArrayList<OpenStackUDR> generateUDR(String instanceId, DateInterval dates) {
+    /**
+     * Method to generate UDR record for a source between two time points
+     * @param source source id
+     * @param dates DateInterval object
+     * @return list of usages
+     */
+    private ArrayList<OpenStackUsage> generateUDR(String source, DateInterval dates) {
 
-        ArrayList<Map> generatedEvents = new ArrayList<>();
+        ArrayList<OpenstackEvent> generatedEvents = new ArrayList<>();
         // generate first event
         Long toMills = Time.getMilisForTime(dates.getToDate());
         Long fromMills = Time.getMilisForTime(dates.getFromDate());
         Boolean isItExist = true;
 
         try {
-            Map lastEvent = getEventBeforeTime(fromMills, instanceId);
-            if (lastEvent.get("type").equals(settings.getOpenstackCollectorEventDelete())){
+            OpenstackEvent lastEvent = getEventBeforeTime(fromMills, source);
+            if (lastEvent.getType().equals(settings.getOpenstackCollectorEventDelete())){
                 isItExist = false;
             }
             else {
                 generatedEvents.add(lastEvent);
             }
         } catch (Exception e){
-            SchedulerLogger.log("No events for " + instanceId + " before "+ dates.toDate);
+            SchedulerLogger.log("No events for " + source + " before "+ dates.toDate);
         }
 
         if (isItExist) {
             //get all events
-            ArrayList<OpenStackUDR> listOfUDRs= new ArrayList<>();
+            ArrayList<OpenStackUsage> listOfUDRs= new ArrayList<>();
             QueryBuilder parameterQuery = new QueryBuilder(dbName).
-                    and("instanceId", instanceId).timeTo(toMills, MILLISECONDS).timeFrom(fromMills, MILLISECONDS);
-            generatedEvents.addAll(Time.normaliseInfluxDB(influxDBClient.executeQuery(parameterQuery)));
+                    and("source", source).timeTo(toMills, MILLISECONDS).timeFrom(fromMills, MILLISECONDS);
+            try{
+                generatedEvents.addAll(
+                        influxDBClient.executeQuery(parameterQuery).getAsListOfType(classStructure));
+            } catch (Exception e){
+                SchedulerLogger.log("Influxdb data cannot be fetched. " + e);
+            }
             // generate last event
-            generatedEvents.add(getEventBeforeTime(toMills, instanceId));
-            Map lastEventInScope = new HashMap<>();
-            for (Map event : generatedEvents) {
-                if ((!lastEventInScope.isEmpty())) {
-                    Long eventTime = Double.valueOf(event.get("time").toString()).longValue();
-                    Long eventLastTime = Double.valueOf(lastEventInScope.get("time").toString()).longValue();
-                    listOfUDRs.add(generateValue(eventTime, eventLastTime, lastEventInScope, instanceId));
+            generatedEvents.add(getEventBeforeTime(toMills, source));
+            OpenstackEvent lastEventInScope = null;
+            for (OpenstackEvent event : Time.normaliseInfluxDB(generatedEvents)) {
+                if (lastEventInScope!= null && !lastEventInScope.getType().equals(settings.getOpenstackCollectorEventDelete())) {
+                    Long eventTime = Double.valueOf(event.getTime().toString()).longValue();
+                    listOfUDRs.addAll(generateValue(eventTime, lastEventInScope));
                 }
                 lastEventInScope = event;
             }
@@ -210,20 +204,30 @@ public  abstract class OpenStackClient extends AbstractRunner {
         return null;
     }
 
-    private Map getEventBeforeTime(Long time, String instanceId){
+    /**
+     * Method to get the last event before specific time
+     * @param source source id
+     * @param time in milliseconds
+     * @return OpenstackEvent object
+     */
+    private OpenstackEvent getEventBeforeTime(Long time, String source){
         QueryBuilder parameterQuery = new QueryBuilder(dbName).
-                and("instanceId", instanceId).timeTo(time, MILLISECONDS);
-        try {
-            influxDBClient.executeQuery(parameterQuery);
+                and("source", source).timeTo(time, MILLISECONDS).orderDesc().limit(1);
+        List<OpenstackEvent> listEvents = new ArrayList<>();
+        try{
+            listEvents = influxDBClient.executeQuery(parameterQuery).getAsListOfType(classStructure);
         } catch (Exception e){
-            logger.error("Couldn't execute DB request " + e);
+            SchedulerLogger.log("Influxdb data cannot be fetched. " + e);
         }
-        List<Map> ListEvents = influxDBClient.executeQuery(parameterQuery);
-        Map lastEvent = ListEvents.get(ListEvents.size()-1);
-        lastEvent.replace("time", time);
+        OpenstackEvent lastEvent = listEvents.get(0);
+        lastEvent.setTime(time);
         return lastEvent;
     }
 
+    /**
+     * Method to get the last pull time from postgresql
+     * @return DateTime object
+     */
     private DateTime whenWasLastPull() {
         DateTime last = getLatestPull();
         SchedulerLogger.log("Getting the last pull date " + last.toString());

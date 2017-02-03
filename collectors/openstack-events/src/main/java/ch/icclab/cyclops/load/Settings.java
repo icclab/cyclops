@@ -64,10 +64,7 @@ public class Settings {
         openstackSettings.setOpenstackCollectorEventPause( properties.getProperty("OpenstackCollectorEventPause"));
         openstackSettings.setOpenstackCollectorEventStop( properties.getProperty("OpenstackCollectorEventStop"));
         openstackSettings.setOpenstackCollectorEventDelete( properties.getProperty("OpenstackCollectorEventDelete"));
-        openstackSettings.setOpenstackCollectorEventResize( properties.getProperty("OpenstackCollectorEventResize"));
         openstackSettings.setOpenstackCollectorEventSuspend( properties.getProperty("OpenstackCollectorEventSuspend"));
-        openstackSettings.setOpenstackEventNeutronTable(properties.getProperty("OpenstackCollectorEventNeutronTable"));
-        openstackSettings.setOpenstackEventNovaTable(properties.getProperty("OpenstackCollectorEventNovaTable"));
         openstackSettings.setOpenstackScheduleTime(properties.getProperty("OpenstackCollectorScheduleTime"));
 
         return openstackSettings;
@@ -157,13 +154,11 @@ public class Settings {
         consumerCredentials.setConsumerPort(Integer.parseInt(properties.getProperty("ConsumerPort")));
         consumerCredentials.setConsumerVirtualHost(properties.getProperty("ConsumerVirtualHost"));
 
-        // consumer queue name
-        String consumer = properties.getProperty("ConsumerDataQueue");
-        if (consumer != null && !consumer.isEmpty()) {
-            consumerCredentials.setConsumerDataQueue(consumer);
-        } else {
-            consumerCredentials.setConsumerDataQueue(ConsumerCredentials.DEFAULT_DATA_QUEUE);
-        }
+        consumerCredentials.setConsumerNovaQueue(properties.getProperty("ConsumerNovaQueue"));
+        consumerCredentials.setConsumerCinderQueue(properties.getProperty("ConsumerCinderQueue"));
+        consumerCredentials.setConsumerNeutronQueue(properties.getProperty("ConsumerNeutronQueue"));
+
+
 
         return consumerCredentials;
     }
@@ -228,6 +223,22 @@ public class Settings {
         } finally {
             // set appropriate page limit
             influxDBCredentials.setInfluxDBPageSizeLimit(limit);
+        }
+
+        // query timeout in seconds
+        Integer timeout = InfluxDBCredentials.DEFAULT_QUERY_TIMEOUT;
+        try {
+            // load it from configuration file
+            Integer time = Integer.parseInt(properties.getProperty("InfluxDBQueryTimeout"));
+
+            // only override if page limit makes sense
+            if (time > 0) {
+                timeout = time;
+            }
+        } catch (Exception ignored) {
+        } finally {
+            // set appropriate timeout
+            influxDBCredentials.setInfluxDBQueryTimeout(timeout);
         }
 
         return influxDBCredentials;

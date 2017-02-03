@@ -19,7 +19,7 @@
         <servlet-version>2.5</servlet-version>
         <rabbitmq-version>3.6.1</rabbitmq-version>
         <slf4j-version>1.7.12</slf4j-version>
-        <influxdb-version>2.2</influxdb-version>
+        <influxdb-version>2.5</influxdb-version>
     </properties>
 
     <prerequisites>
@@ -151,6 +151,16 @@
             <scope>runtime</scope>
         </dependency>
         <dependency>
+            <groupId>commons-beanutils</groupId>
+            <artifactId>commons-beanutils</artifactId>
+            <version>1.9.2</version>
+        </dependency>
+        <dependency>
+            <groupId>org.atteo</groupId>
+            <artifactId>evo-inflector</artifactId>
+            <version>1.2.1</version>
+        </dependency>
+        <dependency>
             <groupId>org.json</groupId>
             <artifactId>json</artifactId>
             <version>20140107</version>
@@ -194,6 +204,16 @@
         <groupId>postgresql</groupId>
         <artifactId>postgresql</artifactId>
         <version>9.1-901-1.jdbc4</version>
+        </dependency>
+        <dependency>
+            <groupId>com.lmax</groupId>
+            <artifactId>disruptor</artifactId>
+            <version>3.3.5</version>
+        </dependency>
+        <dependency>
+            <groupId>org.atteo</groupId>
+            <artifactId>evo-inflector</artifactId>
+            <version>1.2.1</version>
         </dependency>
     </dependencies>
 </project>

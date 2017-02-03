@@ -26,6 +26,12 @@ sudo -u postgres createuser ubuntu
 sudo -u postgres psql <<EOF
 \x
 ALTER USER ubuntu WITH PASSWORD 'pass1234';
+CREATE DATABASE ruleengine WITH OWNER ubuntu;
+CREATE DATABASE coin_cdr WITH OWNER ubuntu;
+CREATE DATABASE coin_bill WITH OWNER ubuntu;
+CREATE DATABASE cloudstack WITH OWNER ubuntu;
+CREATE DATABASE openstackevents WITH OWNER ubuntu;
+CREATE DATABASE ceilometer WITH OWNER ubuntu;
 EOF
 
 # restart postgresql

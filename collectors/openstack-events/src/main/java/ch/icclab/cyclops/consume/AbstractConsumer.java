@@ -17,9 +17,15 @@
 
 package ch.icclab.cyclops.consume;
 
+import ch.icclab.cyclops.consume.data.mapping.openstack.OpenstackEvent;
+import ch.icclab.cyclops.load.Loader;
+import ch.icclab.cyclops.load.model.OpenstackSettings;
+import ch.icclab.cyclops.timeseries.InfluxDBClient;
 import com.rabbitmq.client.*;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * Author: Martin Skoviera
@@ -27,7 +33,26 @@ import java.io.IOException;
  * Description: Abstract consumer for our RabbitMQ
  */
 public abstract class AbstractConsumer {
-    protected abstract void consume(String message);
+
+    protected static InfluxDBClient influxDBClient = new InfluxDBClient();
+    protected static OpenstackSettings settings = Loader.getSettings().getOpenstackSettings();
+
+    /**
+     * This is a method to transform message into OpenstackEvent object
+     * @param content message itself
+     * @return OpenstackEvent object
+     */
+    protected abstract OpenstackEvent manageMessage(String content);
+
+    protected void consume(String content) {
+        OpenstackEvent data =null;
+        try{
+            data = manageMessage(content);
+        }catch (Exception ignored) {
+        }
+        if (data != null) influxDBClient.persistSinglePoint(data.getPoint());
+    }
+
 
     /**
      * This is the body of message processing
@@ -45,5 +70,36 @@ public abstract class AbstractConsumer {
                 consume(message);
             }
         };
+    }
+
+    /**
+     * This is method to simplify openstatck event actions
+     * @param method a method fetched from message
+     * @return collector friendly method
+     */
+    protected String getType(String method){
+        List<String> listOfActiveActions = Arrays.asList("spawning", "powering-on", "unpausing", "resuming",
+                "floatingip.create.end", "volume.create.end", "resize_finish", "volume.resize.end");
+        String paused = "pausing";
+        String stopped="[powering-off]";
+        String suspended = "suspending";
+        List<String> listOfDeletedActions = Arrays.asList ("floatingip.delete.end", "volume.delete.end");
+
+        if (listOfActiveActions.contains(method)){
+            return settings.getOpenstackCollectorEventRun();
+        }
+        if (method.equals(paused)){
+            return settings.getOpenstackCollectorEventPause();
+        }
+        if (method.equals(stopped)){
+            return settings.getOpenstackCollectorEventStop();
+        }
+        if (method.equals(suspended)){
+            return settings.getOpenstackCollectorEventSuspend();
+        }
+        if (listOfDeletedActions.contains(method)){
+            return settings.getOpenstackCollectorEventDelete();
+        }
+        return method;
     }
 }

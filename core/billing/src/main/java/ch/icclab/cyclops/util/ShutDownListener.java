@@ -19,6 +19,7 @@ package ch.icclab.cyclops.util;
 import ch.icclab.cyclops.consume.RabbitMQListener;
 import ch.icclab.cyclops.executor.TaskExecutor;
 import ch.icclab.cyclops.publish.RabbitMQPublisher;
+import ch.icclab.cyclops.timeseries.SharedInfluxDBSession;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -33,10 +34,13 @@ public class ShutDownListener extends Thread{
 
     @Override
     public void run() {
-        logger.trace("We are shutting down BOX micro service");
+        logger.trace("We are shutting down Billing micro service");
 
         // shut down executor service
         TaskExecutor.getInstance().shutDown();
+
+        // flush and close InfluxDB shared session
+        SharedInfluxDBSession.shutDown();
 
         // and Consumer (RabbitMQ)
         RabbitMQListener.shutDown();

@@ -27,7 +27,6 @@ public class OpenStackCeilometerDiskWriteRequests extends AbstractOpenStackCeilo
 
     public OpenStackCeilometerDiskWriteRequests(OpenStackUsageData udr, OpenStackMeter meter) {
         super(udr, meter);
-        this.setChartType(Constant.NUMBER_GRAPH);
     }
 
     @Override

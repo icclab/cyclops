@@ -228,6 +228,22 @@ public class Settings {
             influxDBCredentials.setInfluxDBPageSizeLimit(limit);
         }
 
+        // query timeout in seconds
+        Integer timeout = InfluxDBCredentials.DEFAULT_QUERY_TIMEOUT;
+        try {
+            // load it from configuration file
+            Integer time = Integer.parseInt(properties.getProperty("InfluxDBQueryTimeout"));
+
+            // only override if page limit makes sense
+            if (time > 0) {
+                timeout = time;
+            }
+        } catch (Exception ignored) {
+        } finally {
+            // set appropriate timeout
+            influxDBCredentials.setInfluxDBQueryTimeout(timeout);
+        }
+
         return influxDBCredentials;
     }
 

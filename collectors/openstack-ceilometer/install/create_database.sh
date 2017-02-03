@@ -19,7 +19,7 @@
 # create database
 sudo -u postgres psql <<EOF
 \x
-CREATE DATABASE openstack-ceilometer WITH OWNER ubuntu;
+CREATE DATABASE ceilometer WITH OWNER ubuntu;
 EOF
 
 # restart postgresql

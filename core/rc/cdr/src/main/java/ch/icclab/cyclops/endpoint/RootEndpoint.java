@@ -28,7 +28,7 @@ public class RootEndpoint extends AbstractEndpoint {
 
     @Get
     public String root(){
-        return "RCB BOX micro service - version 2.1.0";
+        return "RCB CDR micro service - version 2.1.0";
     }
 
     @Override

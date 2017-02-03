@@ -20,16 +20,14 @@ package ch.icclab.cyclops.timeseries;
 import ch.icclab.cyclops.load.Loader;
 import ch.icclab.cyclops.load.model.InfluxDBCredentials;
 import ch.icclab.cyclops.util.loggers.TimeSeriesLogger;
+import okhttp3.OkHttpClient;
 import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.atteo.evo.inflector.English;
 import org.influxdb.InfluxDB;
 import org.influxdb.InfluxDBFactory;
-import org.influxdb.dto.BatchPoints;
-import org.influxdb.dto.Point;
-import org.influxdb.dto.Query;
-import org.influxdb.dto.QueryResult;
+import org.influxdb.dto.*;
 
 import java.util.Collections;
 import java.util.List;
@@ -67,7 +65,16 @@ public class InfluxDBClient {
      * @return session
      */
     private InfluxDB obtainSession() {
-        return InfluxDBFactory.connect(credentials.getInfluxDBURL(), credentials.getInfluxDBUsername(), credentials.getInfluxDBPassword());
+        // http client builder
+        OkHttpClient.Builder builder = new OkHttpClient().newBuilder();
+
+        // preferred time outs
+        builder.connectTimeout(credentials.getInfluxDBQueryTimeout(), TimeUnit.SECONDS);
+        builder.writeTimeout(credentials.getInfluxDBQueryTimeout(), TimeUnit.SECONDS);
+        builder.readTimeout(credentials.getInfluxDBQueryTimeout(), TimeUnit.SECONDS);
+
+        // establish influxDB connection with our own builder
+        return InfluxDBFactory.connect(credentials.getInfluxDBURL(), credentials.getInfluxDBUsername(), credentials.getInfluxDBPassword(), builder);
     }
 
     /**
@@ -117,7 +124,7 @@ public class InfluxDBClient {
         Point point = builder.addField(InfluxDBCredentials.COUNTER_FIELD_NAME, true).build();
 
         // depending on whether batch processing for single points is enabled store immediately or wait for flush
-        session.write(credentials.getInfluxDBTSDB(), "default", point);
+        session.write(credentials.getInfluxDBTSDB(), "autogen", point);
     }
 
     /**
@@ -142,11 +149,11 @@ public class InfluxDBClient {
     }
     public InfluxDBResponse executeQuery(List<QueryBuilder> builders) {
         try {
-            TimeSeriesLogger.log(String.format("About to execute %d %s", builders.size(), English.plural("query", builders.size())));
-
             // concatenate multiple queries into one
             List<String> queries = builders.stream().map(QueryBuilder::build).collect(Collectors.toList());
             String multipleQuery = StringUtils.join(queries, ";");
+
+            TimeSeriesLogger.log(String.format("About to execute %d %s: %s", builders.size(), English.plural("query", builders.size()), multipleQuery));
 
             // connect to InfluxDB and execute query
             QueryResult result = session.query(new Query(multipleQuery, credentials.getInfluxDBTSDB()));
@@ -158,5 +165,12 @@ public class InfluxDBClient {
             TimeSeriesLogger.log(String.format("Query execution failed: %s", ignored.getMessage()));
             return null;
         }
+    }
+
+    /**
+     * Shut down InfluxDB Client (flush and disable batch)
+     */
+    public void close() {
+        session.disableBatch();
     }
 }

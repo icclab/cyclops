@@ -23,15 +23,16 @@ package ch.icclab.cyclops.load.model;
  */
 public class ConsumerCredentials {
 
-    public static String DEFAULT_DATA_QUEUE = "cyclops.box.consume";
-
     // These fields correspond with the configuration file
     private String consumerUsername;
     private String consumerPassword;
     private String consumerHost;
     private int consumerPort;
     private String consumerVirtualHost;
-    private String consumerDataQueue;
+    private String consumerNovaQueue;
+    private String consumerCinderQueue;
+    private String consumerNeutronQueue;
+
 
     //==== Getters and Setters
     public String getConsumerUsername() {
@@ -69,11 +70,25 @@ public class ConsumerCredentials {
         this.consumerVirtualHost = consumerVirtualHost;
     }
 
-    public String getConsumerDataQueue() {
-        return consumerDataQueue;
+    public String getConsumerNovaQueue() {
+        return consumerNovaQueue;
     }
-    public void setConsumerDataQueue(String consumerDataQueue) {
-        this.consumerDataQueue = consumerDataQueue;
+    public void setConsumerNovaQueue(String consumerNovaQueue) {
+        this.consumerNovaQueue = consumerNovaQueue;
+    }
+
+    public String getConsumerCinderQueue() {
+        return consumerCinderQueue;
+    }
+    public void setConsumerCinderQueue(String consumerCinderQueue) {
+        this.consumerCinderQueue = consumerCinderQueue;
+    }
+
+    public String getConsumerNeutronQueue() {
+        return consumerNeutronQueue;
+    }
+    public void setConsumerNeutronQueue(String consumerNeutronQueue) {
+        this.consumerNeutronQueue = consumerNeutronQueue;
     }
 
 }

@@ -18,9 +18,15 @@ package ch.icclab.cyclops.consume.data.mapping.openstack.events;
 
 import ch.icclab.cyclops.consume.data.mapping.openstack.OpenstackEvent;
 import ch.icclab.cyclops.load.Loader;
+import ch.icclab.cyclops.timeseries.GenerateDBPoint;
+import org.influxdb.dto.Point;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 /**
  * Author: Oleksii Serhiienko
@@ -28,35 +34,19 @@ import java.util.Map;
  * Description: This class holds the OpenstackNeutronEvent data
  */
 public class OpenstackNeutronEvent extends OpenstackEvent {
-    public OpenstackNeutronEvent(String account, String instanceId, String type, String time){
+    public OpenstackNeutronEvent(){
+    }
+    public OpenstackNeutronEvent(String account, String source, String ip_adress, String type, Long time) {
         this.account = account;
-        this.instanceId = instanceId;
+        this.source = source;
+        this.ip_adress = ip_adress;
         this.type = type;
         this.time = time;
     }
 
-    /**
-     * @return table
-     */
-    public  String getTableName() {
-        return Loader.getSettings().getOpenstackSettings().getOpenstackEventNeutronTable();
-    }
+    private String ip_adress;
 
-    /**
-     * Get fields for point generation
-     *
-     * @return hashmap
-     */
-    public Map<String, Object> getFields() {
-        Map<String, Object> map = new HashMap<String, Object>();
-        map.put("instanceId", instanceId);
-        map.put("account", account);
-        map.put("type", type);
+    public String getIp_adress() { return ip_adress; }
 
-        return map;
-    }
-
-    public String getDateFormat(){
-        return "yyyy-MM-dd HH:mm:ss.SSSSSS";
-    }
+    public void setIp_adress(String ip_adress) { this.ip_adress = ip_adress; }
 }

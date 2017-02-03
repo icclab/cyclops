@@ -91,3 +91,12 @@ services:
       - rabbitmq
     ports:
       - 4569:4569
+
+  dashboard:
+   build: dashboard/
+   links:
+      - udr
+      - billing
+      - rc
+   ports:
+      - 8080:8080

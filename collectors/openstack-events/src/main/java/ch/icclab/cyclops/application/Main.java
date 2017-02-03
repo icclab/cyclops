@@ -18,15 +18,19 @@
 package ch.icclab.cyclops.application;
 
 import ch.icclab.cyclops.consume.RabbitMQListener;
-import ch.icclab.cyclops.consume.data.DataConsumer;
+import ch.icclab.cyclops.consume.data.consumer.CinderConsumer;
+import ch.icclab.cyclops.consume.data.consumer.NeutronConsumer;
+import ch.icclab.cyclops.consume.data.consumer.NovaConsumer;
 import ch.icclab.cyclops.load.Loader;
 import ch.icclab.cyclops.load.model.HibernateCredentials;
+import ch.icclab.cyclops.load.model.InfluxDBCredentials;
 import ch.icclab.cyclops.persistence.HibernateClient;
 import ch.icclab.cyclops.persistence.HibernateConfiguration;
 import ch.icclab.cyclops.schedule.Scheduler;
 import ch.icclab.cyclops.load.Settings;
 import ch.icclab.cyclops.load.model.PublisherCredentials;
 import ch.icclab.cyclops.publish.RabbitMQPublisher;
+import ch.icclab.cyclops.schedule.runner.openstack.CinderUDRRunner;
 import ch.icclab.cyclops.schedule.runner.openstack.NeutronUDRRunner;
 import ch.icclab.cyclops.schedule.runner.openstack.NovaUDRRunner;
 import ch.icclab.cyclops.timeseries.InfluxDBClient;
@@ -45,6 +49,11 @@ import java.util.concurrent.TimeUnit;
  * Description: Entry point for Openstack event collector micro service
  */
 public class Main extends Application{
+
+    static {
+        // Nothing can appear before this initializer
+        System.setProperty("Log4jContextSelector", "org.apache.logging.log4j.core.async.AsyncLoggerContextSelector");
+    }
 
     final static Logger logger = LogManager.getLogger(Main.class.getName());
 
@@ -171,8 +180,11 @@ public class Main extends Application{
                 if (consumer != null) {
 
                     // bind consumers
-                    Boolean con = consumer.addConsumer(settings.getConsumerCredentials().getConsumerDataQueue(), new DataConsumer());
-                    if (con) {
+                    Boolean conNova = consumer.addConsumer(settings.getConsumerCredentials().getConsumerNovaQueue(), new NovaConsumer());
+                    Boolean conCinder = consumer.addConsumer(settings.getConsumerCredentials().getConsumerCinderQueue(), new CinderConsumer());
+                    Boolean conNeutron = consumer.addConsumer(settings.getConsumerCredentials().getConsumerNeutronQueue(), new NeutronConsumer());
+
+                    if (conNova && conCinder && conNeutron) {
                         logger.trace("RabbitMQ Consumer successfully initialised");
                         consumer.start();
                     } else {
@@ -206,9 +218,14 @@ public class Main extends Application{
      * Check and configure InfluxDB
      */
     private static void checkAndConfigureInfluxDB() {
+        InfluxDBClient influxDBClient = new InfluxDBClient();
         try {
-            logger.trace("Binding to InfluxDB");
-            InfluxDBClient.createInstance(Loader.getSettings().getInfluxDBCredentials());
+            logger.trace("Binding to InfluxDB and creating databases");
+            InfluxDBCredentials credentials = Loader.getSettings().getInfluxDBCredentials();
+            InfluxDBClient client = new InfluxDBClient(credentials);
+
+            client.ping();
+            client.createDatabases(credentials.getInfluxDBTSDB());
         } catch (Exception e) {
             String log = String.format("Couldn't connect to InfluxDb: %s", e.getMessage());
             logger.error(log);
@@ -255,6 +272,7 @@ public class Main extends Application{
             Scheduler scheduler = Scheduler.getInstance();
             scheduler.addRunner(new NovaUDRRunner(), 0, time, TimeUnit.MILLISECONDS);
             scheduler.addRunner(new NeutronUDRRunner(), 0, time, TimeUnit.MILLISECONDS);
+            scheduler.addRunner(new CinderUDRRunner(), 0, time, TimeUnit.MILLISECONDS);
             scheduler.start();
 
             // and finally start the server

@@ -28,14 +28,9 @@ public class OpenstackSettings {
     private String OpenstackCollectorEventStop;
     private String OpenstackCollectorEventPause;
     private String OpenstackCollectorEventDelete;
-    private String OpenstackCollectorEventResize;
     private String OpenstackCollectorEventSuspend;
 
     private String OpenstackFirstImport;
-
-    private String OpenstackEventNovaTable;
-
-    private String OpenstackEventNeutronTable;
 
     private String OpenstackScheduleTime;
 
@@ -55,10 +50,6 @@ public class OpenstackSettings {
         OpenstackCollectorEventDelete = openstackCollectorEventDelete;
     }
 
-    public void setOpenstackCollectorEventResize(String openstackCollectorEventResize) {
-        OpenstackCollectorEventResize = openstackCollectorEventResize;
-    }
-
     public void setOpenstackCollectorEventSuspend(String openstackCollectorEventSuspend) {
         OpenstackCollectorEventSuspend = openstackCollectorEventSuspend;
     }
@@ -72,23 +63,13 @@ public class OpenstackSettings {
         OpenstackScheduleTime = openstackScheduleTime;
     }
 
-    public void setOpenstackEventNeutronTable(String openstackEventNeutronTable) {
-        OpenstackEventNeutronTable = openstackEventNeutronTable;
-    }
 
-    public void setOpenstackEventNovaTable(String openstackEventNovaTable) {
-        OpenstackEventNovaTable = openstackEventNovaTable;
-    }
-
-    public String getOpenstackEventNeutronTable() { return OpenstackEventNeutronTable; }
-    public String getOpenstackEventNovaTable() { return OpenstackEventNovaTable; }
     public String getOpenstackCollectorEventRun() {
         return OpenstackCollectorEventRun;
     }
     public String getOpenstackCollectorEventStop() { return OpenstackCollectorEventStop; }
     public String getOpenstackCollectorEventPause() { return OpenstackCollectorEventPause; }
     public String getOpenstackCollectorEventDelete() { return OpenstackCollectorEventDelete; }
-    public String getOpenstackCollectorEventResize() { return OpenstackCollectorEventResize; }
     public String getOpenstackCollectorEventSuspend() { return OpenstackCollectorEventSuspend; }
 
     public String getOpenstackFirstImport() {

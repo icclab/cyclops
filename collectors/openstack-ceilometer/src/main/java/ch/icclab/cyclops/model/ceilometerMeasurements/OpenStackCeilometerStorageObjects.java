@@ -27,7 +27,6 @@ public class OpenStackCeilometerStorageObjects extends AbstractOpenStackCeilomet
 
     public OpenStackCeilometerStorageObjects(OpenStackUsageData udr, OpenStackMeter meter) {
         super(udr, meter);
-        this.setChartType(Constant.GAUGE_GRAPH);
     }
 
     @Override

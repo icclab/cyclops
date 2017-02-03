@@ -17,7 +17,7 @@ package ch.icclab.cyclops.consume.command.model.generic;
  */
 
 import ch.icclab.cyclops.consume.command.Command;
-import ch.icclab.cyclops.consume.command.model.generic.model.FlushData;
+import ch.icclab.cyclops.load.Loader;
 import ch.icclab.cyclops.publish.APICaller;
 import ch.icclab.cyclops.util.loggers.CommandLogger;
 
@@ -31,9 +31,17 @@ import java.util.List;
  */
 public class BillRequest extends Command {
 
-    // TODO add service discovery
-    private static String CDR_URL = "localhost:4568";
-    private static String COIN_URL = "localhost:4571";
+    private class URLs {
+        String BillingRuleEngineURL;
+        String CDRMicroServiceURL;
+
+        public URLs() {
+        }
+
+        public boolean isValid() {
+            return (BillingRuleEngineURL != null && !BillingRuleEngineURL.isEmpty() && CDRMicroServiceURL != null && !CDRMicroServiceURL.isEmpty());
+        }
+    }
 
     // account holder for the bill
     private String account;
@@ -56,15 +64,21 @@ public class BillRequest extends Command {
 
             CommandLogger.log("Received Bill Request that is meant for Billing Rule engine, therefore synchronously forwarding it");
 
-            // perform CDR flush
-            new APICaller().post(new URL(String.format("http://%s/command", CDR_URL)), new FlushData(from, to, account, linked));
+            // load URLS from configuration file
+            URLs urls = Loader.extractProperties(URLs.class);
 
-            // request bill from Coin
-            APICaller.Response response = new APICaller().post(new URL(String.format("http://%s/ruleengine/facts", COIN_URL)), this);
-            return response.getAsList();
+            if (urls != null && urls.isValid()) {
+                // perform CDR flush
+                new APICaller().post(new URL(String.format("http://%s/command", urls.CDRMicroServiceURL)), new FlushData(from, to, account, linked));
 
+                // request bill from Coin
+                APICaller.Response response = new APICaller().post(new URL(String.format("http://%s/ruleengine/facts", urls.BillingRuleEngineURL)), this);
+                return response.getAsList();
+            } else {
+                return "Check configuration file, command endpoints are not valid";
+            }
         } catch (Exception e) {
-            return "No data";
+            return String.format("No data [%s]", e.getMessage());
         }
     }
 

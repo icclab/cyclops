@@ -16,33 +16,48 @@
  */
 package ch.icclab.cyclops.schedule.runner.openstack;
 
-import ch.icclab.cyclops.consume.data.mapping.udr.OpenStackIpTimeUDR;
-import ch.icclab.cyclops.consume.data.mapping.udr.OpenStackUDR;
-import ch.icclab.cyclops.load.Loader;
+import ch.icclab.cyclops.consume.data.mapping.openstack.OpenstackEvent;
+import ch.icclab.cyclops.consume.data.mapping.openstack.events.OpenstackNeutronEvent;
+import ch.icclab.cyclops.consume.data.mapping.openstack.events.OpenstackNovaEvent;
+import ch.icclab.cyclops.consume.data.mapping.usage.OpenStackFloatingIpActiveUsage;
 import ch.icclab.cyclops.persistence.HibernateClient;
 import ch.icclab.cyclops.persistence.pulls.LatestPullNeutron;
 import ch.icclab.cyclops.schedule.runner.OpenStackClient;
 import ch.icclab.cyclops.util.loggers.SchedulerLogger;
 import org.joda.time.DateTime;
 
+import java.util.ArrayList;
 import java.util.Map;
 
 /**
  * Author: Oleksii Serhiienko
  * Updated on: 26-Aug-16
- * Description: Runner to generate Neutron udr records out of events and send to the queue
+ * Description: Runner to generate Neutron usage records out of events and send to the queue
  */
 public class NeutronUDRRunner extends OpenStackClient {
+
+    @Override
     public String getDbName() {
-        return Loader.getSettings().getOpenstackSettings().getOpenstackEventNeutronTable();
+        return OpenstackNeutronEvent.class.getSimpleName();
     }
 
-    public OpenStackUDR generateValue(Long eventTime, Long eventLastTime, Map lastEventInScope, String instanceId) {
-        return new OpenStackIpTimeUDR(eventLastTime / 1000, lastEventInScope.get("account").toString(),
-                instanceId, lastEventInScope.get("type").toString(),
-                (double) (eventTime - eventLastTime) / 1000); //Seconds instead of milliseconds;
+    @Override
+    public Class getUsageFormat(){
+        return OpenstackNeutronEvent.class;
     }
 
+    @Override
+    public ArrayList<OpenStackFloatingIpActiveUsage> generateValue(Long eventTime, OpenstackEvent lastEventInScope) {
+        OpenstackNeutronEvent transformedEvent = (OpenstackNeutronEvent) lastEventInScope;
+        Long eventLastTime = transformedEvent.getTime();
+        ArrayList<OpenStackFloatingIpActiveUsage> generatedUsages = new ArrayList<>();
+        generatedUsages.add( new OpenStackFloatingIpActiveUsage(eventLastTime, transformedEvent.getAccount(),
+                transformedEvent.getIp_adress(), transformedEvent.getSource(),
+                (double) (eventTime - eventLastTime) / 1000)); //Seconds instead of milliseconds;
+        return generatedUsages;
+    }
+
+    @Override
     public void updateLatestPull(Long time){
         LatestPullNeutron pull = (LatestPullNeutron) hibernateClient.getObject(LatestPullNeutron.class, 1l);
         if (pull == null) {
@@ -54,6 +69,7 @@ public class NeutronUDRRunner extends OpenStackClient {
         hibernateClient.persistObject(pull);
     }
 
+    @Override
     public DateTime getLatestPull(){
         DateTime last;
         LatestPullNeutron pull = (LatestPullNeutron) HibernateClient.getInstance().getObject(LatestPullNeutron.class, 1l);

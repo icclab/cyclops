@@ -1,17 +1,25 @@
 package ch.icclab.cyclops.client;
 
 import ch.icclab.cyclops.load.Loader;
+import ch.icclab.cyclops.model.OpenStackCeilometerResource;
 import ch.icclab.cyclops.model.OpenStackMeter;
-import ch.icclab.cyclops.persistence.HibernateClient;
-import ch.icclab.cyclops.persistence.LatestPullORM;
 import ch.icclab.cyclops.publish.Messenger;
-import ch.icclab.cyclops.util.Time;
+import ch.icclab.cyclops.util.Constant;
+import ch.icclab.cyclops.util.DateInterval;
+import ch.icclab.cyclops.util.OpenStackClient;
+import com.google.gson.Gson;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.joda.time.DateTime;
-import org.joda.time.DateTimeZone;
+import org.restlet.Request;
+import org.restlet.data.Header;
+import org.restlet.data.MediaType;
+import org.restlet.engine.header.HeaderConstants;
+import org.restlet.resource.ClientResource;
+import org.restlet.util.Series;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 
 /**
@@ -64,25 +72,29 @@ public class OpenStackPuller {
      */
     private Boolean pull() {
         // whether to start from epoch or last commit
-        DateInterval dates = new DateInterval(whenWasLastPull());
+        DateInterval dates = new DateInterval();
         String url = "";
         OpenStackMeterDownloader openStackMeterDownloader = new OpenStackMeterDownloader();
-        ArrayList<OpenStackMeter> meters = openStackMeterDownloader.performRequest();
+        HashSet<OpenStackMeter> meters = openStackMeterDownloader.performRequest();
+        ArrayList<String> supportedMeters = new ArrayList<>(Arrays.asList(Loader.getSettings().getOpenStackSettings().getSupportedMeterList().split(",")));
 
         List<Object> records = null;
         // build the url for requesting usage data from each meter
         for (OpenStackMeter meter : meters) {
             url = generateUsageUrl(dates, meter);
             OpenStackUsageDownloader openStackUsageDownloader = new OpenStackUsageDownloader(url);
-
-            // first run has to be manual (not threaded)
-            if (records == null) {
-                records = openStackUsageDownloader.performRequest(meter);
-            } else {
-                List<Object> newRecords = openStackUsageDownloader.performRequest(meter);
-                if (newRecords != null)
-                    records.addAll(newRecords);
-            }
+            // Check if the supported meter selection is empty
+            if (supportedMeters != null)
+                // Check if the meter is supported
+                if (supportedMeters.contains(Constant.FULL_METER_SELECTION) || supportedMeters.contains(meter.getName()))
+                    // first run has to be manual (not threaded)
+                    if (records == null) {
+                        records = openStackUsageDownloader.performRequest(meter);
+                    } else {
+                        List<Object> newRecords = openStackUsageDownloader.performRequest(meter);
+                        if (newRecords != null)
+                            records.addAll(newRecords);
+                    }
         }
         // only if we have valid list
         if (records != null) {
@@ -96,45 +108,6 @@ public class OpenStackPuller {
     }
 
     /**
-     * Will determine when was the last entry point (pull from Ceilometer), or even if there was any
-     *
-     * @return date object of the last commit, or epoch if there was none
-     */
-    private DateTime whenWasLastPull() {
-        DateTime last;
-
-        LatestPullORM pull = (LatestPullORM) HibernateClient.getInstance().getObject(LatestPullORM.class, 1l);
-        if (pull == null) {
-            last = new DateTime(0);
-        } else {
-            last = new DateTime(pull.getTimeStamp());
-        }
-
-        logger.trace("Getting the last pull date " + last.toString());
-
-        // get date specified by admin
-        String date = Loader.getSettings().getOpenStackSettings().getFirstImport();
-        if (date != null && !date.isEmpty()) {
-            try {
-                logger.trace("Admin provided us with import date preference " + date);
-                DateTime selection = Time.getDateForTime(date);
-
-                // if we are first time starting and having Epoch, change it to admin's selection
-                // otherwise skip admin's selection and continue from the last DB entry time
-                if (last.getMillis() == 0) {
-                    logger.debug("Setting first import date as configuration file dictates.");
-                    last = selection;
-                }
-            } catch (Exception ignored) {
-                // ignoring configuration preference, as admin didn't provide correct format
-                logger.debug("Import date selection for Ceilometer ignored - use yyyy-MM-dd'T'HH:mm:ssZ format");
-            }
-        }
-        DateTime dateTime = last.toDateTime(DateTimeZone.UTC);
-        return dateTime;
-    }
-
-    /**
      * Broadcast list of items on RabbitMQ
      *
      * @param list to be broadcast
@@ -142,31 +115,6 @@ public class OpenStackPuller {
     private void broadcastRecords(List<Object> list) {
         for (Object item : list) {
             Messenger.getInstance().broadcast(item);
-        }
-    }
-
-    /**
-     * This class is being used to generate interval either from last point or epoch
-     */
-    private class DateInterval {
-        private String fromDate;
-        private String toDate;
-
-        protected DateInterval(DateTime from) {
-            fromDate = from.toString("yyyy-MM-dd'T'HH:mm:ssZ");
-            toDate = new DateTime(DateTimeZone.UTC).toString("yyyy-MM-dd'T'HH:mm:ssZ");
-            if(fromDate.contains("+"))
-                fromDate = fromDate.substring(0, fromDate.indexOf("+"));
-            if(toDate.contains("+"))
-                toDate = toDate.substring(0, toDate.indexOf("+"));
-        }
-
-        protected String getFromDate() {
-            return fromDate;
-        }
-
-        protected String getToDate() {
-            return toDate;
         }
     }
 
@@ -185,6 +133,36 @@ public class OpenStackPuller {
             url = url + "meters/" + metername + "/statistics?q.field=timestamp&q.op=lt&q.value=" + to + "&groupby=user_id&groupby=project_id&groupby=resource_id";
 
         return url;
+    }
+
+    public String getResourceIdName(String resourceId) {
+        try {
+            String url = Loader.getSettings().getOpenStackSettings().getCeilometerUrl();
+            url = url + "resources/" + resourceId;
+
+            Series<Header> headerValue;
+
+            ClientResource clientResource = new ClientResource(url);
+            headerValue = new Series<Header>(Header.class);
+            Request request = clientResource.getRequest();
+            String token;
+
+            OpenStackClient openStackClient = new OpenStackClient();
+            token = openStackClient.generateToken();
+
+            request.getAttributes().put(HeaderConstants.ATTRIBUTE_HEADERS, headerValue);
+            headerValue.add("Content-Type", "application/json");
+            headerValue.add("X-Auth-Token", token);
+
+            clientResource.get(MediaType.APPLICATION_JSON);
+            String data = clientResource.getResponseEntity().getText();
+
+            Gson gson = new Gson();
+            OpenStackCeilometerResource resource = gson.fromJson(data, OpenStackCeilometerResource.class);
+            return (String) resource.getMetadata().get("display_name");
+        } catch (Exception e) {
+            return "";
+        }
     }
 
 }

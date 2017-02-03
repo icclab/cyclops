@@ -16,16 +16,15 @@
  */
 package ch.icclab.cyclops.util;
 
+import ch.icclab.cyclops.consume.data.mapping.openstack.OpenstackEvent;
 import org.joda.time.DateTime;
-import org.joda.time.DateTimeZone;
-import org.joda.time.LocalTime;
+
 import org.joda.time.chrono.ISOChronology;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 
 /**
  * Author: Martin Skoviera
@@ -92,10 +91,26 @@ public class Time {
         }
     }
 
-    public static List<Map>  normaliseInfluxDB(List<Map> events) {
-        for (Map event: events){
-            event.replace("time", event.get("time").toString().replace("E9", "E12"));
+    public static List<OpenstackEvent>  normaliseInfluxDB(List<OpenstackEvent> events) {
+        for (OpenstackEvent event: events){
+            if (event.getTime()<Math.pow(10, 12)){
+             event.setTime(event.getTime()*1000);
+            }
         }
         return events;
+    }
+
+    public static Long fromNovaTimeToMills(String time){
+        DateTimeFormatter format = DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm:ss.SSSSSS").withZoneUTC();
+        DateTime date = format.parseDateTime(time);
+
+        return date.getMillis();
+    }
+
+    public static Long fromOpenstackTimeToMills(String time){
+        DateTimeFormatter format = DateTimeFormat.forPattern("yyyy-MM-dd' 'HH:mm:ss.SSSSSS").withZoneUTC();
+        DateTime date = format.parseDateTime(time);
+
+        return date.getMillis();
     }
 }

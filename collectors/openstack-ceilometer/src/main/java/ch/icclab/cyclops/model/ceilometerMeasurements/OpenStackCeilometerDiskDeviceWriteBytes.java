@@ -27,7 +27,6 @@ public class OpenStackCeilometerDiskDeviceWriteBytes extends AbstractOpenStackCe
 
     public OpenStackCeilometerDiskDeviceWriteBytes(OpenStackUsageData udr, OpenStackMeter meter) {
         super(udr, meter);
-        this.setChartType(Constant.NUMBER_GRAPH);
     }
 
     @Override

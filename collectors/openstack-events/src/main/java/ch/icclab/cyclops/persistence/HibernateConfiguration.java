@@ -17,8 +17,10 @@ package ch.icclab.cyclops.persistence;
  */
 
 import ch.icclab.cyclops.load.model.HibernateCredentials;
+import ch.icclab.cyclops.persistence.pulls.LatestPullCinder;
 import ch.icclab.cyclops.persistence.pulls.LatestPullNeutron;
 import ch.icclab.cyclops.persistence.pulls.LatestPullNova;
+import javafx.scene.control.Label;
 import org.hibernate.cfg.Configuration;
 
 /**
@@ -33,6 +35,7 @@ public class HibernateConfiguration {
         // add mandatory hibernate classes
         conf.addAnnotatedClass(LatestPullNova.class);
         conf.addAnnotatedClass(LatestPullNeutron.class);
+        conf.addAnnotatedClass(LatestPullCinder.class);
 
         // now set properties
         conf.setProperty("hibernate.connection.driver_class", credentials.getHibernateDriver())

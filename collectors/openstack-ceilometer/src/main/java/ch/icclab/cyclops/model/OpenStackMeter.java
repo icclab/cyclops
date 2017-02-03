@@ -1,5 +1,7 @@
 package ch.icclab.cyclops.model;
 
+import com.google.common.base.Objects;
+
 /**
  * Copyright (c) 2015. Zuercher Hochschule fuer Angewandte Wissenschaften
  * All Rights Reserved.
@@ -28,6 +30,19 @@ public class OpenStackMeter {
     private String project_id;
     private String type;
     private String unit;
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        OpenStackMeter that = (OpenStackMeter) o;
+        return Objects.equal(name, that.name);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(name);
+    }
 
     public String getUser_id() {
         return user_id;

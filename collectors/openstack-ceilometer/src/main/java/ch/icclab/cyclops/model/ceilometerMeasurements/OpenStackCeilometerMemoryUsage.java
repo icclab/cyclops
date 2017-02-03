@@ -27,7 +27,6 @@ public class OpenStackCeilometerMemoryUsage extends AbstractOpenStackCeilometerU
 
     public OpenStackCeilometerMemoryUsage(OpenStackUsageData udr, OpenStackMeter meter) {
         super(udr, meter);
-        this.setChartType(Constant.GAUGE_GRAPH);
     }
 
     @Override

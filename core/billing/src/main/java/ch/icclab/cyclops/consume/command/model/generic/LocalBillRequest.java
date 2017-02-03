@@ -17,12 +17,13 @@ package ch.icclab.cyclops.consume.command.model.generic;
  */
 
 import ch.icclab.cyclops.consume.command.Command;
-import ch.icclab.cyclops.consume.command.model.generic.model.Bill;
-import ch.icclab.cyclops.consume.command.model.generic.model.CDR;
-import ch.icclab.cyclops.consume.command.model.generic.model.FlushData;
+import ch.icclab.cyclops.consume.command.model.generic.local.Bill;
+import ch.icclab.cyclops.consume.command.model.generic.local.CDR;
+import ch.icclab.cyclops.load.Loader;
 import ch.icclab.cyclops.publish.APICaller;
+import ch.icclab.cyclops.timeseries.GenerateDBPoint;
+import ch.icclab.cyclops.timeseries.InfluxDBClient;
 import ch.icclab.cyclops.util.loggers.CommandLogger;
-
 import java.net.URL;
 import java.util.List;
 
@@ -33,8 +34,16 @@ import java.util.List;
  */
 public class LocalBillRequest extends Command {
 
-    // TODO add service discovery
-    private static String CDR_URL = "localhost:4568";
+    private class URLs {
+        String CDRMicroServiceURL;
+
+        public URLs() {
+        }
+
+        public boolean isValid() {
+            return CDRMicroServiceURL != null && !CDRMicroServiceURL.isEmpty();
+        }
+    }
 
     // account holder for the bill
     private String account;
@@ -45,6 +54,9 @@ public class LocalBillRequest extends Command {
     // time boundaries for the bill
     private Long from;
     private Long to;
+
+    // storage preference
+    private boolean persist;
 
     @Override
     protected Object execute() {
@@ -57,27 +69,39 @@ public class LocalBillRequest extends Command {
 
             CommandLogger.log("Received Local Bill Request, thus asking CDR for data and generating a bill locally");
 
-            // prepare flush command
-            FlushData flush = new FlushData(from, to, account, linked);
-            flush.disableSync();
-            flush.enableOutput();
+            // load URLS from configuration file
+            URLs urls = Loader.extractProperties(URLs.class);
 
-            // send flush data request
-            APICaller.Response response = new APICaller().post(new URL(String.format("http://%s/command", CDR_URL)), flush);
+            if (urls != null && urls.isValid()) {
+                // prepare flush command
+                FlushData flush = new FlushData(from, to, account, linked);
+                flush.disableSync();
+                flush.enableOutput();
 
-            // parse as list of CDRs
-            List<CDR> cdrs = response.getAsListOfType(CDR.class);
+                // send flush data request
+                APICaller.Response response = new APICaller().post(new URL(String.format("http://%s/command", urls.CDRMicroServiceURL)), flush);
 
-            // create a bill
-            Bill bill = new Bill(account, from, to);
+                // parse as list of CDRs
+                List<CDR> cdrs = response.getAsListOfType(CDR.class);
 
-            // process received CDR records
-            bill.addAndProcessCDRs(cdrs);
+                // create a bill
+                Bill bill = new Bill(account, from, to);
 
-            return bill;
+                // process received CDR records
+                bill.addAndProcessCDRs(cdrs);
+
+                // shall we persist it?
+                if (persist) {
+                    new InfluxDBClient().persistSinglePoint(GenerateDBPoint.fromObjectWithTimeAndTags(bill, Bill.getTimeFieldName(), Bill.getTimeUnit(), Bill.getTagNames()));
+                }
+
+                return bill;
+            } else {
+                return "Check configuration file, command endpoints are not valid";
+            }
 
         } catch (Exception e) {
-            return "No data";
+            return String.format("No data [%s]", e.getMessage());
         }
     }
 }

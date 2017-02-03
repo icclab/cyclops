@@ -17,19 +17,22 @@
 
 package ch.icclab.cyclops.timeseries;
 
+import ch.icclab.cyclops.load.Loader;
 import ch.icclab.cyclops.load.model.InfluxDBCredentials;
 import ch.icclab.cyclops.util.loggers.TimeSeriesLogger;
+import okhttp3.OkHttpClient;
+import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.atteo.evo.inflector.English;
 import org.influxdb.InfluxDB;
 import org.influxdb.InfluxDBFactory;
-import org.influxdb.dto.BatchPoints;
-import org.influxdb.dto.Point;
-import org.influxdb.dto.Query;
-import org.influxdb.dto.QueryResult;
+import org.influxdb.dto.*;
 
+import java.util.Collections;
 import java.util.List;
-import java.util.Map;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 /**
  * Author: Skoviera
@@ -38,38 +41,23 @@ import java.util.Map;
  */
 public class InfluxDBClient {
     final static Logger logger = LogManager.getLogger(InfluxDBClient.class.getName());
-    public static String MEASUREMENT_FIELD_NAME = "name";
 
     // singleton
-    private static InfluxDBClient singleton;
     private InfluxDBCredentials credentials;
-
-    /**
-     * Create InfluxDB instance
-     * @param conf to be used
-     */
-    public static void createInstance(InfluxDBCredentials conf){
-        if (singleton == null) {
-            singleton = new InfluxDBClient(conf);
-        }
-    }
+    private InfluxDB session;
 
     /**
      * Constructor
      * @param conf to be used
      */
-    private InfluxDBClient(InfluxDBCredentials conf) {
+    public InfluxDBClient(InfluxDBCredentials conf) {
         credentials = conf;
-
-        createDatabases(credentials.getInfluxDBTSDB());
+        session = obtainSession();
     }
 
-    /**
-     * Simple implementation of Singleton class
-     * @return instance of InfluxDB object
-     */
-    public static InfluxDBClient getInstance() {
-        return singleton;
+    public InfluxDBClient() {
+        credentials = Loader.getSettings().getInfluxDBCredentials();
+        session = obtainSession();
     }
 
     /**
@@ -77,38 +65,66 @@ public class InfluxDBClient {
      * @return session
      */
     private InfluxDB obtainSession() {
-        return InfluxDBFactory.connect(credentials.getInfluxDBURL(), credentials.getInfluxDBUsername(), credentials.getInfluxDBPassword());
+        // http client builder
+        OkHttpClient.Builder builder = new OkHttpClient().newBuilder();
+
+        // preferred time outs
+        builder.connectTimeout(credentials.getInfluxDBQueryTimeout(), TimeUnit.SECONDS);
+        builder.writeTimeout(credentials.getInfluxDBQueryTimeout(), TimeUnit.SECONDS);
+        builder.readTimeout(credentials.getInfluxDBQueryTimeout(), TimeUnit.SECONDS);
+
+        // establish influxDB connection with our own builder
+        return InfluxDBFactory.connect(credentials.getInfluxDBURL(), credentials.getInfluxDBUsername(), credentials.getInfluxDBPassword(), builder);
+    }
+
+    /**
+     * Ping InfluxDB server to see whether it is alive
+     * @throws Exception
+     */
+    public void ping() throws Exception {
+        session.ping();
+    }
+
+    /**
+     * Enable batch processing for items that are added as single points
+     * @param flushPoints flush every X points (for example 2000)
+     * @param flushFrequency flush every Y time unit (for example 100 ms)
+     * @param unit time unit (for example milliseconds)
+     */
+    public void configureBatchOnSinglePoints(Integer flushPoints, Integer flushFrequency, TimeUnit unit) {
+        session.enableBatch(flushPoints, flushFrequency, unit);
     }
 
     /**
      * Save container to InfluxDB
      * @param container to be persisted
      */
-    public void persistContainer(BatchPoints container) {
-        InfluxDB con = obtainSession();
+    public void persistContainer(BatchPointsContainer container) {
+        persistContainer(container.getPoints());
+    }
+    private void persistContainer(BatchPoints container) {
         TimeSeriesLogger.log(String.format("Saving container with %d points to database", container.getPoints().size()));
-
-        con.write(container);
+        session.write(container);
     }
 
     /**
      * Request BatchPoint container
      * @return container
      */
-    public BatchPoints getEmptyContainer() {
+    protected BatchPoints getEmptyContainer() {
         return BatchPoints.database(credentials.getInfluxDBTSDB()).build();
     }
 
     /**
      * Persist single point
-     * @param point to be stored
+     * @param builder to generate point
      */
-    public void persistSinglePoint(Point point) {
-        BatchPoints container = getEmptyContainer();
+    public void persistSinglePoint(Point.Builder builder) {
+        // add mandatory hidden field
+        Point point = builder.addField(InfluxDBCredentials.COUNTER_FIELD_NAME, true).build();
 
-        container.point(point);
-
-        persistContainer(container);
+        // depending on whether batch processing for single points is enabled store immediately or wait for flush
+        session.write(credentials.getInfluxDBTSDB(), "autogen", point);
     }
 
     /**
@@ -116,27 +132,45 @@ public class InfluxDBClient {
      * @param names for database creation
      */
     public void createDatabases(String ... names) {
-        InfluxDB client = obtainSession();
-
         // now create required databases
         for (String name: names) {
             TimeSeriesLogger.log(String.format("Making sure \"%s\" database exists", name));
-            client.createDatabase(name);
+            session.createDatabase(name);
         }
     }
 
     /**
      * Execute query
      * @param builder QueryBuilder
-     * @return QueryResult
+     * @return InfluxDBResponse or null
      */
-    public List<Map> executeQuery(QueryBuilder builder) {
-        InfluxDB client = obtainSession();
+    public InfluxDBResponse executeQuery(QueryBuilder builder) {
+        return executeQuery(Collections.singletonList(builder));
+    }
+    public InfluxDBResponse executeQuery(List<QueryBuilder> builders) {
+        try {
+            // concatenate multiple queries into one
+            List<String> queries = builders.stream().map(QueryBuilder::build).collect(Collectors.toList());
+            String multipleQuery = StringUtils.join(queries, ";");
 
-        // execute query
-        QueryResult result = client.query(new Query(builder.build(), credentials.getInfluxDBTSDB()));
+            TimeSeriesLogger.log(String.format("About to execute %d %s: %s", builders.size(), English.plural("query", builders.size()), multipleQuery));
 
-        // return it parsed as list of maps
-        return ParseQueryResult.process(result);
+            // connect to InfluxDB and execute query
+            QueryResult result = session.query(new Query(multipleQuery, credentials.getInfluxDBTSDB()));
+
+            // return InfluxDB response or null
+            return (!result.hasError())? new InfluxDBResponse(result): null;
+
+        } catch (Exception ignored) {
+            TimeSeriesLogger.log(String.format("Query execution failed: %s", ignored.getMessage()));
+            return null;
+        }
+    }
+
+    /**
+     * Shut down InfluxDB Client (flush and disable batch)
+     */
+    public void close() {
+        session.disableBatch();
     }
 }

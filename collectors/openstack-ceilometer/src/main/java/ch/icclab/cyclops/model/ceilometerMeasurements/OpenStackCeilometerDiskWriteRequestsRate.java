@@ -27,7 +27,6 @@ public class OpenStackCeilometerDiskWriteRequestsRate extends AbstractOpenStackC
 
     public OpenStackCeilometerDiskWriteRequestsRate(OpenStackUsageData udr, OpenStackMeter meter) {
         super(udr, meter);
-        this.setChartType(Constant.GAUGE_GRAPH);
     }
 
     @Override

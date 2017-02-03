@@ -27,7 +27,6 @@ public class OpenStackCeilometerNetworkOutgoingPacketsRate extends AbstractOpenS
 
     public OpenStackCeilometerNetworkOutgoingPacketsRate(OpenStackUsageData udr, OpenStackMeter meter) {
         super(udr, meter);
-        this.setChartType(Constant.GAUGE_GRAPH);
     }
 
     @Override

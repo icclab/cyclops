@@ -42,11 +42,11 @@ public class UDR {
     }
 
     public static TimeUnit getTimeUnit() {
-        return TimeUnit.SECONDS;
+        return TimeUnit.MILLISECONDS;
     }
 
     public UDR(String account, Long from, Long to) {
-        this.time = System.currentTimeMillis() / 1000;
+        this.time = System.currentTimeMillis();
         this.account = account;
         this.from = from;
         this.to = to;
