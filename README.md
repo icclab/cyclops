@@ -22,10 +22,10 @@ The current release includes the following usage collectors (with many more to c
 ### Supporting components
 On top of core micro services the RCB Cyclops frameworks utilises couple of other modules:
   
+  - Dashboard - visualisation and forecasting
   - Static rating - used in RC micro service as a rating function
   - Rule engine - write your own pricing strategies (in the future release)
   - Autoscaler - autonomously scaling in and out (in the future release)
-  - Dashboard - visualisation and forecasting (in the future release)
   - Load balancer - forwarding requests to micro services (in the future release)
 
 ## Deployment
@@ -36,7 +36,7 @@ Depending on the configuration you will run, the RCB Cyclops has the following d
 
   - Java 8
   - Maven 3
-  - InfluxDB 0.13
+  - InfluxDB 1.0
   - RabbitMQ 3.6
   
 All of which you can install one by one from <code>install</code> subfolder or by executing the following command:

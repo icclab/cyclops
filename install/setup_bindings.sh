@@ -32,23 +32,16 @@ fi
 chmod +x rabbitmqadmin
 
 # Create necessary exchanges
-./rabbitmqadmin declare exchange --host=$1 --port=$2 --vhost="/" name="cyclops.cloudstack_collector.broadcast" type=fanout
 ./rabbitmqadmin declare exchange --host=$1 --port=$2 --vhost="/" name="cyclops.udr.broadcast" type=fanout
 ./rabbitmqadmin declare exchange --host=$1 --port=$2 --vhost="/" name="cyclops.rate.broadcast" type=fanout
 
+
 # Create necessary queues
-./rabbitmqadmin declare queue --host=$1 --port=$2 --vhost="/" name="cyclops.udr.consume" durable=true
 ./rabbitmqadmin declare queue --host=$1 --port=$2 --vhost="/" name="cyclops.rate.consume" durable=true
 ./rabbitmqadmin declare queue --host=$1 --port=$2 --vhost="/" name="cyclops.cdr.consume" durable=true
-./rabbitmqadmin declare queue --host=$1 --port=$2 --vhost="/" name="cyclops.billing.commands" durable=true
 
-# Bind CloudStack collector to UDR micro service
-./rabbitmqadmin declare binding --host=$1 --port=$2 --vhost="/" source="cyclops.cloudstack_collector.broadcast" destination_type="queue" destination="cyclops.udr.consume"
-
-# Bind UDR to Static Rating (pushing UDR records)
+# Bind UDR to Rule engine (pushing UDR records)
 ./rabbitmqadmin declare binding --host=$1 --port=$2 --vhost="/" source="cyclops.udr.broadcast" destination_type="queue" destination="cyclops.rate.consume"
-
-# Bind Static Rating to CDR (returning created CDR records)
 ./rabbitmqadmin declare binding --host=$1 --port=$2 --vhost="/" source="cyclops.rate.broadcast" destination_type="queue" destination="cyclops.cdr.consume"
 
 rm rabbitmqadmin
