@@ -21,11 +21,13 @@ import ch.icclab.cyclops.consume.data.mapping.openstack.OpenstackEvent;
 import ch.icclab.cyclops.load.Loader;
 import ch.icclab.cyclops.load.model.OpenstackSettings;
 import ch.icclab.cyclops.timeseries.InfluxDBClient;
+import ch.icclab.cyclops.timeseries.InfluxDBHealth;
 import com.rabbitmq.client.*;
 
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Author: Martin Skoviera
@@ -36,6 +38,7 @@ public abstract class AbstractConsumer {
 
     protected static InfluxDBClient influxDBClient = new InfluxDBClient();
     protected static OpenstackSettings settings = Loader.getSettings().getOpenstackSettings();
+    protected static InfluxDBHealth influxDBHealth = InfluxDBHealth.getInstance();
 
     /**
      * This is a method to transform message into OpenstackEvent object
@@ -44,13 +47,21 @@ public abstract class AbstractConsumer {
      */
     protected abstract OpenstackEvent manageMessage(String content);
 
-    protected void consume(String content) {
-        OpenstackEvent data =null;
+    protected boolean consume(String content) {
+        OpenstackEvent data;
         try{
             data = manageMessage(content);
         }catch (Exception ignored) {
+            return true;
         }
-        if (data != null) influxDBClient.persistSinglePoint(data.getPoint());
+        try{
+            if (data != null) {
+                influxDBClient.persistSinglePoint(data.getPoint());
+            }
+            return true;
+        } catch (Exception ignored){
+            return  false;
+        }
     }
 
 
@@ -62,13 +73,27 @@ public abstract class AbstractConsumer {
     public Consumer handleDelivery(Channel channel) {
         return new DefaultConsumer(channel) {
             public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties, byte[] body) throws IOException {
-
                 // make sure encoding is correct
                 String message = new String(body, "UTF-8");
-
                 // and let the message be consumed by client
-                consume(message);
+                boolean status = consume(message);
+                if (status){
+                    channel.basicAck(envelope.getDeliveryTag(), false);
+                    influxDBHealth.setStatusOfLastSave(true);
+                } else {
+                    channel.basicNack(envelope.getDeliveryTag(), false, true);
+                    influxDBHealth.setStatusOfLastSave(false);
+                    int time = new Integer(settings.getOpenstackScheduleTime());
+                    try{
+                        TimeUnit.MILLISECONDS.sleep(time);
+                    } catch (Exception ignored){
+
+                    }
+
+                }
+
             }
+
         };
     }
 

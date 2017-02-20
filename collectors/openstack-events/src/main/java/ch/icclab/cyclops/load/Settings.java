@@ -38,7 +38,6 @@ public class Settings {
     protected PublisherCredentials publisherCredentials;
     protected ConsumerCredentials consumerCredentials;
     protected InfluxDBCredentials influxDBCredentials;
-    protected HibernateCredentials hibernateCredentials;
     protected OpenstackSettings openstackSettings;
 
 
@@ -260,36 +259,4 @@ public class Settings {
 
         return influxDBCredentials;
     }
-
-    //=============== Hibernate credentials and settings
-    /**
-     * Load Hibernate credentials
-     * @return credentials
-     */
-    private HibernateCredentials loadHibernateConfiguration() {
-        HibernateCredentials hibernateCredentials = new HibernateCredentials();
-
-        hibernateCredentials.setHibernateURL(properties.getProperty("HibernateURL"));
-        hibernateCredentials.setHibernateUsername(properties.getProperty("HibernateUsername"));
-        hibernateCredentials.setHibernatePassword(properties.getProperty("HibernatePassword"));
-        hibernateCredentials.setHibernateDriver(properties.getProperty("HibernateDriver"));
-        hibernateCredentials.setHibernateDialect(properties.getProperty("HibernateDialect"));
-
-        return hibernateCredentials;
-    }
-
-    /**
-     * Access loaded Hibernate credentials
-     * @return hibernate credentials
-     */
-    public HibernateCredentials getHibernateCredentials() {
-
-        if (hibernateCredentials == null) {
-            hibernateCredentials = loadHibernateConfiguration();
-        }
-
-        return hibernateCredentials;
-    }
-
-
 }

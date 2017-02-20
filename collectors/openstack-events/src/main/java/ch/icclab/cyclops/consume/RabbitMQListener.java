@@ -141,11 +141,13 @@ public class RabbitMQListener {
 
                 // attach consumers
                 Consumer con = entry.getClazz().handleDelivery(channel);
+
                 entry.setConsumer(con);
 
                 // start listening
                 try {
-                    String tag = channel.basicConsume(entry.getQueue(), true, entry.getConsumer());
+                    channel.basicQos(1, true);
+                    String tag = channel.basicConsume(entry.getQueue(), false, entry.getConsumer());
                     entry.setTag(tag);
                 } catch (Exception e) {
                     logger.error("Couldn't start consuming for queue: " + entry.getQueue() + "because of: " + e.getMessage());

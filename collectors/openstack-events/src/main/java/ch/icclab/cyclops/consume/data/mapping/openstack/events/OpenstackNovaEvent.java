@@ -59,16 +59,6 @@ public class OpenstackNovaEvent extends OpenstackEvent{
 
     private Double disk;
 
-    private Boolean valueAttached = false;
-
-    public void attachValue(){
-        this.valueAttached = true;
-    }
-
-    public void deattachValue(){
-        this.valueAttached = false;
-    }
-
     public Double getMemory() {
         return memory;
     }
@@ -107,11 +97,4 @@ public class OpenstackNovaEvent extends OpenstackEvent{
         this.disk = disk;
     }
 
-    public Boolean getValueAttached() {
-        return valueAttached;
-    }
-
-    public void setValueAttached(Boolean valueAttached) {
-        this.valueAttached = valueAttached;
-    }
 }

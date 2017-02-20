@@ -22,10 +22,7 @@ import ch.icclab.cyclops.consume.data.consumer.CinderConsumer;
 import ch.icclab.cyclops.consume.data.consumer.NeutronConsumer;
 import ch.icclab.cyclops.consume.data.consumer.NovaConsumer;
 import ch.icclab.cyclops.load.Loader;
-import ch.icclab.cyclops.load.model.HibernateCredentials;
 import ch.icclab.cyclops.load.model.InfluxDBCredentials;
-import ch.icclab.cyclops.persistence.HibernateClient;
-import ch.icclab.cyclops.persistence.HibernateConfiguration;
 import ch.icclab.cyclops.schedule.Scheduler;
 import ch.icclab.cyclops.load.Settings;
 import ch.icclab.cyclops.load.model.PublisherCredentials;
@@ -37,7 +34,6 @@ import ch.icclab.cyclops.timeseries.InfluxDBClient;
 import ch.icclab.cyclops.util.ShutDownListener;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.hibernate.cfg.Configuration;
 import org.restlet.Application;
 import org.restlet.Component;
 
@@ -94,9 +90,6 @@ public class Main extends Application{
 
         // check and setup RabbitMQ publisher and consumer
         checkAndSetupRabbitMQ();
-
-        // check and configure hibernate
-        checkAndConfigureHibernate();
 
         // and finally create and start the server
         Component component = new Component();
@@ -235,29 +228,6 @@ public class Main extends Application{
     }
 
 
-    /**
-     * Check and configure Hibernate
-     */
-    private static void checkAndConfigureHibernate() {
-        try {
-            // get credentials
-            HibernateCredentials credentials = Loader.getSettings().getHibernateCredentials();
-
-            // create configuration
-            Configuration configuration = HibernateConfiguration.createConfiguration(credentials);
-
-            // create Hibernate
-            HibernateClient.createInstance(configuration);
-
-        } catch (Exception e) {
-            String log = String.format("Couldn't connect to Hibernate: %s", e.getMessage());
-            logger.error(log);
-            System.err.println(log);
-            System.exit(ERR_HIBERNATE_CON);
-        }
-
-        outputProgressBar();
-    }
 
     private static void checkAndStartServer(Component component) {
         logger.trace("Starting the Openstack event collector micro service");

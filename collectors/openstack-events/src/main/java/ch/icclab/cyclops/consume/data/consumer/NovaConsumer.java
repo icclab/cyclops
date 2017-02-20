@@ -62,8 +62,9 @@ public class NovaConsumer extends AbstractConsumer {
             String imageDescription = novaData.getSystem_metadata().getImage_description();
             String image = novaData.getSystem_metadata().getImage_base_image_ref();
             Double disk = novaData.getEphemeral_gb() + novaData.getRoot_gb();
+            Long mills = Time.fromNovaTimeToMills(time);
             return new OpenstackNovaEvent(account, instanceId, instanceName, type, memory, vcpus,
-                    Time.fromNovaTimeToMills(time), image, imageDescription, disk);
+                    mills, image, imageDescription, disk);
         }
         return null;
     }

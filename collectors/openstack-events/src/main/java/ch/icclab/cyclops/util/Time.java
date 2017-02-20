@@ -91,14 +91,6 @@ public class Time {
         }
     }
 
-    public static List<OpenstackEvent>  normaliseInfluxDB(List<OpenstackEvent> events) {
-        for (OpenstackEvent event: events){
-            if (event.getTime()<Math.pow(10, 12)){
-             event.setTime(event.getTime()*1000);
-            }
-        }
-        return events;
-    }
 
     public static Long fromNovaTimeToMills(String time){
         DateTimeFormatter format = DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm:ss.SSSSSS").withZoneUTC();

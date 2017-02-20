@@ -66,10 +66,6 @@ public abstract class OpenstackEvent {
         this.time = time;
     }
 
-    public boolean isValid() {
-        return type != null;
-    }
-
     public String account;
     public String source;
     public String type;

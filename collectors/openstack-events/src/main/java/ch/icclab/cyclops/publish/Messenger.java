@@ -57,11 +57,13 @@ public class Messenger {
      * @param content of the message
      * @param routing key
      */
-    public void publish(Object content, String routing) {
+    public Boolean publish(Object content, String routing) {
         if (rabbitMQ != null) {
-            rabbitMQ.publish(content, routing);
+            return rabbitMQ.publish(content, routing);
         } else {
             DispatchLogger.log("RabbitMQ is not properly configured, therefore it is not possible to publish any messages. Please consult logs and double check configuration files");
+            return false;
+
         }
     }
 
@@ -69,11 +71,12 @@ public class Messenger {
      * Broadcast message using RabbitM!
      * @param content of the message
      */
-    public void broadcast(Object content) {
+    public Boolean broadcast(Object content) {
         if (rabbitMQ != null) {
-            rabbitMQ.broadcast(content);
+            return rabbitMQ.broadcast(content);
         } else {
             DispatchLogger.log("RabbitMQ is not properly configured, therefore it is not possible to publish any messages. Please consult logs and double check configuration files");
+            return false;
         }
     }
 

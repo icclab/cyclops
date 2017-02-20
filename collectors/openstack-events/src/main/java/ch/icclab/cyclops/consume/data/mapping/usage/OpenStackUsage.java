@@ -16,15 +16,51 @@
  */
 package ch.icclab.cyclops.consume.data.mapping.usage;
 
+import ch.icclab.cyclops.timeseries.GenerateDBPoint;
+import org.influxdb.dto.Point;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+
 /**
  * Author: Oleksii
  * Date: 26/08/2016
  * Description: This class holds the OpenStackUsage response
  */
 public class OpenStackUsage {
+    public OpenStackUsage() {
+    }
     protected Long time;
+
+    public String getAccount() {
+        return account;
+    }
+
+    public void setAccount(String account) {
+        this.account = account;
+    }
+
+    public Double getUsage() {
+        return usage;
+    }
+
+    public void setUsage(Double usage) {
+        this.usage = usage;
+    }
+
+    public String getWasSent() {
+        return wasSent;
+    }
+
+    public void setWasSent(String wasSent) {
+        this.wasSent = wasSent;
+    }
+
+
     protected String account;
     protected Double usage;
+    protected String wasSent = "false";
 
     public Long getTime() {
         return time;
@@ -32,6 +68,17 @@ public class OpenStackUsage {
 
     public void setTime(Long time) {
         this.time = time;
+    }
+
+    public void isSent() {wasSent = "true";}
+
+    public Point.Builder getPoint() {
+        List<String> tags = new ArrayList<>();
+        tags.add("account");
+        tags.add("metadata.sourceId");
+        tags.add("_class");
+        return GenerateDBPoint.fromObjectWithTimeAndTags(this, "time", TimeUnit.MILLISECONDS, tags);
+
     }
 
 }

@@ -42,7 +42,7 @@ chmod +x rabbitmqadmin
 
 # Bind UDR to Rule engine (pushing UDR records)
 ./rabbitmqadmin declare binding --host=$1 --port=$2 --vhost="/" source="cyclops.openstack.event.broadcast" destination_type="queue" destination="cyclops.udr.consume"
-./rabbitmqadmin declare binding --host=$1 --port=$2 --vhost="/" source="nova" destination_type="queue" destination="cyclops.openstack.event.data" routing_key="conductor"
-./rabbitmqadmin declare binding --host=$1 --port=$2 --vhost="/" source="neutron" destination_type="queue" destination="cyclops.openstack.event.data" routing_key="notifications.info"
-./rabbitmqadmin declare binding --host=$1 --port=$2 --vhost="/" source="cinder" destination_type="queue" destination="cyclops.openstack.event.data" routing_key="notifications.info"
+./rabbitmqadmin declare binding --host=$1 --port=$2 --vhost="/" source="nova" destination_type="queue" destination="cyclops.openstack.nova.data" routing_key="conductor"
+./rabbitmqadmin declare binding --host=$1 --port=$2 --vhost="/" source="neutron" destination_type="queue" destination="cyclops.openstack.neutron.data" routing_key="notifications.info"
+./rabbitmqadmin declare binding --host=$1 --port=$2 --vhost="/" source="openstack" destination_type="queue" destination="cyclops.openstack.cinder.data" routing_key="notifications.info"
 rm rabbitmqadmin

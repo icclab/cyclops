@@ -16,6 +16,9 @@
  */
 package ch.icclab.cyclops.consume.data.mapping.usage;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * Author: Oleksii
  * Date: 01/06/2016
@@ -24,26 +27,36 @@ package ch.icclab.cyclops.consume.data.mapping.usage;
 
 public class OpenStackUpTimeUsage extends OpenStackUsage {
 
+    public OpenStackUpTimeUsage(){}
+
     public OpenStackUpTimeUsage(Long time, String account, String sourceId, String source, Double usage, Double value, String className){
         this.account = account;
         this.usage = usage;
         this.time = time;
         this._class = className;
-        this.metadata = new NovaMetadata(sourceId, source, value);
+        Map<String, String> my_metadata = new HashMap<>();
+        my_metadata.put("source", source);
+        my_metadata.put("sourceId", sourceId);
+        my_metadata.put("value", value.toString());
+        this.metadata=my_metadata;
     }
     private String _class;
     private String unit = "sec";
-    private NovaMetadata metadata;
+    public Map metadata;
 
-    private class NovaMetadata {
-        private Double value;
-        private String  sourceId;
-        private String source;
-        NovaMetadata(String sourceId, String source, Double value){
-            this.sourceId = sourceId;
-            this.source = source;
-            this.value = value;
-        }
+    public void setMetadata(Map metadata) {
+        this.metadata = metadata;
     }
 
+    public Map getMetadata() {
+        return metadata;
+    }
+
+    public String get_class() {
+        return _class;
+    }
+
+    public void set_class(String _class) {
+        this._class = _class;
+    }
 }

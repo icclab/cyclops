@@ -18,19 +18,15 @@ package ch.icclab.cyclops.schedule.runner;
 
 import ch.icclab.cyclops.consume.data.mapping.openstack.OpenstackEvent;
 import ch.icclab.cyclops.consume.data.mapping.openstack.OpenstackTag;
-import ch.icclab.cyclops.consume.data.mapping.openstack.events.OpenstackNovaEvent;
 import ch.icclab.cyclops.consume.data.mapping.usage.OpenStackUsage;
 import ch.icclab.cyclops.load.Loader;
 import ch.icclab.cyclops.load.model.OpenstackSettings;
 import ch.icclab.cyclops.load.model.PublisherCredentials;
-import ch.icclab.cyclops.persistence.HibernateClient;
 import ch.icclab.cyclops.publish.Messenger;
-import ch.icclab.cyclops.timeseries.InfluxDBClient;
-import ch.icclab.cyclops.timeseries.QueryBuilder;
+import ch.icclab.cyclops.timeseries.*;
 import ch.icclab.cyclops.util.Time;
 import ch.icclab.cyclops.util.loggers.SchedulerLogger;
 import org.joda.time.DateTime;
-import org.joda.time.DateTimeZone;
 
 import java.util.*;
 
@@ -44,8 +40,7 @@ import static java.util.concurrent.TimeUnit.MILLISECONDS;
  * Description: Client class for transforming events to UDR Records for Openstack events
  */
 public  abstract class OpenStackClient extends AbstractRunner {
-    //link to hibernate
-    protected HibernateClient hibernateClient;
+
     //link to influxDB client
     private static InfluxDBClient influxDBClient;
     //Openstack settings
@@ -57,32 +52,36 @@ public  abstract class OpenStackClient extends AbstractRunner {
     private static Messenger messenger;
     //custom event POJO
     private Class classStructure;
+    //influxdb health
+    private InfluxDBHealth influxDBHealth;
 
     /**
      * Constructor has to be hidden
      */
     public OpenStackClient() {
-        hibernateClient = HibernateClient.getInstance();
         influxDBClient = new InfluxDBClient();
         settings = Loader.getSettings().getOpenstackSettings();
         publisherCredentials = Loader.getSettings().getPublisherCredentials();
         dbName = getDbName();
         messenger = Messenger.getInstance();
         classStructure=getUsageFormat();
+        influxDBHealth = InfluxDBHealth.getInstance();
     }
 
     @Override
     public void run() {
+        if (influxDBHealth.isHealthy()){
         transformEventsToUsageRecords();
+        } else {
+            SchedulerLogger.log("check database health");
+        }
     }
 
     public abstract String getDbName();
 
     public abstract ArrayList generateValue(Long eventTime, OpenstackEvent lastEventInScope);
 
-    public abstract void updateLatestPull(Long time);
-
-    public abstract DateTime getLatestPull();
+    public abstract ArrayList<Class> getListOfMeasurements();
 
     public abstract Class getUsageFormat();
 
@@ -103,13 +102,11 @@ public  abstract class OpenStackClient extends AbstractRunner {
             SchedulerLogger.log("Influxdb data cannot be fetched. " + e);
         }
         SchedulerLogger.log("UDR creation process is started... ");
-        DateInterval dates = new DateInterval(whenWasLastPull());
-        SchedulerLogger.log("The last pull was " + dates.fromDate + " " + dates.toDate);
-        Long time = Time.getMilisForTime(dates.getToDate());
-        SchedulerLogger.log("Current timestamp is " + time);
+
         ArrayList<OpenStackUsage> eventList = new ArrayList<>();
         for (OpenstackTag source : resourceList) {
             try {
+                DateInterval dates = new DateInterval(whenWasLastPull(source.getValue()));
                 ArrayList<OpenStackUsage> udr = generateUDR(source.getValue(), dates);
                 if (udr !=null){
                     eventList.addAll(udr);
@@ -119,14 +116,41 @@ public  abstract class OpenStackClient extends AbstractRunner {
             }
         }
         if (!eventList.isEmpty()) {
-            if (publisherCredentials.getPublisherByDefaultDispatchInsteadOfBroadcast()) {
-                messenger.publish(eventList, OpenStackUsage.class.getSimpleName());
-            } else {
-                messenger.broadcast(eventList);
+            BatchPointsContainer eventContainer = new BatchPointsContainer();
+            for (OpenStackUsage event: eventList){
+                eventContainer.addPoint(event.getPoint());
             }
-            SchedulerLogger.log("All usage are published ");
-            updateLatestPull(time);
+            influxDBClient.persistContainer(eventContainer);
+
         }
+        for (Class measurement : getListOfMeasurements()) {
+            QueryBuilder listQuery = new QueryBuilder(measurement.getSimpleName()).and("wasSent", "false");
+            try {
+                List<OpenStackUsage> validUsages = influxDBClient.executeQuery(listQuery).getAsListOfType(measurement);
+                Boolean status = false;
+                if (!validUsages.isEmpty()){
+                    for (OpenStackUsage event: validUsages){
+                        event.setTime(event.getTime()*1000);
+                    }
+                    if (publisherCredentials.getPublisherByDefaultDispatchInsteadOfBroadcast()) {
+                        status = messenger.publish(validUsages, OpenStackUsage.class.getSimpleName());
+                    } else {
+                        status = messenger.broadcast(validUsages);
+                    }
+                }
+                if (status){
+                    BatchPointsContainer eventContainer = new BatchPointsContainer();
+                    for (OpenStackUsage event: validUsages){
+                        event.isSent();
+                        eventContainer.addPoint(event.getPoint());
+                    }
+                    influxDBClient.persistContainer(eventContainer);
+                }
+            } catch (Exception e) {
+                SchedulerLogger.log("Couldn't generate UDR " +e);
+            }
+        }
+            SchedulerLogger.log("All usage are published ");
     }
 
 
@@ -134,20 +158,19 @@ public  abstract class OpenStackClient extends AbstractRunner {
      * This class is being used to generate interval either from last point or epoch
      */
     private class DateInterval {
-        private String fromDate;
-        private String toDate;
+        private Long fromDate;
+        private Long toDate;
 
-        DateInterval(DateTime from) {
-            from.withZone(DateTimeZone.UTC);
-            fromDate = from.toString("yyyy-MM-dd'T'HH:mm:ss");
-            toDate =  DateTime.now(DateTimeZone.UTC).toString("yyyy-MM-dd'T'HH:mm:ss");
+        DateInterval(Long startTime) {
+            fromDate = startTime;
+            toDate =  (new DateTime().getMillis()/1000)*1000 ;
         }
 
-        String getFromDate() {
+        Long getFromDate() {
             return fromDate;
         }
 
-        String getToDate() {
+        Long getToDate() {
             return toDate;
         }
     }
@@ -162,8 +185,8 @@ public  abstract class OpenStackClient extends AbstractRunner {
 
         ArrayList<OpenstackEvent> generatedEvents = new ArrayList<>();
         // generate first event
-        Long toMills = Time.getMilisForTime(dates.getToDate());
-        Long fromMills = Time.getMilisForTime(dates.getFromDate());
+        Long toMills = dates.getToDate();
+        Long fromMills = dates.getFromDate();
         Boolean isItExist = true;
 
         try {
@@ -192,9 +215,18 @@ public  abstract class OpenStackClient extends AbstractRunner {
             // generate last event
             generatedEvents.add(getEventBeforeTime(toMills, source));
             OpenstackEvent lastEventInScope = null;
-            for (OpenstackEvent event : Time.normaliseInfluxDB(generatedEvents)) {
+            //some weird behaviour: first iteration from influxdb gets seconds, next ones milliseconds
+            for (OpenstackEvent event: generatedEvents){
+                if (event.getTime() < Math.pow(10, 12)) {
+                    event.setTime(event.getTime()*1000);
+                }
+            }
+            for (OpenstackEvent event : generatedEvents) {
                 if (lastEventInScope!= null && !lastEventInScope.getType().equals(settings.getOpenstackCollectorEventDelete())) {
                     Long eventTime = Double.valueOf(event.getTime().toString()).longValue();
+                    if (lastEventInScope.getTime() < fromMills){
+                        lastEventInScope.setTime(fromMills);
+                    }
                     listOfUDRs.addAll(generateValue(eventTime, lastEventInScope));
                 }
                 lastEventInScope = event;
@@ -228,27 +260,18 @@ public  abstract class OpenStackClient extends AbstractRunner {
      * Method to get the last pull time from postgresql
      * @return DateTime object
      */
-    private DateTime whenWasLastPull() {
-        DateTime last = getLatestPull();
-        SchedulerLogger.log("Getting the last pull date " + last.toString());
-        // get date specified by admin
-        String date = settings.getOpenstackFirstImport();
-        if (date != null && !date.isEmpty()) {
+    private Long whenWasLastPull(String source) {
+        Long latestTime = Time.getMilisForTime(settings.getOpenstackFirstImport());
+        for (Class measurment: getListOfMeasurements()){
+            QueryBuilder parameterQuery = new QueryBuilder(measurment.getSimpleName()).where("metadata.sourceId", source).orderDesc().limit(1);
             try {
-                SchedulerLogger.log("Admin provided us with import date preference " + date);
-                DateTime selection = Time.getDateForTime(date);
-
-                // if we are first time starting and having Epoch, change it to admin's selection
-                // otherwise skip admin's selection and continue from the last DB entry time
-                if (last.getMillis() == 0) {
-                    SchedulerLogger.log("Setting first import date as configuration file dictates.");
-                    last = selection;
-                }
-            } catch (Exception ignored) {
-                // ignoring configuration preference, as admin didn't provide correct format
-                SchedulerLogger.log("Import date selection for Openstastack ignored - use yyyy-MM-dd format");
+                List<OpenStackUsage> record = influxDBClient.executeQuery(parameterQuery).getAsListOfType(OpenStackUsage.class);
+                Long recordTime = record.get(0).getTime()*1000;
+                if (latestTime < recordTime){ latestTime = recordTime; }
+            } catch (Exception e){
+                SchedulerLogger.log("Influxdb data cannot be fetched. " + e);
             }
         }
-        return last.withZone(DateTimeZone.forTimeZone(TimeZone.getTimeZone("GMT+00")));
+       return latestTime;
     }
 }

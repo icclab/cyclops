@@ -82,10 +82,12 @@ public class RabbitMQPublisher {
     private Boolean initialiseConnection() {
         try {
             ConnectionFactory factory = new ConnectionFactory();
-            factory.setHost(credentials.getPublisherHost());
             factory.setUsername(credentials.getPublisherUsername());
             factory.setPassword(credentials.getPublisherPassword());
-
+            factory.setHost(credentials.getPublisherHost());
+            factory.setPort(credentials.getPublisherPort());
+            factory.setVirtualHost(credentials.getPublisherVirtualHost());
+            factory.setAutomaticRecoveryEnabled(true);
 
             connection = factory.newConnection();
             channel = connection.createChannel();
@@ -109,16 +111,16 @@ public class RabbitMQPublisher {
      * @param content to be send
      * @param routing key
      */
-    protected void publish(Object content, String routing) {
-        send(credentials.getPublisherDispatchExchange(), content, routing);
+    protected Boolean publish(Object content, String routing) {
+        return send(credentials.getPublisherDispatchExchange(), content, routing);
     }
 
     /**
      * Broadcast a message to RabbitMQ
      * @param content to be send
      */
-    protected void broadcast(Object content) {
-        send(credentials.getPublisherBroadcastExchange(), content, "");
+    protected Boolean broadcast(Object content) {
+        return send(credentials.getPublisherBroadcastExchange(), content, "");
     }
 
     /**
@@ -127,7 +129,7 @@ public class RabbitMQPublisher {
      * @param content to be sent
      * @param routing to be used
      */
-    private void send(String exchange, Object content, String routing) {
+    private Boolean send(String exchange, Object content, String routing) {
         try {
             // first format
             String message = new Gson().toJson(content);
@@ -138,8 +140,10 @@ public class RabbitMQPublisher {
             // don't forget to log
             String key = (routing != null && !routing.isEmpty())? String.format("with key \"%s\"", routing): "";
             DispatchLogger.log(String.format("Message for class %s successfully dispatched to \"%s\" exchange %s", content.getClass().getSimpleName(), exchange, key));
+            return true;
         } catch (Exception e) {
             DispatchLogger.log(String.format("Couldn't dispatch message to RabbitMQ because of: %s", e.getMessage()));
+            return false;
         }
     }
 

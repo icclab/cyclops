@@ -23,15 +23,9 @@ import ch.icclab.cyclops.consume.data.mapping.usage.OpenStackUpTimeUsage;
 import ch.icclab.cyclops.consume.data.mapping.usage.OpenStackUsage;
 import ch.icclab.cyclops.load.Loader;
 import ch.icclab.cyclops.load.model.OpenstackSettings;
-import ch.icclab.cyclops.persistence.HibernateClient;
-import ch.icclab.cyclops.persistence.pulls.LatestPullNova;
 import ch.icclab.cyclops.schedule.runner.OpenStackClient;
-import ch.icclab.cyclops.util.loggers.SchedulerLogger;
-import org.joda.time.DateTime;
-
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.HashMap;
 
 /**
  * Author: Oleksii Serhiienko
@@ -47,6 +41,14 @@ public  class NovaUDRRunner extends OpenStackClient {
     @Override
     public Class getUsageFormat(){
         return OpenstackNovaEvent.class;
+    }
+
+    @Override
+    public ArrayList<Class> getListOfMeasurements(){
+        return new ArrayList<Class>() {{
+                            add(OpenStackImageActiveUsage.class);
+                            add(OpenStackUpTimeUsage.class);
+        }};
     }
 
     @Override
@@ -80,49 +82,51 @@ public  class NovaUDRRunner extends OpenStackClient {
         }
 
         ArrayList<OpenStackUsage> generatedUsages = new ArrayList<>();
-        List<String> meters = Arrays.asList(_classCPU, _classMemory, _classDisk);
+        HashMap<String, Double> meters = new HashMap<>();
+        meters.put(_classCPU, transformedEvent.getVcpus());
+        meters.put(_classMemory, transformedEvent.getMemory());
+        meters.put(_classDisk, transformedEvent.getDisk());
         Long eventLastTime = transformedEvent.getTime();
-        for (String meter: meters){
-            generatedUsages.add(new OpenStackUpTimeUsage(eventLastTime, transformedEvent.getAccount(),
-                    transformedEvent.getSource(), transformedEvent.getSource_name(),
-                    (double) (eventTime - eventLastTime) /1000, //Seconds instead of milliseconds
-                    transformedEvent.getVcpus(), meter));
-        }
+        Long scheduleTime = new Long(Loader.getSettings().getOpenstackSettings().getOpenstackScheduleTime());
+        Long currentTime;
+        String account = transformedEvent.getAccount();
+        String sourceId = transformedEvent.getSource();
 
-        String description = "";
-        if (transformedEvent.getImage_description()!=null){ description = transformedEvent.getImage_description();}
-        generatedUsages.add (new OpenStackImageActiveUsage(eventLastTime, transformedEvent.getAccount(),
-                transformedEvent.getImage(), transformedEvent.getSource(),
-                description, (double) (eventTime - eventLastTime) /1000 //Seconds instead of milliseconds
-                )
-        );
+        Boolean lastIteration = false;
+        do {
+            currentTime = eventLastTime + scheduleTime;
+            if (currentTime >= eventTime){
+                currentTime = eventTime;
+                lastIteration = true;
+            }
+
+            for (String meter: meters.keySet()){
+                generatedUsages.add(new OpenStackUpTimeUsage(
+                        currentTime,
+                        account,
+                        sourceId,
+                        transformedEvent.getSource_name(),
+                        (double) (currentTime - eventLastTime)/1000,
+                        meters.get(meter),
+                        meter));
+            }
+
+            String description = "";
+            if (transformedEvent.getImage_description()!=null){ description = transformedEvent.getImage_description();}
+            generatedUsages.add (new OpenStackImageActiveUsage(
+                    currentTime,
+                    account,
+                    transformedEvent.getImage(),
+                    sourceId,
+                    description,
+                    (double) (currentTime - eventLastTime)/1000
+                    )
+            );
+            eventLastTime = currentTime;
+        } while (!lastIteration);
 
         return generatedUsages;
 
-    }
-
-    @Override
-    public void updateLatestPull(Long time){
-        LatestPullNova pull = (LatestPullNova) hibernateClient.getObject(LatestPullNova.class, 1l);
-        if (pull == null) {
-            pull = new LatestPullNova(time);
-        } else {
-            pull.setTimeStamp(time);
-        }
-        SchedulerLogger.log("The last pull set to "+pull.getTimeStamp().toString());
-        hibernateClient.persistObject(pull);
-    }
-
-    @Override
-    public DateTime getLatestPull(){
-        DateTime last;
-        LatestPullNova pull = (LatestPullNova) HibernateClient.getInstance().getObject(LatestPullNova.class, 1l);
-        if (pull == null) {
-            last = new DateTime(0);
-        } else {
-            last = new DateTime(pull.getTimeStamp());
-        }
-        return last;
     }
 }
 

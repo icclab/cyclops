@@ -16,32 +16,55 @@
  */
 package ch.icclab.cyclops.consume.data.mapping.usage;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * Author: Oleksii Serhiienko
  * Updated on: 26-Aug-16
  * Description: This class holds the OpenStackImageActiveUsage response
  */
 public class OpenStackImageActiveUsage extends OpenStackUsage {
+    public OpenStackImageActiveUsage(){}
+
     public OpenStackImageActiveUsage(Long time, String account, String source, String sourceId, String description, Double usage){
         this.account = account;
         this.usage = usage;
         this.time = time;
-        this.metadata = new OpenStackImageActiveUsage.ImageMetadata(source, sourceId, description);
+        Map<String, String> my_metadata = new HashMap<>();
+        my_metadata.put("source", source);
+        my_metadata.put("sourceId", sourceId);
+        my_metadata.put("description", description);
+        this.metadata=my_metadata;
     }
 
     private String unit = "sec";
     private String _class = getClass().getSimpleName();
-    private OpenStackImageActiveUsage.ImageMetadata metadata;
+    public Map<String, String> metadata;
 
-    private class ImageMetadata {
-        private String  source;
-        private String  sourceId;
-        private String description;
-        ImageMetadata(String source, String sourceId,  String description){
-            this.source = source;
-            this.sourceId =sourceId;
-            this.description = description;
-        }
+    public String getUnit() {
+        return unit;
     }
+
+    public void setUnit(String unit) {
+        this.unit = unit;
+    }
+
+    public String get_class() {
+        return _class;
+    }
+
+    public void set_class(String _class) {
+        this._class = _class;
+    }
+
+    public Map<String, String> getMetadata() {
+        return metadata;
+    }
+
+    public void setMetadata(Map<String, String> metadata) {
+        this.metadata = metadata;
+    }
+
 }
 

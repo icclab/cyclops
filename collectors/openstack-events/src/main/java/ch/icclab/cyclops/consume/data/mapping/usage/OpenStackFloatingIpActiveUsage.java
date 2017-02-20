@@ -16,6 +16,9 @@
  */
 package ch.icclab.cyclops.consume.data.mapping.usage;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * Author: Oleksii Serhiienko
  * Updated on: 26-Aug-16
@@ -23,23 +26,28 @@ package ch.icclab.cyclops.consume.data.mapping.usage;
  */
 
 public class OpenStackFloatingIpActiveUsage extends OpenStackUsage {
+    public OpenStackFloatingIpActiveUsage(){}
     public OpenStackFloatingIpActiveUsage(Long time, String account, String source, String sourceId, Double usage){
         this.account = account;
         this.usage = usage;
         this.time = time;
-        this.metadata = new NeutronMetadata(source, sourceId);
+        Map<String, String> my_metadata = new HashMap<>();
+        my_metadata.put("source", source);
+        my_metadata.put("sourceId", sourceId);
+        this.metadata = my_metadata;
     }
 
     private String unit = "sec";
     private String _class = getClass().getSimpleName();
-    private NeutronMetadata metadata;
 
-    private class NeutronMetadata {
-        private String  source;
-        private String sourceId;
-        NeutronMetadata(String source, String sourceId){
-            this.source = source;
-            this.sourceId = sourceId;
-        }
+    public Map getMetadata() {
+        return metadata;
     }
+
+    public void setMetadata(Map metadata) {
+        this.metadata = metadata;
+    }
+
+    private Map metadata;
+
 }

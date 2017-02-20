@@ -17,31 +17,36 @@ package ch.icclab.cyclops.consume.data.mapping.usage;
  *     under the License.
  */
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * Author: Oleksii
  * Date: 01/06/2016
  * Description: This class holds the OpenStackVolumeActiveUsage response
  */
 public class OpenStackVolumeActiveUsage extends OpenStackUsage {
+    public  OpenStackVolumeActiveUsage(){}
     public OpenStackVolumeActiveUsage(Long time, String account, String source, String sourceId,  Double usage, Double value){
         this.account = account;
         this.usage = usage;
         this.time = time;
-        this.metadata = new CinderMetadata(source, sourceId, value);
+        Map<String, String> my_metadata = new HashMap<>();
+        my_metadata.put("source", source);
+        my_metadata.put("sourceId", sourceId);
+        my_metadata.put("value", value.toString());
+        this.metadata = my_metadata;
     }
 
     private String unit = "sec";
     private String _class = getClass().getSimpleName();
-    private CinderMetadata metadata;
+    private Map metadata;
 
-    private class CinderMetadata {
-        private String  source;
-        private String  sourceId;
-        private Double value;
-        CinderMetadata(String source, String sourceId, Double value){
-            this.source = source;
-            this.sourceId = sourceId;
-            this.value = value;
-        }
+    public Map getMetadata() {
+        return metadata;
+    }
+
+    public void setMetadata(Map metadata) {
+        this.metadata = metadata;
     }
 }

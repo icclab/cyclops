@@ -19,18 +19,11 @@ package ch.icclab.cyclops.schedule.runner.openstack;
 
 import ch.icclab.cyclops.consume.data.mapping.openstack.OpenstackEvent;
 import ch.icclab.cyclops.consume.data.mapping.openstack.events.OpenstackCinderEvent;
-import ch.icclab.cyclops.consume.data.mapping.openstack.events.OpenstackNeutronEvent;
-import ch.icclab.cyclops.consume.data.mapping.openstack.events.OpenstackNovaEvent;
 import ch.icclab.cyclops.consume.data.mapping.usage.OpenStackVolumeActiveUsage;
-import ch.icclab.cyclops.persistence.HibernateClient;
-
-import ch.icclab.cyclops.persistence.pulls.LatestPullCinder;
+import ch.icclab.cyclops.load.Loader;
 import ch.icclab.cyclops.schedule.runner.OpenStackClient;
-import ch.icclab.cyclops.util.loggers.SchedulerLogger;
-import org.joda.time.DateTime;
-
 import java.util.ArrayList;
-import java.util.Map;
+
 
 /**
  * Author: Oleksii Serhiienko
@@ -45,6 +38,13 @@ public class CinderUDRRunner extends OpenStackClient {
     }
 
     @Override
+    public ArrayList<Class> getListOfMeasurements(){
+        return new ArrayList<Class>() {{
+            add(OpenStackVolumeActiveUsage.class);
+        }};
+    }
+
+    @Override
     public Class getUsageFormat(){
         return OpenstackCinderEvent.class;
     }
@@ -52,35 +52,28 @@ public class CinderUDRRunner extends OpenStackClient {
     @Override
     public ArrayList<OpenStackVolumeActiveUsage> generateValue(Long eventTime, OpenstackEvent lastEventInScope) {
         OpenstackCinderEvent transformedEvent = (OpenstackCinderEvent) lastEventInScope;
-        Long eventLastTime = transformedEvent.getTime();
         ArrayList<OpenStackVolumeActiveUsage> generatedUsages = new ArrayList<>();
-        generatedUsages.add(new OpenStackVolumeActiveUsage(eventLastTime, transformedEvent.getAccount(),
-                transformedEvent.getVolumeName(), transformedEvent.getSource(),
-                (double) (eventTime - eventLastTime) / 1000, transformedEvent.getDisk())); //Seconds instead of milliseconds;
+        Long eventLastTime = transformedEvent.getTime();
+        Long scheduleTime = new Long(Loader.getSettings().getOpenstackSettings().getOpenstackScheduleTime());
+        Long currentTime;
+
+        Boolean lastIteration = false;
+        do {
+            currentTime = eventLastTime + scheduleTime;
+            if (currentTime >= eventTime){
+                currentTime = eventTime;
+                lastIteration = true;
+            }
+            generatedUsages.add( new OpenStackVolumeActiveUsage(
+                    currentTime,
+                    transformedEvent.getAccount(),
+                    transformedEvent.getVolumeName(),
+                    transformedEvent.getSource(),
+                    (double) (currentTime - eventLastTime)/1000,
+                    transformedEvent.getDisk()));
+            eventLastTime = currentTime;
+        } while (!lastIteration);
         return generatedUsages;
     }
 
-    @Override
-    public void updateLatestPull(Long time) {
-        LatestPullCinder pull = (LatestPullCinder) hibernateClient.getObject(LatestPullCinder.class, 1l);
-        if (pull == null) {
-            pull = new LatestPullCinder(time);
-        } else {
-            pull.setTimeStamp(time);
-        }
-        SchedulerLogger.log("The last pull set to " + pull.getTimeStamp().toString());
-        hibernateClient.persistObject(pull);
-    }
-
-    @Override
-    public DateTime getLatestPull() {
-        DateTime last;
-        LatestPullCinder pull = (LatestPullCinder) HibernateClient.getInstance().getObject(LatestPullCinder.class, 1l);
-        if (pull == null) {
-            last = new DateTime(0);
-        } else {
-            last = new DateTime(pull.getTimeStamp());
-        }
-        return last;
-    }
 }

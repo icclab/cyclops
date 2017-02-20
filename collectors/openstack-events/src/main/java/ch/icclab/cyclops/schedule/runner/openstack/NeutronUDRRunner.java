@@ -18,16 +18,11 @@ package ch.icclab.cyclops.schedule.runner.openstack;
 
 import ch.icclab.cyclops.consume.data.mapping.openstack.OpenstackEvent;
 import ch.icclab.cyclops.consume.data.mapping.openstack.events.OpenstackNeutronEvent;
-import ch.icclab.cyclops.consume.data.mapping.openstack.events.OpenstackNovaEvent;
 import ch.icclab.cyclops.consume.data.mapping.usage.OpenStackFloatingIpActiveUsage;
-import ch.icclab.cyclops.persistence.HibernateClient;
-import ch.icclab.cyclops.persistence.pulls.LatestPullNeutron;
+import ch.icclab.cyclops.load.Loader;
 import ch.icclab.cyclops.schedule.runner.OpenStackClient;
-import ch.icclab.cyclops.util.loggers.SchedulerLogger;
-import org.joda.time.DateTime;
 
 import java.util.ArrayList;
-import java.util.Map;
 
 /**
  * Author: Oleksii Serhiienko
@@ -42,6 +37,13 @@ public class NeutronUDRRunner extends OpenStackClient {
     }
 
     @Override
+    public ArrayList<Class> getListOfMeasurements(){
+        return new ArrayList<Class>() {{
+            add(OpenStackFloatingIpActiveUsage.class);
+        }};
+    }
+
+    @Override
     public Class getUsageFormat(){
         return OpenstackNeutronEvent.class;
     }
@@ -49,35 +51,28 @@ public class NeutronUDRRunner extends OpenStackClient {
     @Override
     public ArrayList<OpenStackFloatingIpActiveUsage> generateValue(Long eventTime, OpenstackEvent lastEventInScope) {
         OpenstackNeutronEvent transformedEvent = (OpenstackNeutronEvent) lastEventInScope;
-        Long eventLastTime = transformedEvent.getTime();
         ArrayList<OpenStackFloatingIpActiveUsage> generatedUsages = new ArrayList<>();
-        generatedUsages.add( new OpenStackFloatingIpActiveUsage(eventLastTime, transformedEvent.getAccount(),
-                transformedEvent.getIp_adress(), transformedEvent.getSource(),
-                (double) (eventTime - eventLastTime) / 1000)); //Seconds instead of milliseconds;
+        Long eventLastTime = transformedEvent.getTime();
+        Long scheduleTime = new Long(Loader.getSettings().getOpenstackSettings().getOpenstackScheduleTime());
+        Long currentTime;
+
+        Boolean lastIteration = false;
+        do {
+            currentTime = eventLastTime + scheduleTime;
+            if (currentTime >= eventTime){
+                currentTime = eventTime;
+                lastIteration = true;
+            }
+            generatedUsages.add( new OpenStackFloatingIpActiveUsage(
+                    currentTime,
+                    transformedEvent.getAccount(),
+                    transformedEvent.getIp_adress(),
+                    transformedEvent.getSource() ,
+                    (double) (currentTime - eventLastTime)/1000)
+            );
+            eventLastTime = currentTime;
+        } while (!lastIteration);
         return generatedUsages;
     }
 
-    @Override
-    public void updateLatestPull(Long time){
-        LatestPullNeutron pull = (LatestPullNeutron) hibernateClient.getObject(LatestPullNeutron.class, 1l);
-        if (pull == null) {
-            pull = new LatestPullNeutron(time);
-        } else {
-            pull.setTimeStamp(time);
-        }
-        SchedulerLogger.log("The last pull set to "+pull.getTimeStamp().toString());
-        hibernateClient.persistObject(pull);
-    }
-
-    @Override
-    public DateTime getLatestPull(){
-        DateTime last;
-        LatestPullNeutron pull = (LatestPullNeutron) HibernateClient.getInstance().getObject(LatestPullNeutron.class, 1l);
-        if (pull == null) {
-            last = new DateTime(0);
-        } else {
-            last = new DateTime(pull.getTimeStamp());
-        }
-        return last;
-    }
 }
