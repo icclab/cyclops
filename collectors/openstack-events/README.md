@@ -3,35 +3,38 @@
 ## Openstack collector 
 Usage data collection from your Openstack deployment.
 
-### Installation
-The Openstack usage collector requires Java 8 as well as RabbitMQ, both of which can be installed using the following <a href="https://github.com/icclab/cyclops/wiki/Dependencies" target="_blank">guide</a>. 
-
-Openstack collector also requires an access to rational database. Even though you can deploy and use any backend database, the default database is PostgreSQL, which you can install and set up with
-
-    cd install
-    bash install_postgresql.sh
-    bash create_database.sh
+## Installation
+Openstack collector is written in Java 8 and requires connection to RabbitMQ and InfluxDB. To install these dependencies please consult the [installation page](https://github.com/icclab/cyclops/wiki/Dependencies).
 
 ### Configuration
-For Openstack collector to function properly you will need to edit <code>config/openstack_event.conf</code> file and specify your Openstack evetns settings, as well as RabbitMQ and Hibernate connection settings, both of which can be accessed remotely.
+For Openstack collector to function properly you will need to edit <code>config/openstack_event.conf</code> file and specify your Openstack settings, as well as RabbitMQ and Influxdb connection settings, both of which can be accessed remotely.
 
-### Set up bindings
-Before starting Openstack usage collection it is paramount to bind its exchanges to the RCB Cyclops queues as well as Cyclops queue to the nova exchange. In order to do so simply run the following script and provide server's location and port RabbitMQ admin is listening on:
+### Bindings
+Before starting Openstack event collection it is paramount to bind its exchanges to the RCB Cyclops queues as well as Cyclops queue to the Openstack exhanges:
 
-    bash install/setup_bindings.sh localhost 15672
+* **cyclops.openstack.nova.data** -> *exchange*: nova, *key*: conductor
+* **cyclops.openstack.neutron.data** -> *exchange*: neutron, *key*: notifications.info
+* **cyclops.openstack.cinder.data** -> *exchange*: openstack, *key*: notifications.info
+
+In order to do so simply run the following script:
+
+    bash install/setup_bindings.sh localhost 
 
 ### Logging
 To have the logging system enabled you need to run the following:
 
     bash install/setup_logging.sh
   
-Then all Openstack collector logs will be stored in <code>/var/log/cyclops/openstack_events/</code> directory.
+Then all Openstack event collector logs will be stored in <code>/var/log/cyclops/openstack_events/</code> directory.
+
+## Deployment
+Once all prerequisites are installed and collector is configured you can start using it.
 
 ### Run the JAR file
-In order to run Openstack event collector as embedded JAR you need to have Java 8 installed and execute:
+In order to run Openstack collector as embedded JAR:
 
-    java -jar bin/openstack_event.jar config/openstack_event.conf 
-  
+    java -jar bin/openstack_event.jar config/openstack_event.conf
+
 ### Compile from the source code
 If you want to compile the code on your own and your environment already has Java 8 and Maven 3 present, simply execute the following commands:
 
