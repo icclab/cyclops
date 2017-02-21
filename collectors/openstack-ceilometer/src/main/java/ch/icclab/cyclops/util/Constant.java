@@ -49,8 +49,8 @@ public class Constant {
         map.put("disk.device.capacity", modelPath + "OpenStackCeilometerDiskDeviceCapacity");
         map.put("disk.device.read.bytes", modelPath + "OpenStackCeilometerDiskDeviceReadBytes");
         map.put("disk.device.read.bytes.rate", modelPath + "OpenStackCeilometerDiskDeviceReadBytesRate");
-        map.put("disk.device.read.requests", modelPath + "OpenStackCeilometerDiskDeviceReadRequest");
-        map.put("disk.device.read.requests.rate", modelPath + "OpenStackCeilometerDiskDeviceReadRequestRate");
+        map.put("disk.device.read.requests", modelPath + "OpenStackCeilometerDiskDeviceReadRequests");
+        map.put("disk.device.read.requests.rate", modelPath + "OpenStackCeilometerDiskDeviceReadRequestsRate");
         map.put("disk.device.usage", modelPath + "OpenStackCeilometerDiskDeviceUsage");
         map.put("disk.device.write.bytes", modelPath + "OpenStackCeilometerDiskDeviceWriteBytes");
         map.put("disk.device.write.bytes.rate", modelPath + "OpenStackCeilometerDiskDeviceWriteBytesRate");
