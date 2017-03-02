@@ -84,17 +84,24 @@ public class OpenStackPuller {
             url = generateUsageUrl(dates, meter);
             OpenStackUsageDownloader openStackUsageDownloader = new OpenStackUsageDownloader(url);
             // Check if the supported meter selection is empty
-            if (supportedMeters != null)
+            if (supportedMeters != null) {
                 // Check if the meter is supported
-                if (supportedMeters.contains(Constant.FULL_METER_SELECTION) || supportedMeters.contains(meter.getName()))
-                    // first run has to be manual (not threaded)
-                    if (records == null) {
-                        records = openStackUsageDownloader.performRequest(meter);
+                if (supportedMeters.contains(Constant.FULL_METER_SELECTION) || supportedMeters.contains(meter.getName())) {
+                    //Check if the meter is implemented in our code
+                    if (Constant.METER_NAMES.containsKey(meter.getName())) {
+                        // first run has to be manual (not threaded)
+                        if (records == null) {
+                            records = openStackUsageDownloader.performRequest(meter);
+                        } else {
+                            List<Object> newRecords = openStackUsageDownloader.performRequest(meter);
+                            if (newRecords != null)
+                                records.addAll(newRecords);
+                        }
                     } else {
-                        List<Object> newRecords = openStackUsageDownloader.performRequest(meter);
-                        if (newRecords != null)
-                            records.addAll(newRecords);
+                        logger.info(String.format("Meter %s is not implemented",meter.getName()));
                     }
+                }
+            }
         }
         // only if we have valid list
         if (records != null) {
