@@ -14,7 +14,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 #
-# Author: Martin Skoviera
+# Author: Martin Skoviera, Manu Perez
 
 if [[ $# != 2 ]]; then
     echo "Provide RabbitMQ's server IP (or domain name) and port"
@@ -34,13 +34,15 @@ chmod +x rabbitmqadmin
 
 # Create necessary queues
 ./rabbitmqadmin declare queue --host=$1 --port=$2 --vhost="/" name="cyclops.openstack.event.data" durable=true
-./rabbitmqadmin declare queue --host=$1 --port=$2 --vhost="/" name="cyclops.udr.consume" durable=true
+./rabbitmqadmin declare queue --host=$1 --port=$2 --vhost="/" name="cyclops.openstack.nova.data" durable=true
+./rabbitmqadmin declare queue --host=$1 --port=$2 --vhost="/" name="cyclops.openstack.neutron.data" durable=true
+./rabbitmqadmin declare queue --host=$1 --port=$2 --vhost="/" name="cyclops.openstack.cinder.data" durable=true
 
 # Create necessary exchanges
 ./rabbitmqadmin declare exchange --host=$1 --port=$2 --vhost="/" name="cyclops.openstack.event.broadcast" type=fanout
 
 
-# Bind UDR to Rule engine (pushing UDR records)
+# Bind Exchanges to Queues
 ./rabbitmqadmin declare binding --host=$1 --port=$2 --vhost="/" source="cyclops.openstack.event.broadcast" destination_type="queue" destination="cyclops.udr.consume"
 ./rabbitmqadmin declare binding --host=$1 --port=$2 --vhost="/" source="nova" destination_type="queue" destination="cyclops.openstack.nova.data" routing_key="conductor"
 ./rabbitmqadmin declare binding --host=$1 --port=$2 --vhost="/" source="neutron" destination_type="queue" destination="cyclops.openstack.neutron.data" routing_key="notifications.info"
