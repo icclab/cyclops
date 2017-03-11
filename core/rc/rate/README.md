@@ -1,7 +1,7 @@
 <a href="http://icclab.github.io/cyclops" target="_blank"><img align="middle" src="http://icclab.github.io/cyclops/assets/images/logo_big.png"></img></a>
 
 ## Static Rating micro service 
-A lightweight implementation of Static rating as a micro service - an example how easy is to write your own rating function. In the near future RCB team will be releasing a generic Rule engine micro service, supporting domain specific business rules and flexible pricing strategies.
+A lightweight implementation of Static rating as a micro service - an example how easy is to write your own rating function.
 
 ### Configuration
 For Static Rating micro service to function properly you will need to edit <code>config/rate.conf</code> file and specify RabbitMQ credentials (which can be either run locally or remotely).
