@@ -6,8 +6,6 @@ Rating and Charging micro service as part of RCB Cyclops consists of two sub mic
   - **Static Rating** - rates UDRs and creates CDRs based on specified rates
   - **Charge Data Records** - persists CDRs and makes them available to RCB Cyclops framework
 
-In the near future RCB team will be releasing a generic Rule engine micro service, supporting domain specific business rules and flexible pricing strategies.
-
 ### Documentation
 You can find the API reference and developer's guide, as well as troubleshooting page in the Wiki section.
 
