@@ -24,7 +24,6 @@ On top of core micro services the RCB Cyclops frameworks utilises couple of othe
   
   - Dashboard - visualisation and forecasting
   - Static rating - used in RC micro service as a rating function
-  - Rule engine - write your own pricing strategies (in the future release)
   - Autoscaler - autonomously scaling in and out (in the future release)
   - Load balancer - forwarding requests to micro services (in the future release)
 
