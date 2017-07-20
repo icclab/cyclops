@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration>
+    <Appenders>
+        <RandomAccessFile name="errors" filename="/var/log/cyclops/coin/errors.log" append="false" immediateFlush="false">
+            <PatternLayout pattern="[ %-6p] %d{yyyy-MM-dd HH:mm:ss} - %m%n"/>
+        </RandomAccessFile>
+        <RandomAccessFile name="trace" filename="/var/log/cyclops/coin/trace.log" append="false" immediateFlush="false">
+            <PatternLayout pattern="[ %-6p] %d{yyyy-MM-dd HH:mm:ss} - %m%n"/>
+        </RandomAccessFile>
+        <RandomAccessFile name="hibernate" filename="/var/log/cyclops/coin/hibernate.log" append="false" immediateFlush="false">
+            <PatternLayout pattern="[ %-6p] %d{yyyy-MM-dd HH:mm:ss} - %m%n"/>
+        </RandomAccessFile>
+        <RandomAccessFile name="facts" filename="/var/log/cyclops/coin/facts.log" append="true" immediateFlush="false">
+            <PatternLayout pattern="[%d{yyyy-MM-dd HH:mm:ss}] %m%n"/>
+        </RandomAccessFile>
+        <RandomAccessFile name="rules" filename="/var/log/cyclops/coin/rules.log" append="true" immediateFlush="false">
+            <PatternLayout pattern="[%d{yyyy-MM-dd HH:mm:ss}] %m%n"/>
+        </RandomAccessFile>
+        <RandomAccessFile name="timeline" filename="/var/log/cyclops/coin/timeline.log" append="true" immediateFlush="false">
+            <PatternLayout pattern="[%d{yyyy-MM-dd HH:mm:ss}] %m%n"/>
+        </RandomAccessFile>
+        <RandomAccessFile name="dispatch" filename="/var/log/cyclops/coin/dispatch.log" append="true" immediateFlush="false">
+            <PatternLayout pattern="[%d{yyyy-MM-dd HH:mm:ss}] %m%n"/>
+        </RandomAccessFile>
+        <RandomAccessFile name="stream" filename="/var/log/cyclops/coin/stream.log" append="true" immediateFlush="false">
+            <PatternLayout pattern="[%d{yyyy-MM-dd HH:mm:ss}] %m%n"/>
+        </RandomAccessFile>
+    </Appenders>
+    <Loggers>
+        <Root level="ERROR">
+            <AppenderRef ref="errors" level="ERROR"/>
+        </Root>
+        <logger name="ch.icclab.cyclops" level="ALL">
+            <appender-ref ref="trace" level="TRACE"/>
+        </logger>
+        <logger name="ch.icclab.cyclops.util.loggers.TimelineLogger" level="REST">
+            <appender-ref ref="timeline" level="REST"/>
+        </logger>
+
+        <logger name="ch.icclab.cyclops.rule.listeners.AuditRuleExecution" level="ALL">
+            <appender-ref ref="rules" level="RULE"/>
+        </logger>
+        <logger name="ch.icclab.cyclops.util.loggers.RulesLogger" level="RULE">
+            <appender-ref ref="rules" level="RULE"/>
+        </logger>
+
+        <logger name="ch.icclab.cyclops.rule.listeners.AuditTruthManagement" level="ALL">
+            <appender-ref ref="facts" level="FACT"/>
+        </logger>
+        <logger name="ch.icclab.cyclops.util.loggers.FactsLogger" level="FACT">
+            <appender-ref ref="facts" level="FACT"/>
+        </logger>
+
+        <logger name="ch.icclab.cyclops.util.loggers.DispatchLogger" level="DISPATCH">
+            <appender-ref ref="dispatch" level="DISPATCH"/>
+        </logger>
+
+        <logger name="ch.icclab.cyclops.util.loggers.StreamLogger" level="STREAM">
+            <appender-ref ref="stream" level="STREAM"/>
+        </logger>
+
+        <logger name="org.hibernate" level="INFO">
+            <appender-ref ref="hibernate" level="INFO"/>
+        </logger>
+    </Loggers>
+</Configuration>

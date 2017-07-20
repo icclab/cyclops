@@ -8,80 +8,23 @@ Cyclops is a comprehensive dynamic rating-charging and billing solution for clou
 ### Core components
 The RCB Cyclops framework is a collection of these core micro services:
 
-  - UDR micro service - usage calculation, persistence and exposure
-  - RC micro service  - charge generation and meter rating
-  - Billing micro service - invoice generation
+  - UDR micro service - metering and usage collection
+  - CDR micro service - pricing and charge generation
+  - Billing micro service - invoicing and discounting
 
 ### Usage collectors
 The current release includes the following usage collectors (with many more to come)
   
+  - Docker
   - CloudStack
   - OpenStack Events
   - OpenStack Ceilometer
-
-### Supporting components
-On top of core micro services the RCB Cyclops frameworks utilises couple of other modules:
   
-  - Dashboard - visualisation and forecasting
-  - Static rating - used in RC micro service as a rating function
-  - Autoscaler - autonomously scaling in and out (in the future release)
-  - Load balancer - forwarding requests to micro services (in the future release)
+### Rule engines
+Both CDR and Billing services include flexible rule engine, offering various pricing strategies and supporting hierarchical organisations.
 
 ## Deployment
-All micro services are written in Java and are embedded so you can easily deploy them in containers or run them locally.
-
-#### Prerequisites
-Depending on the configuration you will run, the RCB Cyclops has the following dependencies:
-
-  - Java 8
-  - Maven 3
-  - InfluxDB 1.0
-  - RabbitMQ 3.6
-  
-All of which you can install one by one from <code>install</code> subfolder or by executing the following command:
-
-    bash install_dependencies.sh
-
-#### Configuration
-By default everything is set to run on your local machine, so if you want to access a remote server (for InfluxDB or RabbitMQ), please navigate into respective subfolders and consult Readme files.
-
-#### Logging
-All micro services properly log their execution, as well as data coming in and out. In order to set up your environment to include mentioned log files run the following command:
-
-    bash setup_logging.sh
-
-Those will be stored in <code>/var/log/cyclops/</code> folder.
-
-#### Run embedded
-All the micro services follow the same way of execution, where you can simply invoke the following command:
-
-    java -jar microservice.jar configuration.conf [port]
-
-You will find each micro service precompiled as an embedded JAR file inside of <code>bin</code> subdirectories. However, if you wish to start all the core micro services with their default configuration files, just execute:
-
-    bash start_cyclops.sh
-  
-Which will run all micro services in *nohup* background mode, allowing you to close the terminal.
-
-To make sure everything is running correctly either consult <code>nohup.out</code> console output or logs stored in <code>/var/log/cyclops/</code>.
-
-In order to terminate micro services just run the following command:
-
-    bash stop_cyclops.sh
-
-#### Usage collection
-Even though couple of usage collectors are included, you can write your own (in any language) and let RCB Cyclops take care of the rest. A detailed explanation is offered in Wiki section, where you will find how the whole system functions, what format is required, how micro services communicate with each other, as well as what to keep in mind.
-
-If you decide to use one of the available usage collection micro services, simply navigate into that respective subfolder and follow the <code>Readme</code>.
-
-#### Compile from source
-If you've changed the source code, or you simply cannot use precompiled binary files (which were made available for Ubuntu/Debian) you can easily recompile everything. To do so, please navigate into respective subfolders and either use <code>scripts/compile.sh</code> script or execute the following:
-
-    mvn dependency:tree
-    mvn package assembly:single
-  
-### Documentation
-Comprehensive API reference and developer's guides, as well as troubleshooting pages are available in the Wiki section.
+All micro services are written in Java and are embedded so you can easily deploy them in containers or run them locally. Read more in the Wiki.
 
 ### Communication
   * Email: icclab-rcb-cyclops[at]dornbirn[dot]zhaw[dot]ch
