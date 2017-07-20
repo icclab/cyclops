@@ -3,7 +3,7 @@
 # Cyclops: Rating, Charging and Billing framework
 Cyclops is a comprehensive dynamic rating-charging and billing solution for cloud services and beyond.
 
-<a href="https://blog.zhaw.ch/icclab/files/2016/06/Architecture_without_logo.png" target="_blank"><img src="https://blog.zhaw.ch/icclab/files/2016/06/Architecture_without_logo.png" alt="Architecture" width="620"></img></a>
+<a href="https://raw.githubusercontent.com/icclab/cyclops/gh-pages/_site/assets/images/architecture/v3.png" target="_blank"><img src="https://raw.githubusercontent.com/icclab/cyclops/gh-pages/_site/assets/images/architecture/v3.png" alt="Architecture" width="620"></img></a>
 
 ### Core components
 The RCB Cyclops framework is a collection of these core micro services:
