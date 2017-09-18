@@ -24,6 +24,9 @@ import org.restlet.data.Status;
 import org.restlet.ext.json.JsonRepresentation;
 import org.restlet.resource.Post;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Author: Martin Skoviera (linkedin.com/in/skoviera)
  * Created: 08/07/16
@@ -32,8 +35,12 @@ import org.restlet.resource.Post;
 public class CommandEndpoint extends AbstractEndpoint {
 
     @Override
-    public String getRoute() {
-        return "/command";
+    public List<String> getRoutes() {
+        List<String> list = new ArrayList<>();
+
+        list.add("/command");
+
+        return list;
     }
 
     /**
@@ -67,7 +74,7 @@ public class CommandEndpoint extends AbstractEndpoint {
         else if (command.hadServerError()) output = new HTTPOutput(Status.SERVER_ERROR_INTERNAL, command.getDescription());
         else output = new HTTPOutput(Status.SERVER_ERROR_INTERNAL, "Unknown state in command execution");
 
-        RESTLogger.log(String.format("%s %s", getRoute(), output.toString()));
+        RESTLogger.log(String.format("%s %s", getRoutes(), output.toString()));
 
         return output.prepareResponse(response);
     }

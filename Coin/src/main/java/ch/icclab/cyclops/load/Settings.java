@@ -62,6 +62,24 @@ public class Settings {
         }
 
         try {
+            serverSettings.setServerHTTPSPort(Integer.parseInt(properties.getProperty("ServerHTTPSPort")));
+        } catch (Exception e) {
+            serverSettings.setServerHTTPSPort(-1);
+        }
+
+        try {
+            serverSettings.setServerHTTPSCertPath(properties.getProperty("ServerHTTPSCertPath"));
+        } catch (Exception e) {
+            serverSettings.setServerHTTPSCertPath(null);
+        }
+
+        try {
+            serverSettings.setServerHTTPSPassword(properties.getProperty("ServerHTTPSPassword"));
+        } catch (Exception e) {
+            serverSettings.setServerHTTPSPassword(null);
+        }
+
+        try {
             serverSettings.setServerHealthCheck(Integer.parseInt(properties.getProperty("ServerHealthCheck")));
         } catch (Exception e) {
             serverSettings.setServerHealthCheck(ServerSettings.DEFAULT_SERVER_HEALTH_CHECK);

@@ -19,6 +19,7 @@ package ch.icclab.cyclops.application;
 import ch.icclab.cyclops.consume.ConsumeManager;
 import ch.icclab.cyclops.health.HealthStatus;
 import ch.icclab.cyclops.load.Loader;
+import ch.icclab.cyclops.load.model.ServerSettings;
 import ch.icclab.cyclops.publish.RabbitMQPublisher;
 import ch.icclab.cyclops.timeseries.DbAccess;
 import ch.icclab.cyclops.util.ShutDownListener;
@@ -26,7 +27,9 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.restlet.Application;
 import org.restlet.Component;
+import org.restlet.Server;
 import org.restlet.data.Protocol;
+import org.restlet.util.Series;
 
 import java.util.TimeZone;
 
@@ -173,16 +176,38 @@ public class Main extends Application{
         // access settings and specified ports
         logger.trace("Loading specified configuration file and server settings");
 
-        Integer HTTPPort = Loader.getSettings().getServerSettings().getServerHTTPPort();
+        ServerSettings settings = Loader.getSettings().getServerSettings();
 
-        try {
+        Integer HTTPPort = settings.getServerHTTPPort();
+        if (HTTPPort <= 0) logger.trace(String.format("Skipping HTTP interface creation as the port is %d", HTTPPort));
+        else {
+            logger.trace(String.format("Going to bind HTTP interface to port %d", HTTPPort));
             component.getServers().add(Protocol.HTTP, HTTPPort);
-            logger.trace(String.format("Binding HTTP to port %d", HTTPPort));
-        } catch (Exception e) {
-            logger.trace(String.format("Was not possible to bind HTTP to port %d", HTTPPort));
         }
 
-        logger.trace("Setting up Rule engine micro service");
+        Integer HTTPSPort = settings.getServerHTTPSPort();
+
+        if (HTTPSPort <= 0) logger.trace(String.format("Skipping HTTPS interface creation as the port is %d", HTTPSPort));
+        else {
+            logger.trace(String.format("Going to bind HTTPS interface to port %d", HTTPSPort));
+
+            String certPath = settings.getServerHTTPSCertPath();
+            String password = settings.getServerHTTPSPassword();
+
+            if (certPath == null || certPath.isEmpty()) logger.trace("Skipping HTTPS interface creation as cert is missing");
+            else if (password == null || password.isEmpty()) logger.trace("Skipping HTTPS interface creation as cert password is missing");
+            else {
+                logger.trace(String.format("Cert located at %s", certPath));
+
+                Server server = component.getServers().add(Protocol.HTTPS, HTTPSPort);
+                Series parameters = server.getContext().getParameters();
+                parameters.add("sslContextFactory", "org.restlet.engine.ssl.DefaultSslContextFactory");
+                parameters.add("keyStorePath", certPath);
+                parameters.add("keyStorePassword", password);
+                parameters.add("keyPassword", password);
+                parameters.add("keyStoreType", "PKCS12");
+            }
+        }
 
         try {
             component.getDefaultHost().attach(new Service().createInboundRoot());

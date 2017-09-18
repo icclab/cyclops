@@ -18,11 +18,13 @@ package ch.icclab.cyclops.endpoint;
 
 import org.restlet.resource.ServerResource;
 
+import java.util.List;
+
 /**
  * Author: Martin Skoviera (linkedin.com/in/skoviera)
  * Created: 15/09/16
  * Description: Abstract Endpoint class
  */
 public abstract class AbstractEndpoint extends ServerResource {
-    public abstract String getRoute();
+    public abstract List<String> getRoutes();
 }

@@ -14,4 +14,3 @@ mvn dependency:tree
 mvn package assembly:single
 
 mv target/cyclops-billing-3.0.0-jar-with-dependencies.jar billing.jar
-

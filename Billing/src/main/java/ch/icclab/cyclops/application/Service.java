@@ -74,8 +74,8 @@ public class Service {
             if (AbstractEndpoint.class.isAssignableFrom(clazz)) {
                 try {
                     // get endpoint's route path
-                    String route = ((AbstractEndpoint) clazz.newInstance()).getRoute();
-                    router.attach(route, clazz);
+                    List<String> routes = ((AbstractEndpoint) clazz.newInstance()).getRoutes();
+                    routes.forEach(route -> router.attach(route, clazz));
                 } catch (Exception ignored) {}
             }
         }

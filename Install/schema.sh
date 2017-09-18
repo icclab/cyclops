@@ -76,11 +76,20 @@ EOF
 ########## Cyclops Billing ###########
 ######################################
 psql -U username -h localhost -d cyclops_billing <<EOF
+CREATE TABLE IF NOT EXISTS billrun (
+  id        SERIAL            primary key,
+  time      TIMESTAMP         NOT NULL,
+  data      JSONB
+);
+
 CREATE TABLE IF NOT EXISTS bill (
+  id        SERIAL,
+  run       INTEGER           REFERENCES billrun,
   time_from TIMESTAMP         NOT NULL,
   time_to   TIMESTAMP         NOT NULL,
   account   TEXT              NOT NULL,
   charge    DOUBLE PRECISION  NOT NULL,
+  discount  TEXT,
   data      JSONB,
   currency  TEXT
 );

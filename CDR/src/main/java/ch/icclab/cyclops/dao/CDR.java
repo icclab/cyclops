@@ -59,6 +59,9 @@ public class CDR implements PersistentObject {
     public static Field<String> CURRENCY_FIELD = field(name("currency"), String.class);
     private String currency = "N/A";
 
+    // Sequence number coming from the Bill Run (field not persisted in DB)
+    private Integer run = null;
+
     // empty constructor for GSON
     public CDR() {
     }
@@ -111,6 +114,13 @@ public class CDR implements PersistentObject {
     }
     public void setData(Object data) {
         this.data = data;
+    }
+
+    public Integer getRun() {
+        return run;
+    }
+    public void setRun(Integer run) {
+        this.run = run;
     }
 
     //=========== PersistentObject interface implementation

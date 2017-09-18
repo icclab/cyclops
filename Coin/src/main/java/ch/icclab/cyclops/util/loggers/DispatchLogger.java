@@ -1,6 +1,6 @@
 package ch.icclab.cyclops.util.loggers;
 /*
- * Copyright (c) 2016. Zuercher Hochschule fuer Angewandte Wissenschaften
+ * Copyright (c) 2017. Zuercher Hochschule fuer Angewandte Wissenschaften
  *  All Rights Reserved.
  *
  *     Licensed under the Apache License, Version 2.0 (the "License"); you may

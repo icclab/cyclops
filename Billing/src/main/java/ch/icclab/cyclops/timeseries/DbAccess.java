@@ -24,6 +24,8 @@ import java.sql.Connection;
 import java.util.Collections;
 import java.util.List;
 
+import static org.jooq.impl.DSL.inline;
+
 /**
  * Author: Martin Skoviera (linkedin.com/in/skoviera)
  * Created: 09.05.17
@@ -35,6 +37,29 @@ public class DbAccess {
 
     public enum PersistenceStatus {
         DB_DOWN, INVALID_RECORDS, OK
+    }
+
+    /**
+     * Used to return database status and object result
+     */
+    public class DatabaseResult {
+        private PersistenceStatus persistenceStatus;
+        private Object returnValue;
+
+        public DatabaseResult(PersistenceStatus persistenceStatus) {
+            this.persistenceStatus = persistenceStatus;
+        }
+        public DatabaseResult(PersistenceStatus persistenceStatus, Object returnValue) {
+            this.persistenceStatus = persistenceStatus;
+            this.returnValue = returnValue;
+        }
+
+        public PersistenceStatus getPersistenceStatus() {
+            return persistenceStatus;
+        }
+        public Object getReturnValue() {
+            return returnValue;
+        }
     }
 
     /**
@@ -173,12 +198,48 @@ public class DbAccess {
     }
 
     /**
+     * Store object implementing PersistentObject interface and update mentioned field
+     * @param object to be persisted
+     * @param fieldName of the ID field
+     * @param mappingClazz for object mapping
+     * @return status
+     */
+    public DatabaseResult storePersistentObjectReturningId(PersistentObject object, Field fieldName, Class mappingClazz) {
+        // edge case sanity check
+        if (object == null) return new DatabaseResult(PersistenceStatus.INVALID_RECORDS);
+
+        // note status of the operation
+        PersistenceStatus status = PersistenceStatus.OK;
+        Object returnValue = null;
+
+        try (Connection connection = DbPool.getConnection()) {
+            // use the connection and create DSL context
+            DSLContext context = PostgresDSL.using(connection, SQL_DIALECT);
+
+            // insert into the table while returning its ID
+            InsertResultStep step = getInsertStatement(context, object).returning(fieldName);
+
+            // map the output of returning ID
+            returnValue = step.fetchOne().into(mappingClazz);
+
+        } catch (NullPointerException e) {
+            // getting connection returned null
+            status = PersistenceStatus.DB_DOWN;
+        } catch (Exception e) {
+            // statement execution on valid connection failed
+            status = PersistenceStatus.INVALID_RECORDS;
+        }
+
+        return new DatabaseResult(status, returnValue);
+    }
+
+    /**
      * Create insert statement with specified fields and values
      * @param context for the statement
      * @param object implementing Persistent Object interface
      * @return statement
      */
-    private InsertFinalStep getInsertStatement(DSLContext context, PersistentObject object) {
+    private InsertValuesStepN<?> getInsertStatement(DSLContext context, PersistentObject object) {
         return context.insertInto(object.getTable(), object.getFields()).values(object.getValues());
     }
 

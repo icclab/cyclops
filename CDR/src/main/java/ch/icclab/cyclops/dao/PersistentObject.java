@@ -54,25 +54,27 @@ public interface PersistentObject {
     /**
      * Transform PFObject field into Map
      * @param data field
-     * @return Map, List<Map> or null
+     * @return Map, List<Type> or null
      */
     static Object PGObjectFieldToMap(Object data) {
-        // make sure data object is PGObject
-        if (data != null && data instanceof PGobject) {
-            PGobject object = (PGobject) data;
+        return PGObjectFieldToMap(data, null);
+    }
+    static Object PGObjectFieldToMap(Object data, Class clazz) {
+        if (data == null) return null;
 
-            // make sure there is some value
-            String value = object.getValue();
-            if (value != null && !value.isEmpty()) {
-                try {
-                    // it's either map
-                    Map map = new Gson().fromJson(value, Map.class);
-                    if (map != null && !map.isEmpty()) return map;
-                } catch (Exception e) {
-                    // or a list
-                    List<Map> list = new Gson().fromJson(value, new TypeToken<List<Map>>(){}.getType());
-                    if (list != null && !list.isEmpty()) return list;
-                }
+        String valueToParse;
+        if (data instanceof PGobject) valueToParse = ((PGobject) data).getValue();
+        else if (data instanceof String) valueToParse = (String) data;
+        else return null;
+
+        if (valueToParse != null && !valueToParse.isEmpty()) {
+            if (clazz == null) clazz = Map.class;
+            try {
+                Object mapped = new Gson().fromJson(valueToParse, clazz);
+                if (mapped != null) return mapped;
+            } catch (Exception e) {
+                List list = new Gson().fromJson(valueToParse, com.google.gson.reflect.TypeToken.getParameterized(List.class, clazz).getType());
+                if (list != null && !list.isEmpty()) return list;
             }
         }
 

@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration>
+    <Appenders>
+        <RandomAccessFile name="errors" filename="/var/log/cyclops/usage_generator/errors.log" append="false" immediateFlush="false">
+            <PatternLayout pattern="[ %-6p] %d{yyyy-MM-dd HH:mm:ss} - %m%n"/>
+        </RandomAccessFile>
+        <RandomAccessFile name="trace" filename="/var/log/cyclops/usage_generator/trace.log" append="false" immediateFlush="false">
+            <PatternLayout pattern="[ %-6p] %d{yyyy-MM-dd HH:mm:ss} - %m%n"/>
+        </RandomAccessFile>
+        <RandomAccessFile name="rest" filename="/var/log/cyclops/usage_generator/rest.log" append="false" immediateFlush="false">
+            <PatternLayout pattern="[%d{yyyy-MM-dd HH:mm:ss}] %m%n"/>
+        </RandomAccessFile>
+        <RandomAccessFile name="dispatch" filename="/var/log/cyclops/usage_generator/dispatch.log" append="false" immediateFlush="false">
+            <PatternLayout pattern="[%d{yyyy-MM-dd HH:mm:ss}] %m%n"/>
+        </RandomAccessFile>
+        <RandomAccessFile name="data" filename="/var/log/cyclops/usage_generator/data.log" append="false" immediateFlush="false">
+            <PatternLayout pattern="[%d{yyyy-MM-dd HH:mm:ss}] %m%n"/>
+        </RandomAccessFile>
+        <RandomAccessFile name="commands" filename="/var/log/cyclops/usage_generator/commands.log" append="false" immediateFlush="false">
+            <PatternLayout pattern="[%d{yyyy-MM-dd HH:mm:ss}] %m%n"/>
+        </RandomAccessFile>
+        <RandomAccessFile name="timeseries" filename="/var/log/cyclops/usage_generator/timeseries.log" append="false" immediateFlush="false">
+            <PatternLayout pattern="[%d{yyyy-MM-dd HH:mm:ss}] %m%n"/>
+        </RandomAccessFile>
+    </Appenders>
+    <Loggers>
+        <Root level="ERROR">
+            <AppenderRef ref="errors" level="ERROR"/>
+        </Root>
+        <logger name="ch.icclab.cyclops" level="ALL">
+            <appender-ref ref="trace" level="TRACE"/>
+        </logger>
+        <logger name="ch.icclab.cyclops.util.loggers.RESTLogger" level="REST">
+            <appender-ref ref="rest" level="REST"/>
+        </logger>
+
+        <logger name="ch.icclab.cyclops.util.loggers.DispatchLogger" level="DISPATCH">
+            <appender-ref ref="dispatch" level="DISPATCH"/>
+        </logger>
+
+        <logger name="ch.icclab.cyclops.util.loggers.DataLogger" level="DATA">
+            <appender-ref ref="data" level="DATA"/>
+        </logger>
+
+        <logger name="ch.icclab.cyclops.util.loggers.CommandLogger" level="COMMAND">
+            <appender-ref ref="commands" level="COMMAND"/>
+        </logger>
+
+        <logger name="ch.icclab.cyclops.util.loggers.TimeSeriesLogger" level="TIMESERIES">
+            <appender-ref ref="timeseries" level="TIMESERIES"/>
+        </logger>
+    </Loggers>
+</Configuration>

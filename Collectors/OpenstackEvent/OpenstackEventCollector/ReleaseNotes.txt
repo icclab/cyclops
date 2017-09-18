@@ -1,0 +1,15 @@
+Version:   2.3.0
+Date:      22/May/2017
+Notes:     TimescaleDB as new database backend, Event Collector now adheres to HTTP status code standards and always returns JSON
+
+Version:   2.2.0
+Date:      10/February/2017
+Notes:     Microservice stability and data ingestion reliability improvements, RabbitMQ channel separation and connection validation
+
+Version:   2.1.0
+Date:      16/September/2016
+Notes:     Rabbitmq command is added:RabbitMQStarter
+
+Version:   2.0.0
+Date:      1/July/2016
+Notes:     Initial release of the RCB Cyclops Event Collector micro service

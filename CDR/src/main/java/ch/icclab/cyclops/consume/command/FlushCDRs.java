@@ -25,10 +25,8 @@ import org.jooq.SelectQuery;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
-import static org.jooq.impl.DSL.field;
 import static org.jooq.impl.DSL.inline;
 
 /**
@@ -40,11 +38,48 @@ public class FlushCDRs extends Command {
     // mandatory fields
     private Long time_from;
     private Long time_to;
+    private int run;
     private List<String> accounts;
 
     private class ClientException extends Exception {
         public ClientException(String message) {
             super(message);
+        }
+    }
+
+    private class FlushingFinished {
+        private String type;
+        private long time_from;
+        private long time_to;
+        private int run;
+        private List<String> accounts;
+
+        public FlushingFinished(long time_from, long time_to, int run, List<String> accounts) {
+            this.type = getClass().getSimpleName();
+            this.time_from = time_from;
+            this.time_to = time_to;
+            this.run = run;
+            this.accounts = accounts;
+        }
+
+        public String getType() {
+            return type;
+        }
+
+        public long getTime_from() {
+            return time_from;
+        }
+
+        public long getTime_to() {
+            return time_to;
+        }
+
+        public int getRun() {
+            return run;
+        }
+
+        public List<String> getAccounts() {
+            return accounts;
         }
     }
 
@@ -63,33 +98,47 @@ public class FlushCDRs extends Command {
             DbAccess db = new DbAccess();
 
             // select time_from CDR table
-            SelectQuery select = db.createSelectFrom(CDR.TABLE);
+            SelectQuery select = db.createSelectFrom(CDR.TABLE, inline(run).as("run"), CDR.METRIC_FIELD, CDR.ACCOUNT_FIELD, CDR.TIME_FROM_FIELD, CDR.TIME_TO_FIELD,
+                    CDR.CHARGE_FIELD, CDR.CURRENCY_FIELD, CDR.DATA_FIELD);
 
             // time window selection
             select.addConditions(CDR.TIME_FROM_FIELD.ge(inline(new Timestamp(time_from))));
 
             // include all CDRs, or only CDRs ending in the selected window
-            select.addConditions(CDR.TIME_TO_FIELD.lt(inline(new Timestamp(time_to))));
+            select.addConditions(CDR.TIME_TO_FIELD.le(inline(new Timestamp(time_to))));
 
             // filter list of accounts
             select.addConditions(accountCondition);
 
             // fetch and map into list of CDRs
-            List<CDR> CDRs = db.fetchUsingSelectStatement(select, CDR.class);
+            List listToPush = db.fetchUsingSelectStatement(select, CDR.class);
 
             String message;
 
-            if (CDRs == null) throw new Exception("Error occurred, check your database connection");
-            else if (CDRs.isEmpty()) {
-                message = String.format("Zero CDRs to flush (starting and ending between %s and %s period)", new Timestamp(time_from), new Timestamp(time_to));
-                status.setSuccessful(message);
-            } else {
-                // transform CDR's data field time_from PGObject time_to Map
-                CDRs = CDR.applyPGObjectDataFieldToMapTransformation(CDRs);
-                if (Messenger.broadcast(CDRs)) {
-                    message = String.format("Flushed %d CDRs (starting and ending between %s and %s period)", CDRs.size(), new Timestamp(time_from), new Timestamp(time_to));
+            if (listToPush== null) throw new Exception("Error occurred, check your database connection");
+            else {
+                FlushingFinished finished = new FlushingFinished(time_from, time_to, run, accounts);
+                int numberOfRecords = listToPush.size();
+                boolean pushed;
+
+                // there are no charge records
+                if (listToPush.isEmpty()) {
+                    pushed = Messenger.broadcast(finished);
+                } else {
+                    // transform CDR's data field time_from PGObject time_to Map
+                    listToPush = CDR.applyPGObjectDataFieldToMapTransformation(listToPush);
+
+                    // add object marking the list finished
+                    listToPush.add(finished);
+
+                    // broadcast to the next microservice
+                    pushed = Messenger.broadcast(listToPush);
+                }
+
+                if (pushed) {
+                    message = String.format("%d CDRs flushed (starting and ending between %s and %s period)", numberOfRecords, new Timestamp(time_from), new Timestamp(time_to));
                     status.setSuccessful(message);
-                } else throw new Exception(String.format("Could not flush %d CDRs, RabbitMQ is down", CDRs.size()));
+                } else throw new Exception(String.format("Could not flush %d CDRs, RabbitMQ is down", numberOfRecords));
             }
 
             CommandLogger.log(message);

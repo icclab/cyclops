@@ -121,6 +121,7 @@ public class BillItem {
                 // we don't care about these fields anymore
                 item.setAccount(null);
                 item.setCurrency(null);
+                item.setRun(null);
 
                 // add it to the list
                 items.add(item);

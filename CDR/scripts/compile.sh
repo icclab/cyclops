@@ -14,4 +14,3 @@ mvn dependency:tree
 mvn package assembly:single
 
 mv target/cyclops-cdr-3.0.0-jar-with-dependencies.jar cdr.jar
-

@@ -28,6 +28,9 @@ public class ServerSettings {
     public static TimeUnit SERVER_HEALTH_CHECK_UNIT = TimeUnit.SECONDS;
 
     private Integer serverHTTPPort;
+    private Integer serverHTTPSPort;
+    private String serverHTTPSCertPath;
+    private String serverHTTPSPassword;
     private Integer serverHealthCheck;
     private Boolean serverHealthShutdown;
 
@@ -36,6 +39,27 @@ public class ServerSettings {
     }
     public void setServerHTTPPort(Integer serverHTTPPort) {
         this.serverHTTPPort = serverHTTPPort;
+    }
+
+    public Integer getServerHTTPSPort() {
+        return serverHTTPSPort;
+    }
+    public void setServerHTTPSPort(Integer serverHTTPSPort) {
+        this.serverHTTPSPort = serverHTTPSPort;
+    }
+
+    public String getServerHTTPSCertPath() {
+        return serverHTTPSCertPath;
+    }
+    public void setServerHTTPSCertPath(String serverHTTPSCertPath) {
+        this.serverHTTPSCertPath = serverHTTPSCertPath;
+    }
+
+    public String getServerHTTPSPassword() {
+        return serverHTTPSPassword;
+    }
+    public void setServerHTTPSPassword(String serverHTTPSPassword) {
+        this.serverHTTPSPassword = serverHTTPSPassword;
     }
 
     public Integer getServerHealthCheck() {

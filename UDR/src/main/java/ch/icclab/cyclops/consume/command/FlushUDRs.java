@@ -60,7 +60,7 @@ public class FlushUDRs extends Command {
         select.addConditions(UDR.TIME_FROM_FIELD.ge(inline(new Timestamp(time_from))));
 
         // include all UDRs, or only UDRs ending in the selected window
-        select.addConditions(UDR.TIME_TO_FIELD.lt(inline(new Timestamp(time_to))));
+        select.addConditions(UDR.TIME_TO_FIELD.le(inline(new Timestamp(time_to))));
 
         // fetch and map into list of UDRs
         List<UDR> UDRs= db.fetchUsingSelectStatement(select, UDR.class);

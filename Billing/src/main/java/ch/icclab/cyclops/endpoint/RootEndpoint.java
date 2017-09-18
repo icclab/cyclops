@@ -19,6 +19,9 @@ package ch.icclab.cyclops.endpoint;
 import org.restlet.Response;
 import org.restlet.resource.Get;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Author: Martin Skoviera (linkedin.com/in/skoviera)
  * Created: 21/01/16
@@ -55,7 +58,11 @@ public class RootEndpoint extends AbstractEndpoint {
     }
 
     @Override
-    public String getRoute() {
-        return "/";
+    public List<String> getRoutes() {
+        List<String> list = new ArrayList<>();
+
+        list.add("/");
+
+        return list;
     }
 }

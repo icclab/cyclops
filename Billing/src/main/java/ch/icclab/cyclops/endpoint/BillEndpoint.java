@@ -26,6 +26,7 @@ import org.restlet.data.Status;
 import org.restlet.resource.Get;
 
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -83,8 +84,13 @@ public class BillEndpoint extends AbstractEndpoint {
     }
 
     @Override
-    public String getRoute() {
-        return "/bill";
+    public List<String> getRoutes() {
+        List<String> list = new ArrayList<>();
+
+        list.add("/bill");
+        list.add("/bills");
+
+        return list;
     }
 
     @Get("json")
@@ -157,7 +163,7 @@ public class BillEndpoint extends AbstractEndpoint {
             response = output.prepareResponse(response, false);
         }
 
-        RESTLogger.log(String.format("%s %s", getRoute(), output.toString()));
+        RESTLogger.log(String.format("%s %s", getRoutes(), output.toString()));
 
         return response;
     }

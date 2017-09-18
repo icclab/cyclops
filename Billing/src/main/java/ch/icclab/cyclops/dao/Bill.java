@@ -29,16 +29,25 @@ import static org.jooq.impl.DSL.*;
 /**
  * Author: Martin Skoviera (linkedin.com/in/skoviera)
  * Created: 20.04.17
- * Description: Structure for JSON mapping of Charge records
+ * Description: Structure for JSON mapping of Bill records
  */
 public class Bill implements PersistentObject {
     public static Table TABLE = table(name("bill"));
+
+    public static Field<Integer> ID_FIELD = field(name("id"), Integer.class);
+    private Integer id;
+
+    public static Field<Integer> RUN_FIELD = field(name("run"), Integer.class);
+    private Integer run;
 
     public static Field<String> ACCOUNT_FIELD = field(name("account"), String.class);
     private String account;
 
     public static Field<Double> CHARGE_FIELD = field(name("charge"), Double.class);
     private Double charge = 0d;
+
+    public static Field<String> DISCOUNT_FIELD = field(name("discount"), String.class);
+    private String discount;
 
     // auto-generated if not present
     public static Field<Timestamp> TIME_FROM_FIELD = field(name("time_from"), Timestamp.class);
@@ -61,6 +70,20 @@ public class Bill implements PersistentObject {
     }
 
     //=========== Getters and Setters
+    public Integer getId() {
+        return id;
+    }
+    public void setId(Integer id) {
+        this.id = id;
+    }
+
+    public Integer getRun() {
+        return run;
+    }
+    public void setRun(Integer run) {
+        this.run = run;
+    }
+
     public String getAccount() {
         return account;
     }
@@ -73,6 +96,13 @@ public class Bill implements PersistentObject {
     }
     public void setCharge(Double charge) {
         this.charge = charge;
+    }
+
+    public String getDiscount() {
+        return discount;
+    }
+    public void setDiscount(String discount) {
+        this.discount = discount;
     }
 
     public long getTime_from() {
@@ -109,14 +139,22 @@ public class Bill implements PersistentObject {
         return TABLE;
     }
 
+    /**
+     * We do not include ID field, as it's SERIAL type and we don't want to set it ourselves
+     * @return collection of fields
+     */
     @Override
     public Collection<? extends Field<?>> getFields() {
-        return Arrays.asList(ACCOUNT_FIELD, CHARGE_FIELD, TIME_FROM_FIELD, TIME_TO_FIELD, DATA_FIELD, CURRENCY_FIELD);
+        return Arrays.asList(RUN_FIELD, ACCOUNT_FIELD, CHARGE_FIELD, DISCOUNT_FIELD, TIME_FROM_FIELD, TIME_TO_FIELD, DATA_FIELD, CURRENCY_FIELD);
     }
 
+    /**
+     * We do not include ID value, as it's SERIAL type and we don't want to set it ourselves
+     * @return an array of values
+     */
     @Override
     public Object[] getValues() {
-        return new Object[]{getAccount(), getCharge(), new Timestamp(getTime_from()),
+        return new Object[]{getRun(), getAccount(), getCharge(), getDiscount(), new Timestamp(getTime_from()),
                 new Timestamp(getTime_to()), getData(), getCurrency()};
     }
 

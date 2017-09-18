@@ -27,14 +27,17 @@ import java.util.Map;
 public class Bill {
     private long time_from;
     private long time_to;
+    private int run;
     private String account;
     private double charge;
+    private String discount;
     private String currency;
     private Object data;
 
-    public Bill(long time_from, long time_to, String account, String currency) {
+    public Bill(long time_from, long time_to, int run, String account, String currency) {
         this.time_from = time_from;
         this.time_to = time_to;
+        this.run = run;
         this.account = account;
         this.currency = currency;
     }
@@ -47,12 +50,27 @@ public class Bill {
     public boolean processChargeBasedOnHierarchy(Object hierarchy, Map<String, List<Charge>> records) {
         // bill for an account is requested
         if (hierarchy instanceof String) {
-            processAsString(records.get((String) hierarchy));
+            processAsString(records.get(hierarchy));
             return true;
         } else if (hierarchy instanceof Map) {
             processAsMap((Map<String, Object>) hierarchy, records);
             return true;
         } else return false;
+    }
+
+    /**
+     * Apply discount to calculated charge
+     * @param percentage discount
+     */
+    public void applyPercentageDiscount(double percentage) {
+        try {
+            if (percentage >= 0 && percentage <= 100) {
+                setDiscount(String.format("%.2f%%", percentage));
+                double discount = (100 - percentage) / 100;
+                setCharge(charge * discount);
+            }
+
+        } catch (Exception ignored) {}
     }
 
     /**
@@ -93,6 +111,13 @@ public class Bill {
         this.time_to = time_to;
     }
 
+    public int getRun() {
+        return run;
+    }
+    public void setRun(int run) {
+        this.run = run;
+    }
+
     public String getAccount() {
         return account;
     }
@@ -119,5 +144,12 @@ public class Bill {
     }
     public void setData(Object data) {
         this.data = data;
+    }
+
+    public String getDiscount() {
+        return discount;
+    }
+    public void setDiscount(String discount) {
+        this.discount = discount;
     }
 }

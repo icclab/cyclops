@@ -29,10 +29,24 @@ import java.util.stream.Collectors;
 public class BillRequest extends TypedFact {
     private long time_from;
     private long time_to;
+    private int run;
     private List<String> accounts;
     private Object hierarchy;
 
     public BillRequest() {
+    }
+
+    /**
+     * No CDR list is present, create an empty bill
+     * @param currency as default
+     * @return list of empty bills
+     */
+    public Bill process(String currency) {
+        // determine account name (either complex HashMap, or just String)
+        String account = (hierarchy instanceof String)? (String) hierarchy : (String) ((Map) hierarchy).keySet().toArray()[0];
+
+        // an empty bill
+        return new Bill(time_from, time_to, run, account, currency);
     }
 
     /**
@@ -51,7 +65,7 @@ public class BillRequest extends TypedFact {
 
         // prepare bills
         for (Map.Entry<String, Map<String, List<Charge>>> entry: currencies.entrySet()) {
-            Bill bill = new Bill(time_from, time_to, account, entry.getKey());
+            Bill bill = new Bill(time_from, time_to, run, account, entry.getKey());
 
             // process map of accounts and their charge records
             boolean status = bill.processChargeBasedOnHierarchy(hierarchy, entry.getValue());
@@ -90,5 +104,12 @@ public class BillRequest extends TypedFact {
     }
     public void setHierarchy(Object hierarchy) {
         this.hierarchy = hierarchy;
+    }
+
+    public int getRun() {
+        return run;
+    }
+    public void setRun(int run) {
+        this.run = run;
     }
 }

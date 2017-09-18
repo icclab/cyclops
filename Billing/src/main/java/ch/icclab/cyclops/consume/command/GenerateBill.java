@@ -30,18 +30,21 @@ public class GenerateBill extends Command {
     // mandatory fields
     private Long time_from;
     private Long time_to;
+    private Integer run;
     private Object request;
 
     private class FlushCDRs {
         private String command;
         private Long time_from;
         private Long time_to;
+        private int run;
         private List accounts;
 
-        public FlushCDRs(Long time_from, Long time_to, List accounts) {
+        public FlushCDRs(Long time_from, Long time_to, int run, List accounts) {
             this.command = getClass().getSimpleName();
             this.time_from = time_from;
             this.time_to = time_to;
+            this.run = run;
             this.accounts = accounts;
         }
 
@@ -54,6 +57,9 @@ public class GenerateBill extends Command {
         public Long getTime_to() {
             return time_to;
         }
+        public int getRun() {
+            return run;
+        }
         public List getAccounts() {
             return accounts;
         }
@@ -62,13 +68,15 @@ public class GenerateBill extends Command {
         private String type;
         private Long time_from;
         private Long time_to;
+        private int run;
         private List<String> accounts;
         private Object hierarchy;
 
-        public BillRequest(Long time_from, Long time_to, List<String> accounts, Object hierarchy) {
+        public BillRequest(Long time_from, Long time_to, int run, List<String> accounts, Object hierarchy) {
             this.type = getClass().getSimpleName();
             this.time_from = time_from;
             this.time_to = time_to;
+            this.run = run;
             this.accounts = accounts;
             this.hierarchy = hierarchy;
         }
@@ -81,6 +89,9 @@ public class GenerateBill extends Command {
         }
         public Long getTime_to() {
             return time_to;
+        }
+        public int getRun() {
+            return run;
         }
         public List<String> getAccounts() {
             return accounts;
@@ -111,6 +122,18 @@ public class GenerateBill extends Command {
         }
     }
 
+    public GenerateBill() {
+        this.setCommand(this.getClass().getSimpleName());
+    }
+
+    public GenerateBill(Long time_from, Long time_to, Integer run, Object request) {
+        this.setCommand(this.getClass().getSimpleName());
+        this.time_from = time_from;
+        this.time_to = time_to;
+        this.run = run;
+        this.request = request;
+    }
+
     @Override
     Status execute() {
         Status status = new Status();
@@ -126,8 +149,8 @@ public class GenerateBill extends Command {
             List<String> accounts = validateRequestBody(request);
 
             // request CDR to flush data for these accounts
-            FlushCDRs flushCDRs = new FlushCDRs(time_from, time_to, accounts);
-            BillRequest billRequest = new BillRequest(time_from, time_to, accounts, request);
+            FlushCDRs flushCDRs = new FlushCDRs(time_from, time_to, run, accounts);
+            BillRequest billRequest = new BillRequest(time_from, time_to, run, accounts, request);
 
             // extract routing keys from the configuration file
             RoutingKeys keys = Loader.extractProperties(RoutingKeys.class);

@@ -22,6 +22,8 @@ import org.joda.time.format.PeriodFormatterBuilder;
 import org.restlet.Response;
 import org.restlet.resource.Get;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -101,7 +103,11 @@ public class StatusEndpoint extends AbstractEndpoint {
     }
 
     @Override
-    public String getRoute() {
-        return "/status";
+    public List<String> getRoutes() {
+        List<String> list = new ArrayList<>();
+
+        list.add("/status");
+
+        return list;
     }
 }

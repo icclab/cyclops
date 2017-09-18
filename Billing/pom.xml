@@ -7,7 +7,7 @@
     <groupId>ch.icclab.cyclops.billing</groupId>
     <artifactId>cyclops-billing</artifactId>
     <packaging>jar</packaging>
-    <version>3.0.0</version>
+    <version>2.3.0</version>
     <name>Billing</name>
 
     <properties>
@@ -20,11 +20,11 @@
         <rabbitmq-version>3.6.5</rabbitmq-version>
         <slf4j-version>1.7.25</slf4j-version>
         <log4j-version>2.6.2</log4j-version>
-        <jooq-version>3.9.3</jooq-version>
+        <jooq-version>3.9.5</jooq-version>
         <hikari-version>2.6.3</hikari-version>
         <postgresql-version>42.1.1</postgresql-version>
         <gson-fire-version>1.8.0</gson-fire-version>
-        <gson-version>2.7</gson-version>
+        <gson-version>2.8.1</gson-version>
         <json-version>20160810</json-version>
         <metapossum-version>1.0.1</metapossum-version>
         <evo-version>1.2.1</evo-version>
@@ -112,6 +112,26 @@
             <version>${restlet-version}</version>
         </dependency>
         <dependency>
+            <groupId>org.restlet.jse</groupId>
+            <artifactId>org.restlet.ext.jetty</artifactId>
+            <version>3.0-M1</version>
+        </dependency>
+        <dependency>
+            <groupId>org.jsslutils</groupId>
+            <artifactId>jsslutils</artifactId>
+            <version>1.0.7</version>
+        </dependency>
+        <dependency>
+            <groupId>org.restlet.jse</groupId>
+            <artifactId>org.restlet.ext.simple</artifactId>
+            <version>3.0-M1</version>
+        </dependency>
+        <dependency>
+            <groupId>org.simpleframework</groupId>
+            <artifactId>org.simpleframework</artifactId>
+            <version>4.1.1</version>
+        </dependency>
+        <dependency>
             <groupId>javax.servlet</groupId>
             <artifactId>javax.servlet-api</artifactId>
             <version>${servlet-version}</version>
@@ -179,7 +199,7 @@
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
-            <version>3.4</version>
+            <version>3.6</version>
         </dependency>
         <dependency>
             <groupId>com.metapossum</groupId>
@@ -189,7 +209,7 @@
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
             <artifactId>httpclient</artifactId>
-            <version>4.5.2</version>
+            <version>4.5.3</version>
         </dependency>
         <dependency>
             <groupId>org.atteo</groupId>
@@ -225,6 +245,16 @@
             <groupId>com.lmax</groupId>
             <artifactId>disruptor</artifactId>
             <version>${lmax-version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.thoughtworks.xstream</groupId>
+            <artifactId>xstream</artifactId>
+            <version>1.4.10</version>
+        </dependency>
+        <dependency>
+            <groupId>com.squareup.okhttp3</groupId>
+            <artifactId>okhttp</artifactId>
+            <version>3.8.1</version>
         </dependency>
     </dependencies>
 </project>
