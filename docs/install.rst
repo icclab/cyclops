@@ -36,6 +36,14 @@ reachable by the Cyclops framework components.
 
 Download the source
 -------------------
+Download the full source code via Git clone
+::
+
+  git clone https://github.com/icclab/cyclops.git
+
+Once source code download finishes, check the folder structure and you should see all 
+the microservices in their separate subfolders. We will now proceed with building every 
+microservice individually.
 
 Building the binaries
 ---------------------
