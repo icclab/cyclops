@@ -1,6 +1,6 @@
-============
-Installation
-============
+=======================
+Building & Installation
+=======================
 
 Cyclops framework is made available as a set of docker images, and full source code is 
 available licensed under ASL 2.0.
@@ -33,3 +33,12 @@ reachable by the Cyclops framework components.
 +-----------------+--------------------------------+
 | Postgresql      | 9.6                            |
 +-----------------+--------------------------------+
+
+Download the source
+-------------------
+
+Building the binaries
+---------------------
+
+Service installation & configuration
+====================================
