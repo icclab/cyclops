@@ -163,6 +163,19 @@ Default content is shown next:
 - TimescaleDB parameters are same as Postgressql parameters
 - RabbitMQ block configures how this service communicates with an existing RabbitMQ service endpoint, they are defined for both the consumer as well as publisher process.
 
+Fixing permissions
+------------------
+Before running any of the Cyclops framework services via *systemctl* command, 
+make sure that the process user *cyclops* which was created earlier to run the 
+process has full read/write access to Cyclops specific system folder and files.
+
+::
+
+  sudo chown -R cyclops:cyclops /var/log/cyclops/
+  sudo chown -R cyclops:cyclops /usr/local/bin/cyclops/
+  sudo chown -R cyclops:cyclops /etc/cyclops/
+  sudo chown -R cyclops:cyclops /var/lib/cyclops/
+
 Setup as a service
 ------------------
 Create a file called *cyclops-udr.service* in */etc/systemd/system/* 
@@ -196,16 +209,3 @@ systemctl commands.
 
   sudo systemctl enable cyclops-udr.service
   sudo systemctl start/stop/restart/status cyclops-udr.service
-
-Fixing permissions
-------------------
-Before running any of the Cyclops framework services via *systemctl* command, 
-make sure that the process user *cyclops* which was created earlier to run the 
-process has full read/write access to Cyclops specific system folder and files.
-
-::
-
-  sudo chown -R cyclops:cyclops /var/log/cyclops/
-  sudo chown -R cyclops:cyclops /usr/local/bin/cyclops/
-  sudo chown -R cyclops:cyclops /etc/cyclops/
-  sudo chown -R cyclops:cyclops /var/lib/cyclops/
