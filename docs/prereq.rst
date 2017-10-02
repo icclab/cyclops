@@ -35,10 +35,12 @@ files, and log files.
   sudo mkdir -p /var/log/cyclops/
   sudo mkdir -p /etc/cyclops/
   sudo mkdir -p /usr/local/bin/cyclops/
+  sudo mkdir -p /var/lib/cyclops/
 
 We will move the compiled binaries into */usr/local/bin/cyclops/* subtree, 
 configuration files under */etc/cyclops/* subtree, and the log files will be 
-stored within */var/log/cyclops/* directory subtree.
+stored within */var/log/cyclops/* directory subtree. */var/lib/cyclops/* is 
+used in case the services require a folder to store additional files.
 
 Bootstrapping Postgresql
 ------------------------

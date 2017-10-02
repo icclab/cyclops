@@ -125,3 +125,16 @@ systemctl commands.
 
   sudo systemctl enable cyclops-udr.service
   sudo systemctl start/stop/restart/status cyclops-udr.service
+
+Fixing permissions
+------------------
+Before running any of the Cyclops framework services via *systemctl* command, 
+make sure that the process user can full read/write access to Cyclops specific 
+system folder and files.
+
+::
+
+  sudo chown -R cyclops:cyclops /var/log/cyclops/
+  sudo chown -R cyclops:cyclops /usr/local/bin/cyclops/
+  sudo chown -R cyclops:cyclops /etc/cyclops/
+  sudo chown -R cyclops:cyclops /var/lib/cyclops/
