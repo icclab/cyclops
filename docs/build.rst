@@ -34,6 +34,11 @@ and reachable by the Cyclops framework components.
 | Postgresql      | 9.6                            |
 +-----------------+--------------------------------+
 
+During configuration and setup phase of all the microservices, it is assumed 
+that the RabbitMQ management plugin is enabled in the service. Post 
+configuration and installation, this plugin can be disabled if not needed 
+elsewhere.
+
 Download the source
 -------------------
 Download the full source code via Git clone
