@@ -94,7 +94,8 @@ Default content is shown next:
 
 Setup as a service
 ------------------
-Create a file called *cyclops-udr.service* in */etc/systemd/system/* directory. Add the following content to this file:
+Create a file called *cyclops-udr.service* in */etc/systemd/system/* 
+directory. Add the following content to this file:
 
 ::
 
@@ -111,6 +112,11 @@ Create a file called *cyclops-udr.service* in */etc/systemd/system/* directory. 
   
   [Install]
   WantedBy=multi-user.target
+
+This assumes that the rabbitmq and postgres server is running in the same 
+machine where you are setting up udr service. If not then remove them from the 
+dependencies list by changing the **After** line above. *Do make sure that 
+these services are running and reachable before udr service is started*.
 
 You can enable and manage the udr service and start it by using the following 
 systemctl commands.
