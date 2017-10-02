@@ -43,6 +43,52 @@ to the target system destinations.
   sudo mv UDR/target/udr.jar /usr/local/bin/cyclops/udr/
   sudo mv UDR/config/udr.conf /etc/cyclops/udr/
 
+Preparing the Postgressql / TimescaleDB
+---------------------------------------
+Before working with the udr service, it is necessary to setup the appropriate database and table schemas. This can be achieved by executing the following commands on the host where the Postgresql service is running.
+
+::
+
+  psql -U postgres -h localhost <<EOF
+  CREATE DATABASE cyclops_udr WITH OWNER cyclops;
+  GRANT ALL PRIVILEGES ON DATABASE cyclops_udr TO cyclops;
+  EOF
+
+::
+
+  psql -U cyclops -h localhost -d cyclops_udr <<EOF
+  CREATE TABLE IF NOT EXISTS usage (
+    time      TIMESTAMP         NOT NULL,
+    metric    TEXT              NOT NULL,
+    account   TEXT              NOT NULL,
+    usage     DOUBLE PRECISION  NOT NULL,
+    data      JSONB,
+    unit      TEXT
+  );
+  CREATE INDEX IF NOT EXISTS usage_metric ON usage (metric, time DESC);
+  CREATE INDEX IF NOT EXISTS usage_account ON usage (account, time DESC);
+  CREATE INDEX IF NOT EXISTS usage_unit ON usage (unit, time DESC);
+  CREATE INDEX IF NOT EXISTS usage_data ON usage USING HASH (data);
+  EOF
+
+::
+
+  psql -U cyclops -h localhost -d cyclops_udr <<EOF
+  CREATE TABLE IF NOT EXISTS udr (
+    time_from TIMESTAMP         NOT NULL,
+    time_to   TIMESTAMP         NOT NULL,
+    metric    TEXT              NOT NULL,
+    account   TEXT              NOT NULL,
+    usage     DOUBLE PRECISION  NOT NULL,
+    data      JSONB,
+    unit      TEXT
+  );
+  CREATE INDEX IF NOT EXISTS udr_metric ON udr (metric, time_from DESC);
+  CREATE INDEX IF NOT EXISTS udr_account ON udr (account, time_from DESC);
+  CREATE INDEX IF NOT EXISTS udr_unit ON udr (unit, time_from DESC);
+  CREATE INDEX IF NOT EXISTS udr_data ON udr USING HASH (data);
+  EOF
+
 Configuring UDR
 ---------------
 You can configure the service endpoints and dependencies in the configuration 
