@@ -129,8 +129,8 @@ systemctl commands.
 Fixing permissions
 ------------------
 Before running any of the Cyclops framework services via *systemctl* command, 
-make sure that the process user can full read/write access to Cyclops specific 
-system folder and files.
+make sure that the process user *cyclops* which was created earlier to run the 
+process has full read/write access to Cyclops specific system folder and files.
 
 ::
 
