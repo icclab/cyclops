@@ -53,6 +53,7 @@ with building every microservice individually.
 Building the binaries
 ---------------------
 Cyclops framework comprises of these micro services:
+
 - usage data record generation microservice (udr)
 - rating and charging microservice (cdr)
 - billing microservice (billing)
