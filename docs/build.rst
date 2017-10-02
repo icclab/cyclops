@@ -118,18 +118,4 @@ them.
 
 **Assumption: An Ubuntu 16.04 OS is installed on nodes where Cyclops framework services will be executed**
 
-Installing and configuring UDR service
---------------------------------------
-
-Installing and configuring CDR service
---------------------------------------
-
-Installing and configuring Billing service
-------------------------------------------
-
-Installing and configuring Rule-engine (Coin) service
------------------------------------------------------
-
-
-
-
+Follow through the guide for installing each service individually.
