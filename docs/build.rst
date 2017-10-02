@@ -109,13 +109,3 @@ Change directory to Coin subfolder within *cyclops* folder.
   mv target/cyclops-coin-1.1-jar-with-dependencies.jar target/coin.jar
 
 The java binary file is located within *cyclops/Coin/target/* as **coin.jar**
-
-Service installation & configuration
-====================================
-Now that you have successfully compiled and built binaries of each individual 
-Cyclops components, let us understand how to properly install and configure 
-them.
-
-**Assumption: An Ubuntu 16.04 OS is installed on nodes where Cyclops framework services will be executed**
-
-Follow through the guide for installing each service individually.

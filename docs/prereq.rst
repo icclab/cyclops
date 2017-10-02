@@ -1,6 +1,12 @@
 ==================
 Preparing the host
 ==================
+Now that you have successfully compiled and built binaries of each individual 
+Cyclops components, let us understand how to properly install and configure 
+them.
+
+**Assumption: An Ubuntu 16.04 OS is installed on nodes where Cyclops framework services will be executed**
+
 A few recommended housekeeping steps are receommended before actually starting 
 with the individual service configurations.
 
@@ -68,3 +74,5 @@ communication.
 
 For sake of ease, we will continue using *pass1234* in subsequent pages, do 
 replace it with the actual value that was used instead.
+
+Follow through the guide for installing each service individually.
