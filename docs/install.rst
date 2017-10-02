@@ -47,6 +47,36 @@ microservice individually.
 
 Building the binaries
 ---------------------
+Cyclops framework comprises of these micro services:
+- usage data record generation microservice (udr)
+- rating and charging microservice (cdr)
+- billing microservice (billing)
+- rule engine (coin)
+
+Each one of the above needs to be built individually. Before proceeding with the build 
+phase of any component, make sure your *JAVA_HOME* environment variable is properly set. 
+On Ubuntu 16.04 machine, this can be done through -
+
+::
+
+  source /etc/environment
+  export JAVA_HOME="/usr/lib/jvm/java-8-oracle"
+
+Building udr
+^^^^^^^^^^^^
+Change directory to UDR subfolder within *cyclops* folder.
+::
+
+  mvn dependency:tree
+  mvn package seembly:single
+  mv target/cyclops-udr-3.0.0-jar-with-dependencies.jar target/udr.jar
+
+The java binary file is located within *cyclops/UDR/target/* as *udr.jar*
 
 Service installation & configuration
 ====================================
+
+
+
+
+
