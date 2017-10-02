@@ -19,6 +19,7 @@ collectors.
    :caption: Contents:
 
    build.rst
+   prereq.rst
    setup_udr.rst
    setup_cdr.rst
    setup_billing.rst
