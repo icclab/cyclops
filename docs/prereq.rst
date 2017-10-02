@@ -25,6 +25,10 @@ As cyclops framework components generate extensive log messages, it is highly
 recommended to setup **logrotate** process to ensure log files do not consume 
 the entire usable disk space.
 
+**cURL** is used to setup RabbitMQ bindings for various Cyclops services later 
+on. It is recommended to install it to avoide setup using the graphical 
+interface.
+
 System folders
 --------------
 Lets set up appropriate directories to place the binaries, configuration 

@@ -89,6 +89,31 @@ Before working with the udr service, it is necessary to setup the appropriate da
   CREATE INDEX IF NOT EXISTS udr_data ON udr USING HASH (data);
   EOF
 
+Preparing RabbitMQ
+------------------
+Assuming that RabbitMQ is running on the same machine where the following 
+commands are to be executed, running these will setup necessary exchanges, 
+queues and bindings between them for udr process to function properly.
+
+::
+
+  curl -u "cyclops:pass1234" -H "content-type:application/json" -XPUT -d '{"durable":true}' http://localhost:15672/api/queues/%2F/cyclops.udr.consume
+
+::
+
+  curl -u "cyclops:pass1234" -H "content-type:application/json" -XPUT -d '{"durable":true}' http://localhost:15672/api/queues/%2F/cyclops.udr.commands
+
+::
+
+  curl -u "cyclops:pass1234" -H "content-type:application/json" -XPUT -d '{"type":"fanout", "durable":true}' http://localhost:15672/api/exchanges/%2F/cyclops.udr.broadcast
+
+::
+
+  curl -u "cyclops:pass1234" -H "content-type:application/json" -XPUT -d '{"type":"direct", "durable":true}' http://localhost:15672/api/exchanges/%2F/cyclops.udr.dispatch
+
+In the above commands, do not forget to replace *cyclops* and *pass1234* to 
+correct RabbitMQ user/pass values that was setup earlier.
+
 Configuring UDR
 ---------------
 You can configure the service endpoints and dependencies in the configuration 
