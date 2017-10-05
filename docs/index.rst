@@ -22,6 +22,19 @@ collectors.
 
     Figure 1: Cyclops framework architecture (v3.0)
 
+This manual covers only installation and administration of Cyclops 
+installation.
+
+.. seealso::
+
+    You may want to read `Cyclops's Developer's guide`__ (WiKi) -- the first 
+    bit, at least -- to get an idea of the concepts.
+
+    __ https://github.com/icclab/cyclops/wiki
+
+
+Contents:
+
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
