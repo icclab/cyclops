@@ -91,4 +91,5 @@ Cyclops framework services.
 
     Figure 1: Global bindings map and relations with Cyclops services
 
-Follow through the guide for installing each service individually.
+The above bindings will be setup part by part while setting up respective 
+services. Follow through the guide for installing each service individually.
