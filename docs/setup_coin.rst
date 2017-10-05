@@ -66,6 +66,29 @@ Assuming that RabbitMQ is running on the same machine where the following
 commands are to be executed, running these will setup necessary exchanges, 
 queues and bindings between them for coincdr process to function properly.
 
+::
+
+  curl -u "cyclops:pass1234" -H "content-type:application/json" -XPUT -d '{"durable":true}' http://localhost:15672/api/queues/cyclops/cyclops.coincdr.consume
+
+::
+
+  curl -u "cyclops:pass1234" -H "content-type:application/json" -XPUT -d '{"type":"fanout", "durable":true}' http://localhost:15672/api/exchanges/cyclops/cyclops.udr.broadcast
+
+::
+
+  curl -u "cyclops:pass1234" -H "content-type:application/json" -XPOST -d '{}' http://localhost:15672/api/bindings/cyclops/e/cyclops.udr.broadcast/q/cyclops.coincdr.consume
+
+::
+
+  curl -u "cyclops:pass1234" -H "content-type:application/json" -XPUT -d '{"type":"fanout", "durable":true}' http://localhost:15672/api/exchanges/cyclops/cyclops.coincdr.broadcast
+
+::
+
+  curl -u "cyclops:pass1234" -H "content-type:application/json" -XPUT -d '{"type":"direct", "durable":true}' http://localhost:15672/api/exchanges/cyclops/cyclops.coincdr.dispatch
+
+In the above commands, do not forget to replace the **-u** values *cyclops* 
+and *pass1234* to correct RabbitMQ user/pass values that was setup earlier.
+
 Configuring coincdr
 ^^^^^^^^^^^^^^^^^^^
 You can configure the service endpoints and dependencies in the configuration 
@@ -212,7 +235,30 @@ Preparing RabbitMQ
 ^^^^^^^^^^^^^^^^^^
 Assuming that RabbitMQ is running on the same machine where the following 
 commands are to be executed, running these will setup necessary exchanges, 
-queues and bindings between them for coincdr process to function properly.
+queues and bindings between them for coinbill process to function properly.
+
+::
+
+  curl -u "cyclops:pass1234" -H "content-type:application/json" -XPUT -d '{"durable":true}' http://localhost:15672/api/queues/cyclops/cyclops.coinbill.consume
+
+::
+
+  curl -u "cyclops:pass1234" -H "content-type:application/json" -XPUT -d '{"type":"fanout", "durable":true}' http://localhost:15672/api/exchanges/cyclops/cyclops.cdr.broadcast
+
+::
+
+  curl -u "cyclops:pass1234" -H "content-type:application/json" -XPOST -d '{}' http://localhost:15672/api/bindings/cyclops/e/cyclops.cdr.broadcast/q/cyclops.coinbill.consume
+
+::
+
+  curl -u "cyclops:pass1234" -H "content-type:application/json" -XPUT -d '{"type":"fanout", "durable":true}' http://localhost:15672/api/exchanges/cyclops/cyclops.coinbill.broadcast
+
+::
+
+  curl -u "cyclops:pass1234" -H "content-type:application/json" -XPUT -d '{"type":"direct", "durable":true}' http://localhost:15672/api/exchanges/cyclops/cyclops.coinbill.dispatch
+
+In the above commands, do not forget to replace the **-u** values *cyclops* 
+and *pass1234* to correct RabbitMQ user/pass values that was setup earlier.
 
 Configuring coinbill
 ^^^^^^^^^^^^^^^^^^^
