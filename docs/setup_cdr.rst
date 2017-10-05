@@ -2,7 +2,6 @@
 Install & Configure: CDR
 ========================
 
-
 Let us setup CDR micro-service to run as a linux system service.
 
 Preparing the host machine
