@@ -79,12 +79,16 @@ communication.
 **Please set a reasonably strong rabbitmq user password**
 
 For sake of ease, we will continue using *pass1234* in subsequent pages, do 
-replace it with the actual value that was used instead.
+replace it with the actual value that was used instead. Figure 1 shows the 
+global exchange and queue bindings maps and relationship between various 
+Cyclops framework services.
 
 .. figure:: rabbit_scheme.png
     :width: 800px
     :align: center
     :alt: global binding schema
     :figclass: align-center
+
+    Figure 1: Global bindings map and relations with Cyclops services
 
 Follow through the guide for installing each service individually.
