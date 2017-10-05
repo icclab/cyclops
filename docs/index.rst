@@ -28,12 +28,11 @@ installation.
 .. seealso::
 
     You may want to read `Cyclops's Developer's guide`__ (WiKi) -- the first 
-    bit, at least -- to get an idea of the concepts.
+    bit, at least -- to get an idea of the concepts required for extending the 
+    framework.
 
     __ https://github.com/icclab/cyclops/wiki
 
-
-Contents:
 
 .. toctree::
    :maxdepth: 2
