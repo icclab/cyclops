@@ -45,7 +45,9 @@ to the target system destinations.
 
 Preparing the Postgressql / TimescaleDB
 ---------------------------------------
-Before working with the udr service, it is necessary to setup the appropriate database and table schemas. This can be achieved by executing the following commands on the host where the Postgresql service is running.
+Before working with the udr service, it is necessary to setup the appropriate 
+database and table schemas. This can be achieved by executing the following 
+commands on the host where the Postgresql service is running.
 
 ::
 
@@ -97,22 +99,22 @@ queues and bindings between them for udr process to function properly.
 
 ::
 
-  curl -u "cyclops:pass1234" -H "content-type:application/json" -XPUT -d '{"durable":true}' http://localhost:15672/api/queues/%2F/cyclops.udr.consume
+  curl -u "cyclops:pass1234" -H "content-type:application/json" -XPUT -d '{"durable":true}' http://localhost:15672/api/queues/cyclops/cyclops.udr.consume
 
 ::
 
-  curl -u "cyclops:pass1234" -H "content-type:application/json" -XPUT -d '{"durable":true}' http://localhost:15672/api/queues/%2F/cyclops.udr.commands
+  curl -u "cyclops:pass1234" -H "content-type:application/json" -XPUT -d '{"durable":true}' http://localhost:15672/api/queues/cyclops/cyclops.udr.commands
 
 ::
 
-  curl -u "cyclops:pass1234" -H "content-type:application/json" -XPUT -d '{"type":"fanout", "durable":true}' http://localhost:15672/api/exchanges/%2F/cyclops.udr.broadcast
+  curl -u "cyclops:pass1234" -H "content-type:application/json" -XPUT -d '{"type":"fanout", "durable":true}' http://localhost:15672/api/exchanges/cyclops/cyclops.udr.broadcast
 
 ::
 
-  curl -u "cyclops:pass1234" -H "content-type:application/json" -XPUT -d '{"type":"direct", "durable":true}' http://localhost:15672/api/exchanges/%2F/cyclops.udr.dispatch
+  curl -u "cyclops:pass1234" -H "content-type:application/json" -XPUT -d '{"type":"direct", "durable":true}' http://localhost:15672/api/exchanges/cyclops/cyclops.udr.dispatch
 
-In the above commands, do not forget to replace *cyclops* and *pass1234* to 
-correct RabbitMQ user/pass values that was setup earlier.
+In the above commands, do not forget to replace **-u** values *cyclops* and 
+*pass1234* to correct RabbitMQ user/pass values that was setup earlier.
 
 Configuring UDR
 ---------------
