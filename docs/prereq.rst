@@ -81,4 +81,11 @@ communication.
 For sake of ease, we will continue using *pass1234* in subsequent pages, do 
 replace it with the actual value that was used instead.
 
+.. figure:: rabbit_scheme.png
+    :width: 200px
+    :align: center
+    :height: 100px
+    :alt: global binding schema
+    :figclass: align-center
+
 Follow through the guide for installing each service individually.
