@@ -14,6 +14,14 @@ OpenStack, CloudStack, Apache Hadoop, etc. are already supporting, meaning -
 these can be billed out of box through Cyclops framework via appropriate 
 collectors.
 
+.. figure:: v3.png
+    :width: 800px
+    :align: center
+    :alt: Cyclops v3 architecture
+    :figclass: align-center
+
+    Figure 1: Cyclops framework architecture (v3.0)
+
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
