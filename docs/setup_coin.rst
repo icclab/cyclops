@@ -68,6 +68,54 @@ queues and bindings between them for coincdr process to function properly.
 
 Configuring coincdr
 ^^^^^^^^^^^^^^^^^^^
+You can configure the service endpoints and dependencies in the configuration 
+file located under */etc/cyclops/coincdr/*
+
+Default content is shown next:
+::
+
+  # HTTP and/or HTTPS port to be exposed at
+  ServerHTTPPort=4570
+  #ServerHTTPSPort=5570
+  #ServerHTTPSCertPath=/path/to/cert.p12
+  #ServerHTTPSPassword=pass1234
+  
+  # Health check every X seconds
+  ServerHealthCheck=30
+  ServerHealthShutdown=false
+  
+  # Hibernate connection credentials
+  HibernateURL=jdbc:postgresql://localhost/cyclops_cdr
+  HibernateUsername=cyclops
+  HibernatePassword=pass1234
+  HibernateDriver=org.postgresql.Driver
+  HibernateDialect=org.hibernate.dialect.PostgreSQL9Dialect
+  
+  # Publisher (RabbitMQ) credentials
+  PublisherHost=localhost
+  PublisherUsername=cyclops
+  PublisherPassword=pass1234
+  PublisherPort=5672
+  PublisherMngtPort=15672
+  PublisherVirtualHost=cyclops
+  PublisherDispatchExchange=cyclops.coincdr.dispatch
+  PublisherBroadcastExchange=cyclops.coincdr.broadcast
+  
+  # Consumer (RabbitMQ) credentials
+  ConsumerHost=localhost
+  ConsumerUsername=cyclops
+  ConsumerPassword=pass1234
+  ConsumerPort=5672
+  ConsumerMngtPort=15672
+  ConsumerVirtualHost=cyclops
+  ConsumeFromQueue=cyclops.coincdr.consume
+  
+  # Bind Coin CDR with UDR (flushing UDR records)
+  BindWithUDR=cyclops.udr.broadcast
+
+- ServerHTTPPort / ServerHTTPSPort: You can configure the port where the service will be running at. HTTPS is supported if you provide a valid certificate and the associated password.
+- Hibernate connections parameters are same as Postgressql parameters
+- RabbitMQ block configures how this service communicates with an existing RabbitMQ service endpoint, they are defined for both the consumer as well as publisher process.
 
 Fixing permissions
 ^^^^^^^^^^^^^^^^^^
@@ -168,6 +216,54 @@ queues and bindings between them for coincdr process to function properly.
 
 Configuring coinbill
 ^^^^^^^^^^^^^^^^^^^
+You can configure the service endpoints and dependencies in the configuration 
+file located under */etc/cyclops/coinbill/*
+
+Default content is shown next:
+::
+
+  # HTTP and/or HTTPS port to be exposed at
+  ServerHTTPPort=4571
+  #ServerHTTPSPort=5571
+  #ServerHTTPSCertPath=/path/to/cert.p12
+  #ServerHTTPSPassword=pass1234
+
+  # Health check every X seconds
+  ServerHealthCheck=30
+  ServerHealthShutdown=false
+
+  # Hibernate connection credentials
+  HibernateURL=jdbc:postgresql://localhost/cyclops_billing
+  HibernateUsername=cyclops
+  HibernatePassword=pass1234
+  HibernateDriver=org.postgresql.Driver
+  HibernateDialect=org.hibernate.dialect.PostgreSQL9Dialect
+
+  # Publisher (RabbitMQ) credentials
+  PublisherHost=localhost
+  PublisherUsername=cyclops
+  PublisherPassword=pass1234
+  PublisherPort=5672
+  PublisherMngtPort=15672
+  PublisherVirtualHost=cyclops
+  PublisherDispatchExchange=cyclops.coinbill.dispatch
+  PublisherBroadcastExchange=cyclops.coinbill.broadcast
+
+  # Consumer (RabbitMQ) credentials
+  ConsumerHost=localhost
+  ConsumerUsername=cyclops
+  ConsumerPassword=pass1234
+  ConsumerPort=5672
+  ConsumerMngtPort=15672
+  ConsumerVirtualHost=cyclops
+  ConsumeFromQueue=cyclops.coinbill.consume
+
+  # Bind Coin Bill with CDR (flushing CDR records)
+  BindWithCDR=cyclops.cdr.broadcast
+
+- ServerHTTPPort / ServerHTTPSPort: You can configure the port where the service will be running at. HTTPS is supported if you provide a valid certificate and the associated password.
+- Hibernate connections parameters are same as Postgressql parameters
+- RabbitMQ block configures how this service communicates with an existing RabbitMQ service endpoint, they are defined for both the consumer as well as publisher process.
 
 Fixing permissions
 ^^^^^^^^^^^^^^^^^^
