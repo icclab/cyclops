@@ -67,6 +67,7 @@ following commands on the host where the Postgresql service is running.
   EOF
 
 ::
+
   psql -U cyclops -h localhost -d cyclops_billing <<EOF
   CREATE TABLE IF NOT EXISTS bill (
     id        SERIAL,
