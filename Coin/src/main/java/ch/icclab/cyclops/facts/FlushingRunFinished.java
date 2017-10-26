@@ -23,12 +23,13 @@ import java.util.List;
  * Created: 03.08.17
  * Description: Fact marking that all relevant Charge records were flushed
  */
-public class FlushingFinished extends TypedFact {
+public class FlushingRunFinished extends TypedFact {
     private long time_from;
     private long time_to;
+    private int run;
     private List<String> accounts;
 
-    public FlushingFinished() {
+    public FlushingRunFinished() {
         super();
     }
 
@@ -44,6 +45,13 @@ public class FlushingFinished extends TypedFact {
     }
     public void setTime_to(long time_to) {
         this.time_to = time_to;
+    }
+
+    public int getRun() {
+        return run;
+    }
+    public void setRun(int run) {
+        this.run = run;
     }
 
     public List<String> getAccounts() {

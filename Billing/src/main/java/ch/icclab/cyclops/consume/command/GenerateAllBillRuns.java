@@ -34,7 +34,7 @@ import java.util.List;
  * Created: 31.07.17
  * Description: Generate bills for all accounts in the customer-database
  */
-public class GenerateAllBills extends Command{
+public class GenerateAllBillRuns extends Command{
     // mandatory fields
     private Long time_from;
     private Long time_to;

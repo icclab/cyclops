@@ -24,18 +24,20 @@ import java.util.Map;
  * Created: 01.06.17
  * Description: Bill creation based on list of charge records
  */
-public class Bill {
+public class BillRun {
     private long time_from;
     private long time_to;
+    private int run;
     private String account;
     private double charge;
     private String discount;
     private String currency;
     private Object data;
 
-    public Bill(long time_from, long time_to, String account, String currency) {
+    public BillRun(long time_from, long time_to, int run, String account, String currency) {
         this.time_from = time_from;
         this.time_to = time_to;
+        this.run = run;
         this.account = account;
         this.currency = currency;
     }
@@ -107,6 +109,13 @@ public class Bill {
     }
     public void setTime_to(long time_to) {
         this.time_to = time_to;
+    }
+
+    public int getRun() {
+        return run;
+    }
+    public void setRun(int run) {
+        this.run = run;
     }
 
     public String getAccount() {

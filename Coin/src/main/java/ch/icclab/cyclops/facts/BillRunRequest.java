@@ -26,13 +26,14 @@ import java.util.stream.Collectors;
  * Created: 01.06.17
  * Description: Bill request coming from the Billing microservice
  */
-public class BillRequest extends TypedFact {
+public class BillRunRequest extends TypedFact {
     private long time_from;
     private long time_to;
+    private int run;
     private List<String> accounts;
     private Object hierarchy;
 
-    public BillRequest() {
+    public BillRunRequest() {
     }
 
     /**
@@ -40,12 +41,12 @@ public class BillRequest extends TypedFact {
      * @param currency as default
      * @return list of empty bills
      */
-    public Bill process(String currency) {
+    public BillRun process(String currency) {
         // determine account name (either complex HashMap, or just String)
         String account = (hierarchy instanceof String)? (String) hierarchy : (String) ((Map) hierarchy).keySet().toArray()[0];
 
         // an empty bill
-        return new Bill(time_from, time_to, account, currency);
+        return new BillRun(time_from, time_to, run, account, currency);
     }
 
     /**
@@ -53,8 +54,8 @@ public class BillRequest extends TypedFact {
      * @param CDRs containing charge for multiple users
      * @return list of bills
      */
-    public List<Bill> process(List<Charge> CDRs) {
-        List<Bill> bills = new ArrayList<>();
+    public List<BillRun> process(List<Charge> CDRs) {
+        List<BillRun> bills = new ArrayList<>();
 
         // first split list of CDRs based on accounts and currency
         Map<String, Map<String, List<Charge>>> currencies = CDRs.stream().collect(Collectors.groupingBy(Charge::getCurrency,Collectors.groupingBy(Charge::getAccount)));
@@ -64,7 +65,7 @@ public class BillRequest extends TypedFact {
 
         // prepare bills
         for (Map.Entry<String, Map<String, List<Charge>>> entry: currencies.entrySet()) {
-            Bill bill = new Bill(time_from, time_to, account, entry.getKey());
+            BillRun bill = new BillRun(time_from, time_to, run, account, entry.getKey());
 
             // process map of accounts and their charge records
             boolean status = bill.processChargeBasedOnHierarchy(hierarchy, entry.getValue());
@@ -103,5 +104,12 @@ public class BillRequest extends TypedFact {
     }
     public void setHierarchy(Object hierarchy) {
         this.hierarchy = hierarchy;
+    }
+
+    public int getRun() {
+        return run;
+    }
+    public void setRun(int run) {
+        this.run = run;
     }
 }

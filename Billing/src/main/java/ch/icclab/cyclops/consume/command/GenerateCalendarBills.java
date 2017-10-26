@@ -73,7 +73,7 @@ public class GenerateCalendarBills extends Command{
         if (!extractSchedule(schedule)) status.setClientError("Invalid request, nothing to process");
         else {
             // monthly, quarterly, half-yearly and yearly bill requests
-            List<GenerateBill> requests = getBillRequests();
+            List<GenerateBillRun> requests = getBillRequests();
 
             if (requests == null) {
                 status.setServerError("Couldn't generate list of Bill Request commands");
@@ -132,8 +132,8 @@ public class GenerateCalendarBills extends Command{
      * Get list of GenerateBill command requests
      * @return list or null
      */
-    private List<GenerateBill> getBillRequests() {
-        List<GenerateBill> requests = new ArrayList<>();
+    private List<GenerateBillRun> getBillRequests() {
+        List<GenerateBillRun> requests = new ArrayList<>();
 
         try {
             // is it first of the month
@@ -176,10 +176,10 @@ public class GenerateCalendarBills extends Command{
      * @param end date
      * @return list
      */
-    private List<GenerateBill> createGenerateBillCommands(List<Object> list, DateTime start, DateTime end, int billRun) {
-        List<GenerateBill> requests = new ArrayList<>();
+    private List<GenerateBillRun> createGenerateBillCommands(List<Object> list, DateTime start, DateTime end, int billRun) {
+        List<GenerateBillRun> requests = new ArrayList<>();
 
-        if (list != null && !list.isEmpty()) list.forEach(item -> requests.add(new GenerateBill(start.getMillis(), end.getMillis(), billRun, item)));
+        if (list != null && !list.isEmpty()) list.forEach(item -> requests.add(new GenerateBillRun(start.getMillis(), end.getMillis(), billRun, item)));
 
         return requests;
     }

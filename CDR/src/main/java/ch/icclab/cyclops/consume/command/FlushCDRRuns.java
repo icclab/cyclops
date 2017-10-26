@@ -34,10 +34,11 @@ import static org.jooq.impl.DSL.inline;
  * Created: 09.05.17
  * Description: Flush CDRs command
  */
-public class FlushCDRs extends Command {
+public class FlushCDRRuns extends Command {
     // mandatory fields
     private Long time_from;
     private Long time_to;
+    private int run;
     private List<String> accounts;
 
     private class ClientException extends Exception {
@@ -50,12 +51,14 @@ public class FlushCDRs extends Command {
         private String type;
         private long time_from;
         private long time_to;
+        private int run;
         private List<String> accounts;
 
-        public FlushingFinished(long time_from, long time_to, List<String> accounts) {
+        public FlushingFinished(long time_from, long time_to, int run, List<String> accounts) {
             this.type = getClass().getSimpleName();
             this.time_from = time_from;
             this.time_to = time_to;
+            this.run = run;
             this.accounts = accounts;
         }
 
@@ -69,6 +72,10 @@ public class FlushCDRs extends Command {
 
         public long getTime_to() {
             return time_to;
+        }
+
+        public int getRun() {
+            return run;
         }
 
         public List<String> getAccounts() {
@@ -91,7 +98,7 @@ public class FlushCDRs extends Command {
             DbAccess db = new DbAccess();
 
             // select time_from CDR table
-            SelectQuery select = db.createSelectFrom(CDR.TABLE, CDR.METRIC_FIELD, CDR.ACCOUNT_FIELD, CDR.TIME_FROM_FIELD, CDR.TIME_TO_FIELD,
+            SelectQuery select = db.createSelectFrom(CDR.TABLE, inline(run).as("run"), CDR.METRIC_FIELD, CDR.ACCOUNT_FIELD, CDR.TIME_FROM_FIELD, CDR.TIME_TO_FIELD,
                     CDR.CHARGE_FIELD, CDR.CURRENCY_FIELD, CDR.DATA_FIELD);
 
             // time window selection
@@ -110,7 +117,7 @@ public class FlushCDRs extends Command {
 
             if (listToPush== null) throw new Exception("Error occurred, check your database connection");
             else {
-                FlushingFinished finished = new FlushingFinished(time_from, time_to, accounts);
+                FlushingFinished finished = new FlushingFinished(time_from, time_to, run, accounts);
                 int numberOfRecords = listToPush.size();
                 boolean pushed;
 
