@@ -167,7 +167,7 @@ public class Settings {
         publisherCredentials.setPublisherPassword(properties.getProperty("PublisherPassword"));
         publisherCredentials.setPublisherPort(Integer.parseInt(properties.getProperty("PublisherPort")));
         publisherCredentials.setPublisherVirtualHost(properties.getProperty("PublisherVirtualHost"));
-        publisherCredentials.setPublishToSelf(properties.getProperty("PublishToSelf"));
+        publisherCredentials.setRoutingKeyPublishUDRCommand(properties.getProperty("RoutingKeyPublishUDRCommand"));
 
         // publisher dispatch exchange name
         String dispatch = properties.getProperty("PublisherDispatchExchange");

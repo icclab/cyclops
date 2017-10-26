@@ -35,7 +35,7 @@ public class PublisherCredentials {
 
     private String publisherDispatchExchange;
     private String publisherBroadcastExchange;
-    private String publishToSelf;
+    private String routingKeyPublishUDRCommand;
 
     //==== Getters and Setters
     public String getPublisherUsername() {
@@ -87,10 +87,10 @@ public class PublisherCredentials {
         this.publisherBroadcastExchange = publisherBroadcastExchange;
     }
 
-    public String getPublishToSelf() {
-        return publishToSelf;
+    public String getRoutingKeyPublishUDRCommand() {
+        return routingKeyPublishUDRCommand;
     }
-    public void setPublishToSelf(String publishToSelf) {
-        this.publishToSelf = publishToSelf;
+    public void setRoutingKeyPublishUDRCommand(String routingKeyPublishUDRCommand) {
+        this.routingKeyPublishUDRCommand = routingKeyPublishUDRCommand;
     }
 }

@@ -98,7 +98,7 @@ public class GenerateUDRs extends Command {
             flushUDRs.setTime_to(time_to);
             flushUDRs.setCommand(flushUDRs.getClass().getSimpleName());
 
-            Messenger.publish(flushUDRs, Loader.getSettings().getPublisherCredentials().getPublishToSelf());
+            Messenger.publish(flushUDRs, Loader.getSettings().getPublisherCredentials().getRoutingKeyPublishUDRCommand());
         }
 
         CommandLogger.log(message);
