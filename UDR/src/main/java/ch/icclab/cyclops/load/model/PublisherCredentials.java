@@ -35,6 +35,7 @@ public class PublisherCredentials {
 
     private String publisherDispatchExchange;
     private String publisherBroadcastExchange;
+    private String publishToSelf;
 
     //==== Getters and Setters
     public String getPublisherUsername() {
@@ -84,5 +85,12 @@ public class PublisherCredentials {
     }
     public void setPublisherBroadcastExchange(String publisherBroadcastExchange) {
         this.publisherBroadcastExchange = publisherBroadcastExchange;
+    }
+
+    public String getPublishToSelf() {
+        return publishToSelf;
+    }
+    public void setPublishToSelf(String publishToSelf) {
+        this.publishToSelf = publishToSelf;
     }
 }

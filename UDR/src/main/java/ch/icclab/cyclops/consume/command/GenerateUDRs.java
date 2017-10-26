@@ -18,6 +18,8 @@ package ch.icclab.cyclops.consume.command;
 
 import ch.icclab.cyclops.dao.UDR;
 import ch.icclab.cyclops.dao.Usage;
+import ch.icclab.cyclops.load.Loader;
+import ch.icclab.cyclops.publish.Messenger;
 import ch.icclab.cyclops.timeseries.DbAccess;
 import ch.icclab.cyclops.util.loggers.CommandLogger;
 import org.jooq.Field;
@@ -89,6 +91,14 @@ public class GenerateUDRs extends Command {
         } else {
             message = String.format("%d UDRs generated for period %s and %s", ret, new Timestamp(time_from), new Timestamp(time_to));
             status.setSuccessful(message);
+
+            // Publish a flushUDRs command into the own consumming queue
+            FlushUDRs flushUDRs = new FlushUDRs();
+            flushUDRs.setTime_from(time_from);
+            flushUDRs.setTime_to(time_to);
+            flushUDRs.setCommand(flushUDRs.getClass().getSimpleName());
+
+            Messenger.publish(flushUDRs, Loader.getSettings().getPublisherCredentials().getPublishToSelf());
         }
 
         CommandLogger.log(message);
