@@ -88,5 +88,25 @@ be written as shown below -
 Since the *salience* of the rule is lesser than the first rule, it will be 
 applied only when the first rule mentioned in this page is unapplicable.
 
+You can even control data transmission behavior via rules. Say we want to push 
+all generated charge records over to a channel, specically within the Cyclops 
+framework we must push the cdr records to a specific RabbitMQ exchange, it can 
+be achieved via the following rule within *coincdr*.
+
+::
+
+  import ch.icclab.cyclops.facts.Charge;
+  import java.util.List;
+  global ch.icclab.cyclops.publish.Messenger messenger;
+
+  rule "Broadcast CDRs"
+  salience 20
+  when
+    $charge: List( size > 0 ) from collect ( Charge() )
+  then
+    messenger.broadcast($charge);
+    $charge.forEach(c->retract(c));
+  end
+
 Generation of a bill
 --------------------
