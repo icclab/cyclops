@@ -54,5 +54,12 @@ A sample rule is shown below -
     retract($usage);
   end
 
+Analyzing the rule above, if the usage record being processed contains a data 
+block and an element *billingModel*, then generates the charge by multiplying 
+the **usage** value with **0.4**.
+
+This example simply shows how with ease, Cyclops rule engines can be 
+programmed.
+
 Generation of a bill
 --------------------
