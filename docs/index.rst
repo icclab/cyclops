@@ -45,7 +45,7 @@ installation.
    setup_billing.rst
    setup_coin.rst
    manage.rst
-
+   advanced_topics.rst
 
 Indices and tables
 ==================
