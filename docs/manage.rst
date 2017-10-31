@@ -9,8 +9,8 @@ Configuring a collector
 -----------------------
 
 
-Managing rules
---------------
+Managing rules in coincdr
+-------------------------
 Cyclops data transformation workflow is heavily guide by pricing and billing 
 models injected within the rule engines attached to the microservices *cdr* 
 and *billing*. These are called **coincdr** and **coinbill**.
@@ -107,6 +107,10 @@ be achieved via the following rule within *coincdr*.
     messenger.broadcast($charge);
     $charge.forEach(c->retract(c));
   end
+
+Managing rules in coinbill
+--------------------------
+
 
 Generation of a bill
 --------------------
