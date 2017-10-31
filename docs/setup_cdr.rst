@@ -98,7 +98,7 @@ queues and bindings between them for cdr process to function properly.
 
 ::
 
-  curl -u "cyclops:pass1234" -H "content-type:application/json" -XPUT -d '{"type":"direct", "durable":true}' http://localhost:15672/api/exchanges/cyclops/cyclops.cdr.broadcast
+  curl -u "cyclops:pass1234" -H "content-type:application/json" -XPUT -d '{"type":"fanout", "durable":true}' http://localhost:15672/api/exchanges/cyclops/cyclops.cdr.broadcast
 
 ::
 

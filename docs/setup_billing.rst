@@ -109,7 +109,7 @@ queues and bindings between them for billing process to function properly.
 
 ::
 
-  curl -u "cyclops:pass1234" -H "content-type:application/json" -XPUT -d '{"type":"direct", "durable":true}' http://localhost:15672/api/exchanges/cyclops/cyclops.billing.broadcast
+  curl -u "cyclops:pass1234" -H "content-type:application/json" -XPUT -d '{"type":"fanout", "durable":true}' http://localhost:15672/api/exchanges/cyclops/cyclops.billing.broadcast
 
 ::
 
