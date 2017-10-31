@@ -39,7 +39,7 @@ that the RabbitMQ management plugin is enabled in the service. Post
 configuration and installation, this plugin can be disabled if not needed 
 elsewhere.
 
-**Note**: the default package version available under your limux/unix 
+**Note**: the default package version available under your linux/unix 
 distribution for the above listed dependecies may be different that listed. In 
 that case, please make sure you get the specific versions directly from the 
 respective developer's website.
