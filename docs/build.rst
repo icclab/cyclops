@@ -77,7 +77,7 @@ Change directory to UDR subfolder within *cyclops* folder.
 ::
 
   mvn dependency:tree
-  mvn package seembly:single
+  mvn package assembly:single
   mv target/cyclops-udr-3.0.0-jar-with-dependencies.jar target/udr.jar
 
 The java binary file is located within *cyclops/UDR/target/* as **udr.jar**
@@ -88,7 +88,7 @@ Change directory to CDR subfolder within *cyclops* folder.
 ::
 
   mvn dependency:tree
-  mvn package seembly:single
+  mvn package assembly:single
   mv target/cyclops-cdr-3.0.0-jar-with-dependencies.jar target/cdr.jar
 
 The java binary file is located within *cyclops/CDR/target/* as **cdr.jar**
@@ -99,7 +99,7 @@ Change directory to Billing subfolder within *cyclops* folder.
 ::
 
   mvn dependency:tree
-  mvn package seembly:single
+  mvn package assembly:single
   mv target/cyclops-billing-3.0.0-jar-with-dependencies.jar target/billing.jar
 
 The java binary file is located within *cyclops/Billing/target/* as 
@@ -111,7 +111,7 @@ Change directory to Coin subfolder within *cyclops* folder.
 ::
 
   mvn dependency:tree
-  mvn package seembly:single
+  mvn package assembly:single
   mv target/cyclops-coin-1.1-jar-with-dependencies.jar target/coin.jar
 
 The java binary file is located within *cyclops/Coin/target/* as **coin.jar**
