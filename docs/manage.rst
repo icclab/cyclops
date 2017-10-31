@@ -61,5 +61,32 @@ the **usage** value with **0.4**.
 This example simply shows how with ease, Cyclops rule engines can be 
 programmed.
 
+You can have multiple rules which can be potentially apply in a given 
+situation, but which one is triggered can be controlled by the weight assigned 
+to a rule. The weight is controlled via the **salience** parameter. 
+
+Lets assume one wishes to have a catch all rule for processing usage. This can 
+be written as shown below -
+
+::
+
+  import ch.icclab.cyclops.facts.Usage;
+  import ch.icclab.cyclops.facts.Charge;
+
+  rule "Remaining services for free"
+  salience 40
+  when
+    $usage: Usage()
+  then
+    Charge charge = new Charge($usage);
+    charge.setCharge(0);
+  
+    insert(charge);
+    retract($usage);
+  end
+
+Since the *salience* of the rule is lesser than the first rule, it will be 
+applied only when the first rule mentioned in this page is unapplicable.
+
 Generation of a bill
 --------------------
