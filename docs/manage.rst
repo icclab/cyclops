@@ -6,8 +6,10 @@ Now that we have the framework configured properly, lets look at how to manage
 a live Cyclops service.
 
 Configuring a collector
------------------------
+=======================
 
+Rules management
+================
 
 Managing rules in coincdr
 -------------------------
@@ -110,7 +112,61 @@ be achieved via the following rule within *coincdr*.
 
 Managing rules in coinbill
 --------------------------
+Just like the rules for *coincdr* that governs the transformation of udr 
+records to cdr records, one needs to manage the rules in coinbill to govern 
+the generation of bill from cdr records.
 
+Lets look at a sample *coinbill* rule that upon receipt of the bill generation 
+command and the list of cdr records, creates the bill for the requested set of 
+accounts - 
+
+::
+
+  import ch.icclab.cyclops.facts.BillRequest;
+  import ch.icclab.cyclops.facts.Charge;
+  import ch.icclab.cyclops.facts.Bill;
+  import java.util.List;
+
+  rule "Collect CDRs for the Bill Request"
+  salience 50
+  when
+    $request: BillRequest($accounts: accounts)
+    $CDRs: List(size > 0) from collect (Charge(account memberOf $accounts))
+  then
+    // bills for each currency of account\'s CDRs
+    List<Bill> bills = $request.process($CDRs);
+
+    // add bills to the working memory
+    bills.forEach(bill->insert(bill));
+
+    // remove processed CDRs and the bill request
+    $CDRs.forEach(c->retract(c));
+    retract($request);
+  end
+
+The statements of the rule above should be self explanatory. Similar to 
+*coincdr* where one had to prepare a rule for sending the generated records to 
+next stop in the data path, here too in Cyclops framework, the generated bill 
+records should be moved to the next stage in the messaging setup -
+
+::
+
+  import ch.icclab.cyclops.facts.DatonusBill;
+  import java.util.List;
+
+  global ch.icclab.cyclops.publish.Messenger messenger;
+
+  rule "Broadcast generated Datonus bills"
+  salience 30
+  when
+    $bills: List(size > 0) from collect (DatonusBill())
+  then
+    // broadcast and remove processed bills
+    messenger.broadcast($bills);
+    $bills.forEach(bill->retract(bill));
+  end
+
+As you can notice, usually all Java language constructs and onjects are available to you while formulating a rule.
 
 Generation of a bill
---------------------
+====================
