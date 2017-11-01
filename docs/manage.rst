@@ -170,7 +170,9 @@ As you can notice, usually all Java language constructs and objects are availabl
 
 Rule management endpoints
 -------------------------
-The above shown example rules and any other that one may create must be uploaded to the corresponding rule engines. This is achieved by sending a HTTP POST request to the rule engine endpoint
+The above shown example rules and any other that one may create must be 
+uploaded to the corresponding rule engines. This is achieved by sending a HTTP 
+POST request to the rule engine endpoint
 
 - coin-cdr-url-or-ip:port/rule
 - coin-bill-url-or-ip:port/rule
