@@ -88,10 +88,10 @@ be written as shown below -
   end
 
 Since the *salience* of the rule is lesser than the first rule, it will be 
-applied only when the first rule mentioned in this page is unapplicable.
+applied only when the first rule mentioned in this page is inapplicable.
 
 You can even control data transmission behavior via rules. Say we want to push 
-all generated charge records over to a channel, specically within the Cyclops 
+all generated charge records over to a channel, specially within the Cyclops 
 framework we must push the cdr records to a specific RabbitMQ exchange, it can 
 be achieved via the following rule within *coincdr*.
 
@@ -166,7 +166,14 @@ records should be moved to the next stage in the messaging setup -
     $bills.forEach(bill->retract(bill));
   end
 
-As you can notice, usually all Java language constructs and onjects are available to you while formulating a rule.
+As you can notice, usually all Java language constructs and objects are available to you while formulating a rule.
+
+Rule management endpoints
+-------------------------
+The above shown example rules and any other that one may create must be uploaded to the corresponding rule engines. This is achieved by sending a HTTP POST request to the rule engine endpoint
+
+- coin-cdr-url-or-ip:port/rule
+- coin-bill-url-or-ip:port/rule
 
 Generation of a bill
 ====================
