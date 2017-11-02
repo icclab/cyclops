@@ -10,6 +10,10 @@ Configuring a collector
 
 Rules management
 ================
+It is assumed that you already know how to read/understand/write Drools rule. 
+If not please read further here_.
+
+.. _here: https://www.tutorialspoint.com/drools/drools_rules_writing.htm
 
 Managing rules in coincdr
 -------------------------
