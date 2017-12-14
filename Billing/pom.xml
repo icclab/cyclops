@@ -7,7 +7,7 @@
     <groupId>ch.icclab.cyclops.billing</groupId>
     <artifactId>cyclops-billing</artifactId>
     <packaging>jar</packaging>
-    <version>2.3.0</version>
+    <version>3.0.0</version>
     <name>Billing</name>
 
     <properties>

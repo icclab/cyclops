@@ -7,7 +7,7 @@
     <groupId>ch.icclab.cyclops.udr</groupId>
     <artifactId>cyclops-udr</artifactId>
     <packaging>jar</packaging>
-    <version>2.3.0</version>
+    <version>3.0.0</version>
     <name>UDR</name>
 
     <properties>
