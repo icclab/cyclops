@@ -7,7 +7,7 @@
     <groupId>ch.icclab.cyclops.cdr</groupId>
     <artifactId>cyclops-cdr</artifactId>
     <packaging>jar</packaging>
-    <version>2.3.0</version>
+    <version>3.0.0</version>
     <name>CDR</name>
 
     <properties>
