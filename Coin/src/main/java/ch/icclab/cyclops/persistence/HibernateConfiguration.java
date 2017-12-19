@@ -44,6 +44,10 @@ public class HibernateConfiguration {
             .setProperty("hibernate.dialect", credentials.getHibernateDialect())
             .setProperty("hibernate.hbm2ddl.auto", "update")
             .setProperty("show_sql", "false");
+            .setProperty("hibernate.c3p0.min_size", "5")
+            .setProperty("hibernate.c3p0.max_size", "20")
+            .setProperty("hibernate.c3p0.timeout", "1800")
+            .setProperty("hibernate.c3p0.max_statements", "50")
 
         return conf;
     }
