@@ -24,7 +24,7 @@ import java.util.Map;
  * Created: 01.06.17
  * Description: Bill creation based on list of charge records
  */
-public class Bill {
+public class Bill extends TypedFact {
     private long time_from;
     private long time_to;
     private String account;
