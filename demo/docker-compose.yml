@@ -1,0 +1,249 @@
+version: '3'
+services:
+  coin_bill:
+    image: cyclops_coin_bill
+    container_name: cyclops_coin_bill
+    networks:
+        - backend
+    depends_on:
+        - db
+        - rabbitmq_init
+    ports:
+        - '4571:4571'
+    environment:
+        # HTTP and/or HTTPS port to be exposed at
+        - ServerHTTPPort=4571
+        # Health check every X seconds
+        - ServerHealthCheck=30
+        - ServerHealthShutdown=false
+        # Hibernate connection credentials
+        - HibernateURL=jdbc:postgresql://cyclops_timescaledb/cyclops_billing
+        - HibernateUsername=username
+        - HibernatePassword=password
+        - HibernateDriver=org.postgresql.Driver
+        - HibernateDialect=org.hibernate.dialect.PostgreSQL9Dialect
+        # Publisher (RabbitMQ) credentials
+        - PublisherHost=cyclops_rabbitmq
+        - PublisherUsername=guest
+        - PublisherPassword=guest
+        - PublisherPort=5672
+        - PublisherVirtualHost=/
+        - PublisherDispatchExchange=cyclops.coinbill.dispatch
+        - PublisherBroadcastExchange=cyclops.coinbill.broadcast
+        # Consumer (RabbitMQ) credentials
+        - ConsumerHost=cyclops_rabbitmq
+        - ConsumerUsername=guest
+        - ConsumerPassword=guest
+        - ConsumerPort=5672
+        - ConsumerVirtualHost=/
+        - ConsumeFromQueue=cyclops.coinbill.consume  
+
+  coin_cdr:
+    image: cyclops_coin_cdr
+    container_name: cyclops_coin_cdr
+    networks:
+        - backend
+    depends_on:
+        - db
+        - rabbitmq_init
+    ports:
+        - '4570:4570'
+    environment:
+        # HTTP and/or HTTPS port to be exposed at
+        - ServerHTTPPort=4570
+        # Health check every X seconds
+        - ServerHealthCheck=30
+        - ServerHealthShutdown=false
+        # Hibernate connection credentials
+        - HibernateURL=jdbc:postgresql://cyclops_timescaledb/cyclops_cdr
+        - HibernateUsername=username
+        - HibernatePassword=password
+        - HibernateDriver=org.postgresql.Driver
+        - HibernateDialect=org.hibernate.dialect.PostgreSQL9Dialect
+        # Publisher (RabbitMQ) credentials
+        - PublisherHost=cyclops_rabbitmq
+        - PublisherUsername=guest
+        - PublisherPassword=guest
+        - PublisherPort=5672
+        - PublisherVirtualHost=/
+        - PublisherDispatchExchange=cyclops.coincdr.dispatch
+        - PublisherBroadcastExchange=cyclops.coincdr.broadcast
+        # Consumer (RabbitMQ) credentials
+        - ConsumerHost=cyclops_rabbitmq
+        - ConsumerUsername=guest
+        - ConsumerPassword=guest
+        - ConsumerPort=5672
+        - ConsumerVirtualHost=/
+        - ConsumeFromQueue=cyclops.coincdr.consume
+
+  billing:
+    image: cyclops_billing
+    container_name: cyclops_billing
+    networks:
+        - backend
+    ports:
+        - '4569:4569'
+    depends_on:
+        - db
+        - rabbitmq_init
+    environment:
+        # HTTP and/or HTTPS port to be exposed at
+        - ServerHTTPPort=4569
+        # Health check every X seconds
+        - ServerHealthCheck=30
+        - ServerHealthShutdown=false
+        # Database credentials to TimescaleDB
+        - DatabasePort=5432
+        - DatabaseHost=cyclops_timescaledb
+        - DatabaseUsername=username
+        - DatabasePassword=password
+        - DatabaseName=cyclops_billing
+        - DatabasePageLimit=500
+        - DatabaseConnections=2
+        # Publisher (RabbitMQ) credentials
+        - PublisherHost=cyclops_rabbitmq
+        - PublisherUsername=guest
+        - PublisherPassword=guest
+        - PublisherPort=5672
+        - PublisherVirtualHost=/
+        - PublisherDispatchExchange=cyclops.billing.dispatch
+        - PublisherBroadcastExchange=cyclops.billing.broadcast
+        # Consumer (RabbitMQ) credentials
+        - ConsumerHost=cyclops_rabbitmq
+        - ConsumerUsername=guest
+        - ConsumerPassword=guest
+        - ConsumerPort=5672
+        - ConsumerVirtualHost=/
+        - ConsumerDataQueue=cyclops.billing.consume
+        - ConsumerCommandsQueue=cyclops.billing.commands
+        # Bill generation workflow
+        - PublishToCDRWithKey=CDR
+        - PublishToCoinBillWithKey=CoinBill
+        - PublishToSelf=SelfPublish
+        # Connection to customer-database
+        - CustomerDatabaseHost=localhost
+        - CustomerDatabasePort=8888
+
+  cdr:
+    image: cyclops_cdr
+    container_name: cyclops_cdr
+    networks:
+        - backend
+    depends_on:
+        - db
+        - rabbitmq_init
+    ports:
+        - '4568:4568'
+    environment:
+        # HTTP and/or HTTPS port to be exposed at
+        - ServerHTTPPort=4568
+        # Health check every X seconds
+        - ServerHealthCheck=30
+        - ServerHealthShutdown=false
+        # Database credentials to TimescaleDB
+        - DatabasePort=5432
+        - DatabaseHost=cyclops_timescaledb
+        - DatabaseUsername=username
+        - DatabasePassword=password
+        - DatabaseName=cyclops_cdr
+        - DatabasePageLimit=500
+        - DatabaseConnections=2
+        # Publisher (RabbitMQ) credentials
+        - PublisherHost=cyclops_rabbitmq
+        - PublisherUsername=guest
+        - PublisherPassword=guest
+        - PublisherPort=5672
+        - PublisherVirtualHost=/
+        - PublisherDispatchExchange=cyclops.cdr.dispatch
+        - PublisherBroadcastExchange=cyclops.cdr.broadcast
+        # Consumer (RabbitMQ) credentials
+        - ConsumerHost=cyclops_rabbitmq
+        - ConsumerUsername=guest
+        - ConsumerPassword=guest
+        - ConsumerPort=5672
+        - ConsumerVirtualHost=/
+        - ConsumerDataQueue=cyclops.cdr.consume
+        - ConsumerCommandsQueue=cyclops.cdr.commands
+
+  udr:
+    image: cyclops_udr
+    container_name: cyclops_udr
+    networks:
+        - backend
+    depends_on:
+        - db
+        - rabbitmq_init
+    ports:
+        - '4567:4567'
+    environment: 
+        # HTTP and/or HTTPS port to be exposed at
+        - ServerHTTPPort=4567
+        # Health check every X seconds
+        - ServerHealthCheck=30
+        - ServerHealthShutdown=false
+        # Database credentials to TimescaleDB
+        - DatabasePort=5432
+        - DatabaseHost=cyclops_timescaledb
+        - DatabaseUsername=username
+        - DatabasePassword=password
+        - DatabaseName=cyclops_udr
+        - DatabasePageLimit=500
+        - DatabaseConnections=4
+        # Publisher (RabbitMQ) credentials
+        - PublisherHost=cyclops_rabbitmq
+        - PublisherUsername=guest
+        - PublisherPassword=guest
+        - PublisherPort=5672
+        - PublisherVirtualHost=/
+        - PublisherDispatchExchange=cyclops.udr.dispatch
+        - PublisherBroadcastExchange=cyclops.udr.broadcast
+        - RoutingKeyPublishUDRCommand=SelfPublish
+        # Consumer (RabbitMQ) credentials
+        - ConsumerHost=cyclops_rabbitmq
+        - ConsumerUsername=guest
+        - ConsumerPassword=guest
+        - ConsumerPort=5672
+        - ConsumerVirtualHost=/
+        - ConsumerDataQueue=cyclops.udr.consume
+        - ConsumerCommandsQueue=cyclops.udr.commands
+
+  db:
+    image: cyclops_timescaledb
+    container_name: cyclops_timescaledb
+    ports:
+        - '5432:5432' 
+    networks:
+        - backend
+
+  rabbitmq:
+    image: cyclops_rabbitmq
+    container_name: cyclops_rabbitmq
+    ports:
+        - '5672:5672'
+        - '15672:15672'
+    networks:
+        - backend
+
+  rabbitmq_init:
+    image: cyclops_rabbitmq_init
+    container_name: cyclops_rabbitmq_init
+    depends_on:
+        - rabbitmq
+    networks:
+        - backend
+    environment:
+        # Consumer (RabbitMQ) credentials
+        - ConsumerHost=cyclops_rabbitmq
+        - ManagePort=15672    
+
+networks:
+  backend:    
+
+    
+    
+
+                
+
+
+
+
