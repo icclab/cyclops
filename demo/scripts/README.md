@@ -75,7 +75,7 @@ $ bash getInvoice.sh -t0=22-Sep-2017 -t1=23-Sep-2017 -d=5
 * t1 = end date of the invoice period (inclusive)
 * d = delay parameter in seconds, you must make a reasonable judgement call regarding this value, it should be sufficient to allow each of the stages to finish data processing before the next stage can start.
 
-If the bill is properly generated, you can view it in the browser by navigating to ```http(s)://billing-service-ip-address:port/bills``` 
+If the bill is properly generated, you can view it in the browser by navigating to ```http(s)://billing-service-ip-address:port/bills```. In this demo, you can access it using ```localhost``` instead over port 4569.
 
 ### Database cleaning
 
