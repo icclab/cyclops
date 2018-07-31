@@ -15,8 +15,7 @@ Each synthetic usage data value that the generator script creates has the follow
  	"usage": 22560,
  	"unit": "KB",
  	"data":{
- 		"pod_id":"string id",
-    	}
+ 		"pod_id":"string id"
  	}   
  }
 ```
