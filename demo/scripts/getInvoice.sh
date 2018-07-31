@@ -16,6 +16,7 @@
 # under the License.
 
 # Author: Dorodko Serhii (dord@zhaw.ch)
+# Updated by: Piyush Harsh (harh@zhaw.ch)
 # Created: 27.07.2018
 # Desription: Invoice genration script for Cyclops demo
 
@@ -79,8 +80,8 @@ case "${unameOut}" in
 	fi
 	;;
     Darwin*)    
-	time0=$(date -j -f "%a %b %d %T %Z %Y" "`date`" "+%s%3N")
-	time1=$(date -j -f "%a %b %d %T %Z %Y" "`date`" "+%s%3N")
+	time0=$(date -j -f "%d-%M-%Y" "$TIMESTART" "+%s000")
+	time1=$(date -j -f "%d-%M-%Y" "$TIMESTOP" "+%s000")
 	if [ $? -ne 0 ]; 
 		then
 		error_exit "error: Input time has incorrect format! Aborting."

@@ -51,7 +51,8 @@ $ bash rulesApply.sh
 To generate usage data there is `dataGeneration.sh` script which allows you to specify some window (in minutes) for which usage data points should be generated as part of simulation. You will also need to specify the inter-arrival duration between samples. This script can be executed as shown below. During execution, it will generate and send simulated usage data stream into Cyclop framework. It simulates data, that would be collected from real clusters periodicaly. The command is provided next:   
 
 ```sh
-$ bash dataGeneration.sh -t0=22-Sep-2017 -t1=23-Sep-2017 -i=360
+$ bash dataGeneration.sh -t0=22-Sep-2017 -t1=23-Sep-2017 -i=360 \\in linux
+$ bash dataGeneration.sh -t0=22-09-2017 -t1=23-09-2017 -i=360 \\in MacOS
 ```
 - t0 = start of the data simulation window (a calendar date)
 - t1 = end of the data simulation window (a calendar date)
@@ -69,13 +70,47 @@ Borrowing ideas from the world of telecommunication, Cyclops is able to consolid
 User has to specify time window (invoice period) as well. Cyclops will generate invoice for this particular time. ```getInvoice.sh``` script accepts invoice period. As the framework may take non-zero time in seconds to complete number crunching and aggregation activities for UDR and CDR record generation, the script also takes a delay parameter to allow the previous stage to finish before the subsequent stage can begin.
 
 ```sh
-$ bash getInvoice.sh -t0=22-Sep-2017 -t1=23-Sep-2017 -d=5
+$ bash getInvoice.sh -t0=22-Sep-2017 -t1=23-Sep-2017 -d=5 //in linux
+$ bash getInvoice.sh -t0=22-09-2017 -t1=23-09-2017 -d=5 //in MacOS
 ```
 * t0 = start date of the invoice period (inclusive)
 * t1 = end date of the invoice period (inclusive)
 * d = delay parameter in seconds, you must make a reasonable judgement call regarding this value, it should be sufficient to allow each of the stages to finish data processing before the next stage can start.
 
 If the bill is properly generated, you can view it in the browser by navigating to ```http(s)://billing-service-ip-address:port/bills```. In this demo, you can access it using ```localhost``` instead over port 4569.
+
+Sample output may look similar to -
+
+```json
+{
+  "data": [
+    {
+      "id": 2,
+      "account": "dord",
+      "charge": 3346.64,
+      "time_from": 1530454049000,
+      "time_to": 1531663649000,
+      "data": [
+        {
+          "data": {
+            "unit": "MB",
+            "usage": 334664.0,
+            "pod_id": "pod1"
+          },
+          "charge": 3346.64,
+          "metric": "memory",
+          "time_to": 1531663649000,
+          "time_from": 1530454049000
+        }
+      ],
+      "currency": "CHF"
+    }
+  ],
+  "pageLimit": 500,
+  "selectedPage": 0,
+  "recordsShown": 1
+}
+```
 
 ### Database cleaning
 
@@ -85,6 +120,8 @@ bash cleanDB.sh --rules
 bash cleanDB.sh --data
 bash cleanDB.sh -d -r
 ```
+
+You will need psql utility available for the above cleaning commands to work. 
 
  ### License
 
