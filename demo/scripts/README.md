@@ -47,7 +47,7 @@ To execute pricing and billing rule registration with Cyclops, simply execute th
 ```sh
 $ bash rulesApply.sh
 ```
-### Data simulation
+### Simulating a service usage data stream
 To generate usage data there is `dataGeneration.sh` script which allows you to specify some window (in minutes) for which usage data points should be generated as part of simulation. You will also need to specify the inter-arrival duration between samples. This script can be executed as shown below. During execution, it will generate and send simulated usage data stream into Cyclop framework. It simulates data, that would be collected from real clusters periodicaly. The command is provided next:   
 
 ```sh
@@ -59,20 +59,27 @@ $ bash dataGeneration.sh -t0=22-Sep-2017 -t1=23-Sep-2017 -i=360
 
 Upon termination, necessary simulation data has been fed into Cyclops and we are ready to start the next phases: generation of usage reports, charge data records and finally a bill object.
 
-### Invoice producing 
+### Generation of invoice 
 
-To produce invoice, script runs few commands in a row:
+Borrowing ideas from the world of telecommunication, Cyclops is able to consolidate large number of usage data points for different services used by the customer in a given time window. Such a consolidation results in Usage Data Record (UDR). The pricing rules act of UDR objects to transform aggregated usage amounts to a cost value. This is referred to as Charge Data Record (CDR) in Cyclops. Ultimately, a bill is consolidation of all CDRs in an invoicing period + some additional transformations (if necessary). To produce a demo bill object, included script ```getInvoice.sh``` runs these commands in a row:
  - GenerateUDRs
  - FlushUDRs
  - GenerateBill
 
-User has to specify time window as well. Cyclops will generate invoice for this particular time. `getInvoice.sh` script accepts edge time values like in data simulation part but time interval is not needed here. Instead customer has to define deley between commands in seconds. 
+User has to specify time window (invoice period) as well. Cyclops will generate invoice for this particular time. ```getInvoice.sh``` script accepts invoice period. As the framework may take non-zero time in seconds to complete number crunching and aggregation activities for UDR and CDR record generation, the script also takes a delay parameter to allow the previous stage to finish before the subsequent stage can begin.
 
 ```sh
 $ bash getInvoice.sh -t0=22-Sep-2017 -t1=23-Sep-2017 -d=5
 ```
+* t0 = start date of the invoice period (inclusive)
+* t1 = end date of the invoice period (inclusive)
+* d = delay parameter in seconds, you must make a reasonable judgement call regarding this value, it should be sufficient to allow each of the stages to finish data processing before the next stage can start.
+
+If the bill is properly generated, you can view it in the browser by navigating to ```http(s)://billing-service-ip-address:port/bills``` 
+
 ### Database cleaning
-There is also script to delete all queries from database, so it's easier to play with demo. `cleanDB.sh` can delete just usage, udr, cdr, bills(`-d` | `--data`) or rulles(`-r` | `--rules`) or both(`-r -d`). 
+
+We have included a script to clean up your database by dumping any stale data points so that this demo is easier to play with. `cleanDB.sh` can dump all usage points, udr entries, cdr entries, or bills (`-d` | `--data`) or any existing rules (`-r` | `--rules`) or both (`-r -d`).  Below are a few possibilities -
 ```sh
 bash cleanDB.sh --rules
 bash cleanDB.sh --data
