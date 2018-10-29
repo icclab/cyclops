@@ -181,5 +181,7 @@ POST request to the rule engine endpoint
 - coin-cdr-url-or-ip:port/rule
 - coin-bill-url-or-ip:port/rule
 
+In the upcoming release, ability to checkpoint and rollback rules will also be made available. The additional documentation will follow.
+
 Generation of a bill
 ====================
