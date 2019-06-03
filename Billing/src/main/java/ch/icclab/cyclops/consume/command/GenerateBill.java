@@ -18,8 +18,18 @@ package ch.icclab.cyclops.consume.command;
 
 import ch.icclab.cyclops.load.Loader;
 import ch.icclab.cyclops.publish.Messenger;
+import ch.icclab.cyclops.dao.Bill;
+import ch.icclab.cyclops.timeseries.DbAccess;
+import ch.icclab.cyclops.util.loggers.RESTLogger;
+import org.jooq.SelectQuery;
+import org.restlet.Response;
+import org.restlet.data.Status;
+import org.restlet.resource.Get;
 
+import java.sql.Timestamp;
 import java.util.*;
+
+import static org.jooq.impl.DSL.inline;
 
 /**
  * Author: Martin Skoviera (linkedin.com/in/skoviera)
@@ -143,8 +153,16 @@ public class GenerateBill extends Command {
             // extract routing keys from the configuration file
             RoutingKeys keys = Loader.extractProperties(RoutingKeys.class);
             // and also forward this request to CoinBill
-            if (Messenger.publish(flushCDRs, keys.getPublishToCDRWithKey()) && Messenger.publish(billRequest, keys.getPublishToCoinBillWithKey()))
-                status.setSuccessful(String.format("GenerateBill request processed for %d - %d", time_from, time_to));
+            if (Messenger.publish(flushCDRs, keys.getPublishToCDRWithKey()) && Messenger.publish(billRequest, keys.getPublishToCoinBillWithKey())) {
+                DbAccess db = new DbAccess();
+                SelectQuery select = db.createSelectFrom(Bill.TABLE);
+                select.addOrderBy(Bill.ID_FIELD.desc());
+                select.addLimit(0, 1);
+                List<Bill> bills = db.fetchUsingSelectStatement(select, Bill.class);
+                status.setSuccessful(String.format("GenerateBill request processed for %d - %d, Record %d", time_from, time_to, bills.get(0).getId()));
+
+                //RESTLogger.log(bills.get(0).getId().toString());
+            }
             else status.setServerError(String.format("GenerateBill unable to notify CDR and CoinBill for %d - %d due to RabbitMQ", time_from, time_to));
         } catch (Exception e) {
             status.setClientError(e.getMessage());

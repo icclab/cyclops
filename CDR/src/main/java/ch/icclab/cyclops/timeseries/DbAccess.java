@@ -70,6 +70,23 @@ public class DbAccess {
     }
 
     /**
+     * Create Delete statement
+     * @param table to delete from
+     * @param conditions optional fields and aggregates
+     * @return delete step
+     */
+    public DeleteQuery createDeleteFrom(Table table, Condition ... conditions) {
+        // get Postgres context
+        DSLContext context = PostgresDSL.using(SQL_DIALECT);
+
+        // create select query and optionally add specified fields
+        DeleteQuery<?> delete = context.deleteQuery(table);
+        if (conditions.length > 0) delete.addConditions(conditions);
+
+        return delete;
+    }
+
+    /**
      * Create Insert INTO query
      * @param table to insert data to
      * @return insert query
@@ -84,6 +101,19 @@ public class DbAccess {
      * @return number of inserted records
      */
     public int executeInsertStatement(InsertQuery query) {
+        try (Connection connection = DbPool.getConnection()) {
+            return PostgresDSL.using(connection, SQL_DIALECT).execute(query);
+        } catch (Exception e) {
+            return -1;
+        }
+    }
+
+    /**
+     * Execute delete statement
+     * @param query to be executed
+     * @return number of inserted records
+     */
+    public int executeDeleteStatement(DeleteQuery query) {
         try (Connection connection = DbPool.getConnection()) {
             return PostgresDSL.using(connection, SQL_DIALECT).execute(query);
         } catch (Exception e) {

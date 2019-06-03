@@ -24,10 +24,13 @@ import org.jooq.SelectQuery;
 import org.restlet.Response;
 import org.restlet.data.Status;
 import org.restlet.resource.Get;
+import org.restlet.resource.ResourceException;
 
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.Map;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import static org.jooq.impl.DSL.inline;
 
@@ -52,6 +55,8 @@ public class UDREndpoint extends AbstractEndpoint {
 
     // optional page number
     private static String PAGE = "page";
+    final static Logger logger = LogManager.getLogger(UDREndpoint.class.getName());
+    private Long id = null;
     private int pageLimit;
 
     private class Envelope {
@@ -86,12 +91,70 @@ public class UDREndpoint extends AbstractEndpoint {
     }
 
     @Override
+    protected void doInit() throws ResourceException {
+        try {
+            id = Long.parseLong((String) getRequestAttributes().get("id"));
+        } catch (Exception e) {
+            id = null;
+        }
+        // log received message
+        logger.trace("Dispatching RESTful API call for udrs");
+    }
+
+    @Override
     public String getRoute() {
         return "/udr";
     }
 
     @Get("json")
     public Response getUDRs() {
+        Response response = null;
+        if (id == null) {
+            response = processList();
+        } else {
+            response = processView(id);
+        }
+
+        return response;
+    }
+    private Response processView(Long id) {
+        logger.trace(String.format("Displaying content of a template with id: %d", id));
+        // prepare response
+        Response response = getResponse();
+        HTTPOutput output = null;
+
+        DbAccess db = new DbAccess();
+        SelectQuery select = db.createSelectFrom(UDR.TABLE);
+
+        select.addConditions(UDR.ID_FIELD.eq(id));
+        // fetch from database
+        List<UDR> UDRs= db.fetchUsingSelectStatement(select, UDR.class);
+
+        if (UDRs == null) {
+            output = new HTTPOutput(Status.SERVER_ERROR_INTERNAL, "Could not fetch UDRs, most likely database is down");
+            response = output.prepareResponse(response);
+        } else {
+            if (UDRs.size() > 1) {
+                output = new HTTPOutput(Status.SERVER_ERROR_INTERNAL, "There are several objects with requested id, database works incorrect");
+                response = output.prepareResponse(response);
+            } else {
+                if(UDRs.size() == 0) {
+                    output = new HTTPOutput(Status.SERVER_ERROR_INTERNAL, "There is no UDR stored with id: " + id);
+                    response = output.prepareResponse(response);
+                } else {
+                    // transform UDR's data field time_from PGObject time_to Map
+                    UDRs = UDR.applyPGObjectDataFieldToMapTransformation(UDRs);
+                    output = new HTTPOutput(String.format("Fetched %d UDRs", UDRs.size()), UDRs.get(0));
+                    response = output.prepareResponse(response, false);
+                }
+            }
+        }
+
+        RESTLogger.log(String.format("%s %s", getRoute(), output.toString()));
+
+        return  response;
+    }
+    private Response processList() {
         // prepare response
         Response response = getResponse();
         HTTPOutput output = null;
@@ -108,7 +171,7 @@ public class UDREndpoint extends AbstractEndpoint {
         Long time_to = extractLong(params, TIME_TO, -1L);
         if (time_to == null)
             return new HTTPOutput(Status.CLIENT_ERROR_BAD_REQUEST, String.format("Invalid %s timestamp condition (provide milliseconds)",
-                UDR.TIME_TO_FIELD.getName())).prepareResponse(response);
+                    UDR.TIME_TO_FIELD.getName())).prepareResponse(response);
 
         // if time_to was specified but time_from is still higher number
         if (time_to >= 0 && time_from > time_to)

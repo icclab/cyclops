@@ -26,9 +26,7 @@ import org.restlet.data.Status;
 import org.restlet.resource.Get;
 
 import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static org.jooq.impl.DSL.inline;
 
@@ -138,16 +136,19 @@ public class BillEndpoint extends AbstractEndpoint {
         if (time_from > -1) select.addConditions(Bill.TIME_FROM_FIELD.ge(inline(new Timestamp(time_from))));
 
         // to time window
-        if (time_to > -1 && time_from <= time_to) select.addConditions(Bill.TIME_TO_FIELD.lt(inline(new Timestamp(time_to))));
+        if (time_to > -1 && time_from <= time_to) select.addConditions(Bill.TIME_TO_FIELD.le(inline(new Timestamp(time_to))));
 
         // filter by account
         if (account != null && !account.isEmpty()) select.addConditions(Bill.ACCOUNT_FIELD.eq(inline(account)));
 
         // filter by currency
         if (currency != null && !currency.isEmpty()) select.addConditions(Bill.CURRENCY_FIELD.eq(inline(currency)));
+        //select.addOrderBy(Bill.ID_FIELD.desc());
+
 
         // offset and limit for pagination
         select.addLimit(selectedPage * pageLimit, pageLimit);
+        //select.addLimit(0, 1);
 
         // fetch from database
         List<Bill> bills = db.fetchUsingSelectStatement(select, Bill.class);
@@ -157,6 +158,7 @@ public class BillEndpoint extends AbstractEndpoint {
             response = output.prepareResponse(response);
         } else {
             // transform Bill's data field time_from PGObject time_to Map
+            //RESTLogger.log(bills.get(0).getId().toString());
             bills = Bill.applyPGObjectDataFieldToMapTransformation(bills);
 
             output = new HTTPOutput(String.format("Fetched %d Bills", bills.size()), new Envelope(bills, pageLimit, selectedPage));

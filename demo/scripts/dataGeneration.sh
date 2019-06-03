@@ -16,7 +16,6 @@
 # under the License.
 
 # Author: Dorodko Serhii (dord@zhaw.ch)
-# Modified by: Piyush Harsh (harh@zhaw.ch)
 # Created: 27.07.2018
 # Desription: Data generation script for Cyclops demo
 
@@ -119,8 +118,8 @@ case "${unameOut}" in
 	fi
 	;;
     Darwin*)    
-	time0=$(date -j -f "%d-%M-%Y" "$TIMESTART" "+%s000")
-	time1=$(date -j -f "%d-%M-%Y" "$TIMESTOP" "+%s000")
+	time0=$(date -j -f "%a %b %d %T %Z %Y" "`date`" "+%s%3N")
+	time1=$(date -j -f "%a %b %d %T %Z %Y" "`date`" "+%s%3N")
 	if [ $? -ne 0 ]; 
 		then
 		error_exit "error: Input time has incorrect format! Aborting."
@@ -140,7 +139,7 @@ fi
 
 window=$((${INTERVAL} * 60000))
  
-echo "Input data in millisec: [time0 = $time0; time1 = $time1; window = $window]"
+
 
 # Input dates correctness check
 if [ "${time1}" -lt "${time0}" ]
@@ -150,7 +149,7 @@ if [ "${time1}" -lt "${time0}" ]
 fi
 
 timestamp=${time0}
-
+COUNT=0
 # Deploy usage data to Cyclops through API call in loop
 echo "Deploying manufacturing data to Cyclops..."
 while [ $timestamp -le "$time1" ]
@@ -163,6 +162,12 @@ do
   sendUsage "$json" 
   echo 
   timestamp=$(($timestamp+$window))
+  COUNT=$((${COUNT} + 1))
 done
+
+echo
+echo "Input data in millisec: [time0 = $time0; time1 = $time1; window = $window]"
+echo
+echo "records generated and fed #$COUNT"
 
 

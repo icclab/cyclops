@@ -17,6 +17,7 @@ package ch.icclab.cyclops.application;
  */
 
 import ch.icclab.cyclops.endpoint.*;
+import ch.icclab.cyclops.load.Loader;
 import ch.icclab.cyclops.util.RegexParser;
 import com.metapossum.utils.scanner.reflect.ClassesInPackageScanner;
 import org.apache.logging.log4j.LogManager;
@@ -39,14 +40,22 @@ public class Service {
     // Router for registering api endpoints
     private Router router;
 
+
     /**
      * This method handles the incoming request and routes it to the appropriate resource class
      */
     public Restlet createInboundRoot() throws Exception {
 
         logger.trace("Initialising UDR microservice and creating routes");
+        router = new Router();
 
-        router = attachRoutes();
+        logger.trace("Creating routes for Rule Engine microservice");
+
+        // following endpoints are available
+        router.attach("/", RootEndpoint.class);
+
+        // attach custom endpoints
+        attachCustomEndpoints();
 
         logger.trace("Routes for UDR microservice successfully created");
 
@@ -54,32 +63,52 @@ public class Service {
     }
 
     /**
-     * Attach routes that extend AbstractEndpoint class
-     * @return router
+     * Implement here your own endpoints you want to expose and track
      */
-    private Router attachRoutes() {
-        Router router = new Router();
+    private void attachCustomEndpoints() {
+        // attach endpoints to router and track them
+        logger.trace("Attaching usage endpoint");
+        router.attach("/usage", UsageEndpoint.class);
 
-        List<Class> list = new ArrayList<>();
+        logger.trace("Attaching udr endpoint");
+        router.attach("/udr/{id}", UDREndpoint.class);
+        router.attach("/udr", UDREndpoint.class);
 
-        try {
-            // find all endpoints and add them to the list
-            list.addAll(new ClassesInPackageScanner().setResourceNameFilter((packageName, fileName) -> !AbstractEndpoint.class.getSimpleName().
-                    equals(RegexParser.getFileName(fileName))).scan(AbstractEndpoint.class.getPackage().getName()));
-        } catch (Exception ignored) {}
+        logger.trace("Attaching command endpoint");
+        router.attach("/command", CommandEndpoint.class);
 
-        // create routes
-        for (Class clazz : list) {
-            // only those which extend Endpoint
-            if (AbstractEndpoint.class.isAssignableFrom(clazz)) {
-                try {
-                    // get endpoint's route path
-                    String route = ((AbstractEndpoint) clazz.newInstance()).getRoute();
-                    router.attach(route, clazz);
-                } catch (Exception ignored) {}
-            }
-        }
-
-        return router;
+        logger.trace("Attaching status endpoint");
+        router.attach("/status", StatusEndpoint.class);
     }
+
+//    /**
+//     * Attach routes that extend AbstractEndpoint class
+//     * @return router
+//     */
+//    private Router attachRoutes() {
+//        Router router = new Router();
+//
+//        List<Class> list = new ArrayList<>();
+//
+//        try {
+//            // find all endpoints and add them to the list
+//            list.addAll(new ClassesInPackageScanner().setResourceNameFilter((packageName, fileName) -> !AbstractEndpoint.class.getSimpleName().
+//                    equals(RegexParser.getFileName(fileName))).scan(AbstractEndpoint.class.getPackage().getName()));
+//        } catch (Exception ignored) {}
+//
+//        // create routes
+//        for (Class clazz : list) {
+//            // only those which extend Endpoint
+//            if (AbstractEndpoint.class.isAssignableFrom(clazz)) {
+//                try {
+//                    // get endpoint's route path
+//                    String route = ((AbstractEndpoint) clazz.newInstance()).getRoute();
+//                    router.attach(route, clazz);
+//                } catch (Exception ignored) {}
+//            }
+//        }
+//
+//        return router;
+//    }
+
 }

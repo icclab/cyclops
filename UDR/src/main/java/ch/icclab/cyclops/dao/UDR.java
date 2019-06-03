@@ -29,10 +29,13 @@ import static org.jooq.impl.DSL.*;
 /**
  * Author: Martin Skoviera (linkedin.com/in/skoviera)
  * Created: 20.04.17
- * Description: Structure for JSON mapping of Usage records
+ * Description: Structure for JSON mapping of UDR records
  */
 public class UDR implements PersistentObject {
     public static Table TABLE = table(name("udr"));
+
+    public static Field<Long> ID_FIELD = field(name("id"), Long.class);
+    private Long id;
 
     public static Field<String> METRIC_FIELD = field(name("metric"), String.class);
     private String metric;
@@ -64,6 +67,10 @@ public class UDR implements PersistentObject {
     }
 
     //=========== Getters and Setters
+
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
+
     public String getMetric() {
         return metric;
     }
@@ -121,12 +128,12 @@ public class UDR implements PersistentObject {
 
     @Override
     public Collection<? extends Field<?>> getFields() {
-        return Arrays.asList(METRIC_FIELD, ACCOUNT_FIELD, USAGE_FIELD, TIME_FROM_FIELD, TIME_TO_FIELD, DATA_FIELD, UNIT_FIELD);
+        return Arrays.asList(ID_FIELD, METRIC_FIELD, ACCOUNT_FIELD, USAGE_FIELD, TIME_FROM_FIELD, TIME_TO_FIELD, DATA_FIELD, UNIT_FIELD);
     }
 
     @Override
     public Object[] getValues() {
-        return new Object[]{getMetric(), getAccount(), getUsage(), new Timestamp(getTime_from()),
+        return new Object[]{getId(), getMetric(), getAccount(), getUsage(), new Timestamp(getTime_from()),
                 new Timestamp(getTime_to()), getData(), getUnit()};
     }
 

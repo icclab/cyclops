@@ -5,13 +5,13 @@
 
 Welcome to Cyclops's documentation!
 ===================================
-Cyclops is an open source, community driven project led by Cloud Accounting 
-and Billing (CAB) initiative @ SPLAB, part of InIT - ZHAW, for creating a 
-flexible accounting and billing framework for IT services. Cyclops has been 
-specifically designed keeping requirements of popular cloud native 
-applications, platforms and services in mind. Widely used platforms such as 
-OpenStack, CloudStack, Apache Hadoop, etc. are already supported, meaning - 
-these can be billed out of box through Cyclops framework via appropriate 
+Cyclops is an open source, community driven project led by Cloud Accounting
+and Billing (CAB) initiative @ SPLAB, part of InIT - ZHAW, for creating a
+flexible accounting and billing framework for IT services. Cyclops has been
+specifically designed keeping requirements of popular cloud native
+applications, platforms and services in mind. Widely used platforms such as
+OpenStack, CloudStack, Apache Hadoop, etc. are already supported, meaning -
+these can be billed out of box through Cyclops framework via appropriate
 collectors.
 
 .. figure:: v3.png
@@ -22,13 +22,13 @@ collectors.
 
     Figure 1: Cyclops framework architecture (v3.0)
 
-This manual covers only installation and administration of Cyclops 
+This manual covers only installation and administration of Cyclops
 installation.
 
 .. seealso::
 
-    You may want to read `Cyclops's Developer's guide`__ (WiKi) -- the first 
-    bit, at least -- to get an idea of the concepts required for extending the 
+    You may want to read `Cyclops's Developer's guide`__ (WiKi) -- the first
+    bit, at least -- to get an idea of the concepts required for extending the
     framework.
 
     __ https://github.com/icclab/cyclops/wiki
@@ -46,6 +46,7 @@ installation.
    setup_coin.rst
    manage.rst
    advanced_topics.rst
+   rule_versioning.rst
 
 Indices and tables
 ==================

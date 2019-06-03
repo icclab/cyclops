@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration>
+    <Appenders>
+        <Console name="STDOUT" target="SYSTEM_OUT">
+            <PatternLayout pattern="[ %-6p] %d{yyyy-MM-dd HH:mm:ss} - %m%n"/>
+        </Console>
+        <Console name="STDERR" target="SYSTEM_ERR">
+            <PatternLayout pattern="[ %-6p] %d{yyyy-MM-dd HH:mm:ss} - %m%n"/>
+        </Console>
+    </Appenders>
+    <Loggers>
+        <Root level="ERROR">
+            <AppenderRef ref="STDERR" level="ERROR"/>
+        </Root>
+        <logger name="ch.icclab.cyclops" level="ALL">
+            <appender-ref ref="STDOUT" level="TRACE"/>
+        </logger>
+        <logger name="ch.icclab.cyclops.util.loggers.TimelineLogger" level="REST">
+            <appender-ref ref="STDOUT" level="REST"/>
+        </logger>
+
+        <logger name="ch.icclab.cyclops.rule.listeners.AuditRuleExecution" level="ALL">
+            <appender-ref ref="STDOUT" level="RULE"/>
+        </logger>
+        <logger name="ch.icclab.cyclops.util.loggers.RulesLogger" level="RULE">
+            <appender-ref ref="STDOUT" level="RULE"/>
+        </logger>
+
+        <logger name="ch.icclab.cyclops.rule.listeners.AuditTruthManagement" level="ALL">
+            <appender-ref ref="STDOUT" level="FACT"/>
+        </logger>
+        <logger name="ch.icclab.cyclops.util.loggers.FactsLogger" level="FACT">
+            <appender-ref ref="STDOUT" level="FACT"/>
+        </logger>
+
+        <logger name="ch.icclab.cyclops.util.loggers.DispatchLogger" level="DISPATCH">
+            <appender-ref ref="STDOUT" level="DISPATCH"/>
+        </logger>
+
+        <logger name="ch.icclab.cyclops.util.loggers.StreamLogger" level="STREAM">
+            <appender-ref ref="STDOUT" level="STREAM"/>
+        </logger>
+
+        <logger name="org.hibernate" level="INFO">
+            <appender-ref ref="STDOUT" level="INFO"/>
+        </logger>
+    </Loggers>
+</Configuration>
