@@ -1,0 +1,33 @@
+version: '3.4'
+
+services:
+  k8s-agent:
+    image: elastest/emp-k8s-agent:latest
+    environment:
+      - host=kafka.cloudlab.zhaw.ch
+      - port=9092
+      - topic=user-1-test_space
+      - series=kubernetes
+      - clientid=sentinel-k8s-client
+      - periodicity=30
+      - clustername=minikube
+      - clusterserver=https://192.168.99.106:8443
+      - clusterca=ca.crt
+      - contextname=minikube
+      - contextcluster=minikube
+      - contextuser=minikube
+      - currentcontext=minikube
+      - username=minikube
+      - userclientcertificate=client.crt
+      - userclientkey=client.key
+      - configpath=/tmp/kube_config
+    volumes:
+      - ./keys:/root/.kube/
+    networks:
+      - dockervboxnet
+networks:
+  dockervboxnet:
+    external: true
+  default:
+    external:
+      name: sentinel
