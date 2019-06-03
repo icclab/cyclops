@@ -15,7 +15,7 @@
         <restlet-version>2.3.4</restlet-version>
         <joda-version>2.9.3</joda-version>
         <servlet-version>2.5</servlet-version>
-        <rabbitmq-version>3.6.1</rabbitmq-version>
+        <rabbitmq-version>4.8.0</rabbitmq-version>
         <slf4j-version>1.7.12</slf4j-version>
         <openstack4j-version>2.0.4</openstack4j-version>
     </properties>
