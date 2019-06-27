@@ -47,6 +47,7 @@ installation.
    manage.rst
    advanced_topics.rst
    rule_versioning.rst
+   forecasting.rst
 
 Indices and tables
 ==================

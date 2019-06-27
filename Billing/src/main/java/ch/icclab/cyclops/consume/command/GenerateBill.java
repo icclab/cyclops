@@ -154,12 +154,8 @@ public class GenerateBill extends Command {
             RoutingKeys keys = Loader.extractProperties(RoutingKeys.class);
             // and also forward this request to CoinBill
             if (Messenger.publish(flushCDRs, keys.getPublishToCDRWithKey()) && Messenger.publish(billRequest, keys.getPublishToCoinBillWithKey())) {
-                DbAccess db = new DbAccess();
-                SelectQuery select = db.createSelectFrom(Bill.TABLE);
-                select.addOrderBy(Bill.ID_FIELD.desc());
-                select.addLimit(0, 1);
-                List<Bill> bills = db.fetchUsingSelectStatement(select, Bill.class);
-                status.setSuccessful(String.format("GenerateBill request processed for %d - %d, Record %d", time_from, time_to, bills.get(0).getId()));
+
+                status.setSuccessful(String.format("GenerateBill request processed for %d - %d", time_from, time_to));
 
                 //RESTLogger.log(bills.get(0).getId().toString());
             }

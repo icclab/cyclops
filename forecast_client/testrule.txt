@@ -1,0 +1,15 @@
+import ch.icclab.cyclops.facts.Usage;
+import ch.icclab.cyclops.facts.Charge;
+
+rule "Test 1 rule for ram"
+salience 60
+when
+  $usage: Usage(metric == "memory" && account.contains("test1"))
+then
+  Charge charge = new Charge($usage);
+  charge.setCharge(0.01 * $usage.getUsage());
+  charge.setCurrency("CHF");
+
+  retract($usage);
+  insert(charge);
+end

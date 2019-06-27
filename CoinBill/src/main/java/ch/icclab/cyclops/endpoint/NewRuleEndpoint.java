@@ -18,6 +18,7 @@ package ch.icclab.cyclops.endpoint;
 
 import ch.icclab.cyclops.persistence.DatabaseException;
 import ch.icclab.cyclops.persistence.orm.InstanceORM;
+import ch.icclab.cyclops.publish.Messenger;
 import ch.icclab.cyclops.resource.InstanceResource;
 import ch.icclab.cyclops.rule.RuleException;
 import ch.icclab.cyclops.rule.RuleManagement;
@@ -44,14 +45,11 @@ import org.restlet.resource.Post;
 import org.restlet.resource.ServerResource;
 
 import org.apache.http.HttpResponse;
-import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpGet;
 
-import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
-
 
 import java.io.*;
 import java.net.URLDecoder;
@@ -62,7 +60,6 @@ import java.lang.*;
 public class NewRuleEndpoint extends ServerResource {
     // logger
     final static Logger logger = LogManager.getLogger(RuleEndpoint.class.getName());
-    private GitLabApi gitLab;
     GitCredentials credentials = Loader.getSettings().getGitCredentials();
     RollbackEndpoints endpoints = Loader.getSettings().getRollbackEndpoints();
     private String repo = credentials.getGitRepo();
@@ -70,10 +67,57 @@ public class NewRuleEndpoint extends ServerResource {
     private String user = credentials.getGitUsername();
     private String password = credentials.getGitPassword();
     private String projectPath = credentials.getGitProjectPath();
-    private String udrurl = endpoints.getUdrendpoint();
-    private String cdrurl = endpoints.getCdrendpoint();
     private String billingurl = endpoints.getBillingendpoint();
 
+    private class FlushUDRs {
+        private String command;
+        private Long time_from;
+        private Long time_to;
+
+        public FlushUDRs(Long time_from, Long time_to) {
+            this.command = getClass().getSimpleName();
+            this.time_from = time_from;
+            this.time_to = time_to;
+        }
+    }
+
+    private class DeleteCDRs {
+        private String command;
+        private Long time_from;
+        private Long time_to;
+
+        public DeleteCDRs(Long time_from, Long time_to) {
+            this.command = getClass().getSimpleName();
+            this.time_from = time_from;
+            this.time_to = time_to;
+        }
+    }
+
+    private class DeleteBills {
+        private String command;
+        private Long time_from;
+        private Long time_to;
+
+        public DeleteBills(Long time_from, Long time_to) {
+            this.command = getClass().getSimpleName();
+            this.time_from = time_from;
+            this.time_to = time_to;
+        }
+    }
+
+    private class GenerateBill {
+        private String command;
+        private Long time_from;
+        private Long time_to;
+        private String request;
+
+        public GenerateBill(Long time_from, Long time_to, String request) {
+            this.command = getClass().getSimpleName();
+            this.time_from = time_from;
+            this.time_to = time_to;
+            this.request = request;
+        }
+    }
 
     @Post
     public String processPostRequest(Representation entity) {
@@ -89,7 +133,6 @@ public class NewRuleEndpoint extends ServerResource {
 
                 GitLabApi gitLabApi = GitLabApi.login(repo, user, password);
                 RepositoryFileApi repositoryFileApi = gitLabApi.getRepositoryFileApi();
-
                 RepositoryFile repositoryFile = repositoryFileApi.getFile(getProjectId(payload), element.getAsString(), getProjectRef(payload));
                 String newRule = repositoryFile.getDecodedContentAsString();
 
@@ -107,20 +150,10 @@ public class NewRuleEndpoint extends ServerResource {
                     //Step 1: Delete affected CDRs:
 
                     CloseableHttpClient httpClient = HttpClientBuilder.create().build();
-                    HttpPost request = new HttpPost( cdrurl + "command");
                     Long time_from = getTime(payload);
                     Long time_to = System.currentTimeMillis();
-                    JsonObject query = new JsonObject();
-                    query.addProperty("command", "DeleteCDRs");
-                    query.addProperty("time_from", time_from);
-                    query.addProperty("time_to", time_to);
-                    String body = query.toString();
-
-                    StringEntity params = new StringEntity(body);
-
-                    request.addHeader("content-type", "application/json");
-                    request.setEntity(params);
-                    httpClient.execute(request);
+                    DeleteCDRs deleteCDRs = new DeleteCDRs(time_from,time_to);
+                    Messenger.publish(deleteCDRs,"CDR");
 
                     //Step 2: Retrieve affected Bills (time window and account):
 
@@ -132,33 +165,14 @@ public class NewRuleEndpoint extends ServerResource {
 
                     //Step3 : Delete affected Bills:
 
-                    request = new HttpPost(billingurl + "command");
-                    query = new JsonObject();
-                    query.addProperty("command", "DeleteBills");
-                    query.addProperty("time_from", time_from);
-                    query.addProperty("time_to", time_to);
-                    body = query.toString();
-
-                    params = new StringEntity(body);
-
-                    request.addHeader("content-type", "application/json");
-                    request.setEntity(params);
-                    httpClient.execute(request);
+                    DeleteBills deleteBills = new DeleteBills(time_from,time_to);
+                    Messenger.publish(deleteBills,"Billing");
 
                     //Step4: Flush UDRs:
 
-                    request = new HttpPost(udrurl + "command");
-                    query = new JsonObject();
-                    query.addProperty("command", "FlushUDRs");
-                    query.addProperty("time_from", time_from);
-                    query.addProperty("time_to", time_to);
-                    body = query.toString();
-
-                    params = new StringEntity(body);
-
-                    request.addHeader("content-type", "application/json");
-                    request.setEntity(params);
-                    httpClient.execute(request);
+                    FlushUDRs flushUDRs = new FlushUDRs(time_from,time_to);
+                    Messenger.publish(flushUDRs,"UDR");
+                    Thread.sleep(500);
 
                     //Step5: Generate Bill (use time window and account of retrieved bills):
 
@@ -167,26 +181,13 @@ public class NewRuleEndpoint extends ServerResource {
                         Long bill_from = bill.get("time_from").getAsLong();
                         Long bill_to = bill.get("time_to").getAsLong();
                         String bill_account = bill.get("account").getAsString();
-                        request = new HttpPost(billingurl + "command");
-                        query = new JsonObject();
-                        query.addProperty("command", "GenerateBill");
-                        query.addProperty("time_from", bill_from);
-                        query.addProperty("time_to", bill_to);
-                        query.addProperty("request", bill_account);
-                        body = query.toString();
-
-                        params = new StringEntity(body);
-
-                        request.addHeader("content-type", "application/json");
-                        request.setEntity(params);
-                        httpClient.execute(request);
+                        GenerateBill generateBill = new GenerateBill(bill_from,bill_to,bill_account);
+                        Messenger.publish(generateBill,"Billing");
                     }
-
 
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
-
 
                 System.out.println("Added/updated rule file content:\n" + newRule);
             }
@@ -228,16 +229,6 @@ public class NewRuleEndpoint extends ServerResource {
         JsonObject pushEvent = payloadToGson(query);
         JsonElement projectId = pushEvent.get("ref");
         return projectId.getAsString();
-    }
-    private boolean ifNewRule(String pushResponse) throws UnsupportedEncodingException {
-        boolean result = false;
-        JsonArray jsonArray = getTouchedFiles(payloadToGson(pushResponse));
-        for (JsonElement element : jsonArray) {
-            if (element != null && element.getAsString().equals(fileName)) {
-                result = true;
-            }
-        }
-        return result;
     }
 
     private JsonArray getTouchedBills(String query) throws IOException {

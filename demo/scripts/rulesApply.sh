@@ -33,7 +33,7 @@ then
   $charge.forEach(c->retract(c));
 end'
 
-echo 
+echo
 
 # Coin billing broadcast rule
 curl -X "POST" "http://localhost:4571/rule" -H "Content-Type: text/plain" -d $'import ch.icclab.cyclops.facts.Bill;
@@ -51,9 +51,9 @@ then
   $bills.forEach(bill->retract(bill));
 end'
 
-echo 
+echo
 
-# Coin billing collect rule 
+# Coin billing collect rule
 curl -X "POST" "http://localhost:4571/rule" -H "Content-Type: text/plain" -d $'import ch.icclab.cyclops.facts.BillRequest;
 import ch.icclab.cyclops.facts.Charge;
 import ch.icclab.cyclops.facts.Bill;
@@ -85,7 +85,24 @@ import ch.icclab.cyclops.facts.Charge;
 rule "Static rule for ram"
 salience 50
 when
-  $usage: Usage(metric == "memory") 
+  $usage: Usage(metric == "memory")
+then
+  Charge charge = new Charge($usage);
+  charge.setCharge(0.01 * $usage.getUsage());
+  charge.setCurrency("CHF");
+
+  retract($usage);
+  insert(charge);
+end'
+
+# Coin cdr forecast pricing rule
+curl -X "POST" "http://localhost:4570/rule" -H "Content-Type: text/plain" -d $'import ch.icclab.cyclops.facts.Usage;
+import ch.icclab.cyclops.facts.Charge;
+
+rule "Test 1 rule for ram"
+salience 60
+when
+  $usage: Usage(metric == "memory" && account.contains("test1"))
 then
   Charge charge = new Charge($usage);
   charge.setCharge(0.01 * $usage.getUsage());

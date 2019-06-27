@@ -32,7 +32,7 @@ public class Messenger {
     private static Messenger singleton = new Messenger();
 
     // link to RabbitMQ
-    private RabbitMQPublisher rabbitMQ;
+    private static RabbitMQPublisher rabbitMQ;
 
     // container for RESTful objects
     private List<Object> container = new ArrayList<>();
@@ -55,7 +55,7 @@ public class Messenger {
      * @param content of the message
      * @param routing key
      */
-    public boolean publish(Object content, String routing) {
+    public static boolean publish(Object content, String routing) {
         if (rabbitMQ != null) {
             return rabbitMQ.publish(content, routing);
         } else {

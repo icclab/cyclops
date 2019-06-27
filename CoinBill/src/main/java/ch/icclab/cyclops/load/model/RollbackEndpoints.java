@@ -15,6 +15,7 @@ package ch.icclab.cyclops.load.model;
  * License for the specific language governing permissions and limitations
  * under the License.
  */
+
 public class RollbackEndpoints {
     // These fields correspond with the configuration file
     private String udrendpoint;

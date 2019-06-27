@@ -30,6 +30,7 @@
         <evo-version>1.2.1</evo-version>
         <guava-version>21.0</guava-version>
         <lmax-version>3.3.0</lmax-version>
+        <timeseries-forecast-version>1.1.1</timeseries-forecast-version>
     </properties>
 
     <prerequisites>
@@ -245,6 +246,11 @@
             <groupId>com.lmax</groupId>
             <artifactId>disruptor</artifactId>
             <version>${lmax-version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.workday</groupId>
+            <artifactId>timeseries-forecast</artifactId>
+            <version>${timeseries-forecast-version}</version>
         </dependency>
     </dependencies>
 </project>

@@ -105,4 +105,19 @@ public class GenerateUDRs extends Command {
 
         return status;
     }
+    public Long getTime_from() {
+        return time_from;
+    }
+
+    public void setTime_from(Long time_from) {
+        this.time_from = time_from;
+    }
+
+    public Long getTime_to() {
+        return time_to;
+    }
+
+    public void setTime_to(Long time_to) {
+        this.time_to = time_to;
+    }
 }

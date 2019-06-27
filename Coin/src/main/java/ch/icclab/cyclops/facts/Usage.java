@@ -33,7 +33,6 @@ public class Usage extends MappedFact {
     private long time_to;
     private Map<String, Object> data;
     private String unit;
-
     /**
      * Empty constructor necessary for JSON mapping
      */
