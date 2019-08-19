@@ -34,7 +34,7 @@ public class Forecast extends Command{
     private String target;
     private long forecastSize;
 
-    private class GenerateBill {
+    private static class GenerateBill {
         String command;
         Long time_from;
         Long time_to;
@@ -48,15 +48,18 @@ public class Forecast extends Command{
     }
     @Override
     Status execute() {
+        return compute(account, target, forecastSize);
+    }
+    public static Status compute(String user, String model, long length){
         Long time_from = System.currentTimeMillis();
-        Long time_to = time_from + forecastSize * 86402000;
+        Long time_to = time_from + length * 86402000;
         Status status = new Status();
         //Retrieve usage records
         DbAccess db = new DbAccess();
         SelectQuery select = db.createSelectFrom(Usage.TABLE);
         //Filter by specified account
-        if(!(account.equals("global"))) {
-            select.addConditions(Usage.ACCOUNT_FIELD.eq(account));
+        if(!(user.equals("global"))) {
+            select.addConditions(Usage.ACCOUNT_FIELD.eq(user));
         }
         //Sort by newest first
         select.addOrderBy(Usage.TIME_FIELD.desc());
@@ -70,8 +73,13 @@ public class Forecast extends Command{
         }
         // Generate forecast by usage type
         int generated = 0;
+        int accountsize = 1;
+        if(user.equals("global")){
+            accountsize = countAccounts(usages);
+        }
+
         for(String key:usage_map.keySet()){
-            generated += generateForecastFromUsage(usage_map.get(key));
+            generated += generateForecastFromUsage(usage_map.get(key), accountsize, user, model, length);
         }
         // Only continue if any forecast records were generated
         if(generated > 0) {
@@ -90,14 +98,32 @@ public class Forecast extends Command{
             }
             //Generate Bill estimates
 
-            GenerateBill generateBill = new GenerateBill(time_from, time_to, account + "-arima-" + target);
+            GenerateBill generateBill = new GenerateBill(time_from, time_to, user + "-arima-" + model);
             Messenger.publish(generateBill, "Billing");
-            status.setSuccessful("Forecast estimation for account " + account + " complete");
+            status.setSuccessful("Forecast estimation for account " + user + " complete");
         }
         else{status.setServerError("Not enough records found to generate forecast");}
         return status;
     }
-    private int generateForecastFromUsage(List<Usage> usages){
+    private static int countAccounts(List<Usage> usages){
+        List<String> accounts = new ArrayList<>();
+        for(Usage usage:usages){
+            if(!accounts.isEmpty()){
+                int i = 0;
+                for (String account:accounts){
+                    if (account.equals(usage.getAccount()))i++;
+                }
+                if(i==0){
+                    accounts.add(usage.getAccount());
+                }
+            }
+            else{
+                accounts.add(usage.getAccount());
+            }
+        }
+        return accounts.size();
+    }
+    private static int generateForecastFromUsage(List<Usage> usages, int num, String user, String model, long length){
         if (usages.size()>0) {
 
             String metric = usages.get(0).getMetric();
@@ -111,17 +137,20 @@ public class Forecast extends Command{
                 metrics[i] = usages.get(i).getUsage();
             }
             //Generate forecast with ARIMA model
-            ARIMAForecast forecast = new ARIMAForecast();
-            double[] forecastData = forecast.getForecast(metrics, 9, 0, 9, 0, 0, 0, 0, (int)(long)forecastSize);
+            //ARIMAForecast forecast = new ARIMAForecast();
+            //double[] forecastData = forecast.getForecast(metrics, 9, 0, 9, 0, 0, 0, 0, (int)(long)forecastSize*24*num);
+            double mean = Arrays.stream(metrics).average().orElse(Double.NaN);
+            double[] forecastData = new double[(int)(long)length*24*num];
+            Arrays.fill(forecastData, mean);
             //Generate Usage records from forecast
             int k = 0;
             for (double entry : forecastData) {
                 DbAccess dbn = new DbAccess();
                 InsertQuery insert = dbn.createInsertInto(Usage.TABLE);
-                insert.addValue(Usage.DATA_FIELD, String.format("{\"target\":\"%s\"}", target));
-                insert.addValue(Usage.ACCOUNT_FIELD, account + "-arima-" + target);
+                insert.addValue(Usage.DATA_FIELD, String.format("{\"target\":\"%s\"}", model));
+                insert.addValue(Usage.ACCOUNT_FIELD, user + "-arima-" + model);
                 insert.addValue(Usage.METRIC_FIELD, metric);
-                insert.addValue(Usage.TIME_FIELD, System.currentTimeMillis() + k * 86400000);
+                insert.addValue(Usage.TIME_FIELD, System.currentTimeMillis() + k * 3600000);
                 insert.addValue(Usage.USAGE_FIELD, entry);
                 insert.addValue(Usage.UNIT_FIELD, unit);
                 dbn.executeInsertStatement(insert);
