@@ -95,10 +95,11 @@ public class Forecast extends Command{
                 Thread.sleep(500);
             } catch (InterruptedException e) {
                 e.printStackTrace();
+                Thread.currentThread().interrupt();
             }
             //Generate Bill estimates
 
-            GenerateBill generateBill = new GenerateBill(time_from, time_to, user + "-arima-" + model);
+            GenerateBill generateBill = new GenerateBill(time_from, time_to, user + "-forecast-" + model);
             Messenger.publish(generateBill, "Billing");
             status.setSuccessful("Forecast estimation for account " + user + " complete");
         }
@@ -148,7 +149,7 @@ public class Forecast extends Command{
                 DbAccess dbn = new DbAccess();
                 InsertQuery insert = dbn.createInsertInto(Usage.TABLE);
                 insert.addValue(Usage.DATA_FIELD, String.format("{\"target\":\"%s\"}", model));
-                insert.addValue(Usage.ACCOUNT_FIELD, user + "-arima-" + model);
+                insert.addValue(Usage.ACCOUNT_FIELD, user + "-forecast-" + model);
                 insert.addValue(Usage.METRIC_FIELD, metric);
                 insert.addValue(Usage.TIME_FIELD, System.currentTimeMillis() + k * 3600000);
                 insert.addValue(Usage.USAGE_FIELD, entry);

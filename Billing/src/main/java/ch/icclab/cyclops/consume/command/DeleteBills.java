@@ -44,11 +44,12 @@ public class DeleteBills extends Command{
     @Override
     Status execute() {
         Status status = new Status();
+        DeleteQuery delete = null;
         try {
             DbAccess db = new DbAccess();
 
             // select time_from Bill table
-            DeleteQuery delete = db.createDeleteFrom(Bill.TABLE);
+            delete = db.createDeleteFrom(Bill.TABLE);
 
             // time window selection
             delete.addConditions(Bill.TIME_FROM_FIELD.ge(inline(new Timestamp(time_from))));
@@ -68,6 +69,9 @@ public class DeleteBills extends Command{
         } catch (Exception e) {
             CommandLogger.log(e.getMessage());
             status.setServerError(e.getMessage());
+        } finally{
+            assert delete != null;
+            delete.close();
         }
 
         return status;

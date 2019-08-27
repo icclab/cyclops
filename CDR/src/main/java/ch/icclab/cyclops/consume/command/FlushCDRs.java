@@ -83,7 +83,7 @@ public class FlushCDRs extends Command {
     @Override
     Status execute(){
         Status status = new Status();
-
+        SelectQuery select = null;
         try {
             // sanity checks first
             Condition accountCondition = sanityCheckAndWhereAccounts();
@@ -91,7 +91,7 @@ public class FlushCDRs extends Command {
             DbAccess db = new DbAccess();
 
             // select time_from CDR table
-            SelectQuery select = db.createSelectFrom(CDR.TABLE, CDR.METRIC_FIELD, CDR.ACCOUNT_FIELD, CDR.TIME_FROM_FIELD, CDR.TIME_TO_FIELD,
+            select = db.createSelectFrom(CDR.TABLE, CDR.METRIC_FIELD, CDR.ACCOUNT_FIELD, CDR.TIME_FROM_FIELD, CDR.TIME_TO_FIELD,
                     CDR.CHARGE_FIELD, CDR.CURRENCY_FIELD, CDR.DATA_FIELD);
 
             // time window selection
@@ -142,6 +142,9 @@ public class FlushCDRs extends Command {
         } catch (Exception e) {
             CommandLogger.log(e.getMessage());
             status.setServerError(e.getMessage());
+        } finally{
+            assert select != null;
+            select.close();
         }
 
         return status;

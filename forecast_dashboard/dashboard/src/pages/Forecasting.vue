@@ -237,12 +237,12 @@ methods:{
           for (var i=0; i<this.info.length; i++){
             var obj = this.info[i];
             var string = obj['account'];
-            var regex = /arima/;
+            var regex = /forecast/;
             if(regex.test(string)){
               this.billchart.data.labels.push(obj['account']);
               this.billchart.data.series.push(obj['charge']);
               this.total += parseFloat(obj['charge']);
-              this.bills.push({account:obj['account'].substring(0,4),charge:parseFloat(obj['charge']),percentage:0});
+              this.bills.push({account:obj['account'],charge:parseFloat(obj['charge']),percentage:0});
               for (var j=0; j<obj['data'].length;j++){
                 var record = obj['data'][j];
                 if(record['metric']==='cpu'){

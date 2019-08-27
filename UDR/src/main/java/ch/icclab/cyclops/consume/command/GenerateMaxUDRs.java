@@ -64,43 +64,54 @@ public class GenerateMaxUDRs extends Command {
         }
 
         DbAccess db = new DbAccess();
+        InsertQuery<?> insert = null;
+        SelectQuery select = null;
+        try {
+            // create INSERT INTO statement
+            insert = db.createInsertInto(UDR.TABLE);
 
-        // create INSERT INTO statement
-        InsertQuery<?> insert = db.createInsertInto(UDR.TABLE);
+            // prepare fields
+            Field[] fields = {UDR.METRIC_FIELD, UDR.ACCOUNT_FIELD, UDR.USAGE_FIELD,
+                    UDR.TIME_FROM_FIELD, UDR.TIME_TO_FIELD, UDR.UNIT_FIELD, UDR.DATA_FIELD};
 
-        // prepare fields
-        Field[] fields = {UDR.METRIC_FIELD, UDR.ACCOUNT_FIELD, UDR.USAGE_FIELD,
-                UDR.TIME_FROM_FIELD, UDR.TIME_TO_FIELD, UDR.UNIT_FIELD, UDR.DATA_FIELD};
+            // prepare select command
+            select = db.createSelectFrom(Usage.TABLE, Usage.METRIC_FIELD, Usage.ACCOUNT_FIELD, Usage.USAGE_FIELD,
+                    inline(new Timestamp(time_from)), inline(new Timestamp(time_to)), Usage.UNIT_FIELD, Usage.DATA_FIELD);
 
-        // prepare select command
-        SelectQuery select = db.createSelectFrom(Usage.TABLE, Usage.METRIC_FIELD, Usage.ACCOUNT_FIELD, Usage.USAGE_FIELD,
-                inline(new Timestamp(time_from)), inline(new Timestamp(time_to)), Usage.UNIT_FIELD, Usage.DATA_FIELD);
+            // add where predicate for TIME and WHERE METRICS
+            select.addConditions(Usage.TIME_FIELD.between(inline(new Timestamp(time_from)), inline(new Timestamp(time_to))));
+            select.addConditions(onlySelectTheseMetrics(metrics));
 
-        // add where predicate for TIME and WHERE METRICS
-        select.addConditions(Usage.TIME_FIELD.between(inline(new Timestamp(time_from)), inline(new Timestamp(time_to))));
-        select.addConditions(onlySelectTheseMetrics(metrics));
+            // aggregate based on group by
+            select.addGroupBy(Usage.METRIC_FIELD, Usage.ACCOUNT_FIELD, Usage.USAGE_FIELD, Usage.UNIT_FIELD, Usage.DATA_FIELD);
 
-        // aggregate based on group by
-        select.addGroupBy(Usage.METRIC_FIELD, Usage.ACCOUNT_FIELD, Usage.USAGE_FIELD, Usage.UNIT_FIELD, Usage.DATA_FIELD);
+            // modify insert command with list of fields and select statement
+            insert.setSelect(fields, select);
 
-        // modify insert command with list of fields and select statement
-        insert.setSelect(fields, select);
+            // execute the insert
+            int ret = db.executeInsertStatement(insert);
 
-        // execute the insert
-        int ret = db.executeInsertStatement(insert);
+            String message;
 
-        String message;
+            // and handle the status
+            if (ret < 0) {
+                message = "Problem with the database access, could not generate UDRs";
+                status.setServerError(message);
+            } else {
+                message = String.format("%d UDRs generated for period %s and %s", ret, new Timestamp(time_from), new Timestamp(time_to));
+                status.setSuccessful(message);
+            }
 
-        // and handle the status
-        if (ret < 0) {
-            message = "Problem with the database access, could not generate UDRs";
-            status.setServerError(message);
-        } else {
-            message = String.format("%d UDRs generated for period %s and %s", ret, new Timestamp(time_from), new Timestamp(time_to));
-            status.setSuccessful(message);
+            CommandLogger.log(message);
+        } catch (Exception e) {
+            CommandLogger.log(e.getMessage());
+            status.setClientError(e.getMessage());
+        } finally{
+            assert insert != null;
+            insert.close();
+            assert select != null;
+            select.close();
         }
-
-        CommandLogger.log(message);
 
         return status;
     }

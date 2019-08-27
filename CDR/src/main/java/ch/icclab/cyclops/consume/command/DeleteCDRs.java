@@ -28,6 +28,7 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.jooq.impl.DSL.delete;
 import static org.jooq.impl.DSL.inline;
 
 public class DeleteCDRs extends Command {
@@ -43,11 +44,12 @@ public class DeleteCDRs extends Command {
     @Override
     Status execute() {
         Status status = new Status();
+        DeleteQuery delete = null;
         try {
             DbAccess db = new DbAccess();
 
             // select time_from CDR table
-            DeleteQuery delete = db.createDeleteFrom(CDR.TABLE);
+            delete = db.createDeleteFrom(CDR.TABLE);
 
             // time window selection
             delete.addConditions(CDR.TIME_FROM_FIELD.ge(inline(new Timestamp(time_from))));
@@ -67,6 +69,9 @@ public class DeleteCDRs extends Command {
         } catch (Exception e) {
             CommandLogger.log(e.getMessage());
             status.setServerError(e.getMessage());
+        } finally{
+            assert delete != null;
+            delete.close();
         }
 
         return status;
