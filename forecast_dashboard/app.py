@@ -6,7 +6,6 @@ from flask_cors import CORS
 app = Flask(__name__)
 CORS(app)
 
-
 @app.route('/addrule', methods=['POST'])
 def addrule():
     data = json.loads(request.data)

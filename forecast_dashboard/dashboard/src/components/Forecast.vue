@@ -90,7 +90,9 @@ export default {
       .then(response => {
         this.accounts = response.data;
           for (var option in this.accounts){
-            this.options.push({'value':this.accounts[option],'text':this.accounts[option]})
+            if (!this.accounts[option].includes("forecast")){
+              this.options.push({'value':this.accounts[option],'text':this.accounts[option]})
+            }
           }
       })
   },

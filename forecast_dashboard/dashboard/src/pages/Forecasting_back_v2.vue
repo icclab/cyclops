@@ -2,19 +2,15 @@
   <div class="content">
     <div class="md-layout">
       <div
-        class="md-layout-item md-medium-size-100 md-xsmall-size-100 md-size-34"
+        class="md-layout-item md-medium-size-100 md-xsmall-size-100 md-size-33"
       >
 
             <forecast @update="onUpdate" table-header-color="green"></forecast>
             <cleanup @update="onUpdate" table-header-color="green"></cleanup>
-
-           <md-card>
+            <md-card>
 
 </md-card>
       </div>
-
-
-
       <div v-if="totaltotal != 0"
         class="md-layout-item md-medium-size-100 md-xsmall-size-100 md-size-33"
         >
@@ -28,7 +24,7 @@
           :options="chartOptions"
           />
 
-
+          <md-card>
 
           <md-table v-model="bills" :key="componentKey" :table-header-color="tableHeaderColor">
             <md-table-row slot="md-table-row" slot-scope="{ item }">
@@ -40,12 +36,9 @@
           </md-table>
 
 
-
+</md-card>
       </md-card>
-          </div>
-          <div v-if="totaltotal != 0"
-            class="md-layout-item md-medium-size-100 md-xsmall-size-100 md-size-33"
-            >
+
           <md-card >
             <md-card-header data-background-color="purple">
             <h4 class="title">Total Forecast by model</h4>
@@ -56,7 +49,7 @@
               :options="totalchartOptions"
               />
 
-
+              <md-card>
 
               <md-table v-model="modeltotal" :key="componentKey" :table-header-color="tableHeaderColor">
                 <md-table-row slot="md-table-row" slot-scope="{ item }">
@@ -65,36 +58,36 @@
                   <!--<md-table-cell md-label="%">{{ item.percentage }}</md-table-cell> -->
                 </md-table-row>
               </md-table>
-
+            </md-card>
           </md-card>
 
       </div>
 
       <div v-if="totaltotal != 0"
-        class="md-layout-item md-medium-size-100 md-xsmall-size-100 md-size-100"
+        class="md-layout-item md-medium-size-100 md-xsmall-size-100 md-size-33"
       >
       <md-card>
-        <md-card-header data-background-color="blue">
+        <md-card-header data-background-color="orange">
         <h4 class="title">Bill Breakdowns</h4>
       </md-card-header>
-      <md-card style="margin-right:35px;margin-left:35px;" class="md-layout-item md-medium-size-100 md-xsmall-size-100 md-size-45" v-for="metric in breakdown">
-        <md-card-header data-background-color="purple">
+      <md-card v-for="metric in breakdown">
+        <md-card-header data-background-color="blue">
         <h4 class="title">{{"Account: " + metric.account}}</h4>
         <h4 class="title">{{"Model: " + metric.model}}</h4>
-
+        <GChart
+          type="PieChart"
+          :data="metric.chart"
+          :options="dynOptions"
+          />
       </md-card-header>
-      <GChart style="width: 100%;"
-        type="PieChart"
-        :data="metric.chart"
-        :options="dynOptions"
-        />
-      <md-table v-model="metric.table" :key="componentKey" :table-header-color="tableHeaderColor">
+
+      <!--<md-table v-model="metric.table" :key="componentKey" :table-header-color="tableHeaderColor">
         <md-table-row slot="md-table-row" slot-scope="{ item }">
           <md-table-cell md-label="Metric">{{ item.metric }}</md-table-cell>
           <md-table-cell md-label="Usage">{{ item.usage}}</md-table-cell>
           <md-table-cell md-label="Charge">{{ item.charge.toFixed(2) + " CHF" }}</md-table-cell>
         </md-table-row>
-      </md-table>
+      </md-table>-->
     </md-card>
     </md-card>
 
@@ -178,7 +171,6 @@ data(){
 },
 mounted(){
   this.onUpdate();
-  this.renderChart(this.chartjsdata, this.jsoptions);
 },
 methods:{
   onUpdate(){

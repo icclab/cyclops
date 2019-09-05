@@ -25,7 +25,7 @@
     left: 0;
   }
 }
-
+svg > g > g:last-child { pointer-events: none }
 @mixin ct-align-justify($ct-text-align: $ct-text-align, $ct-text-justify: $ct-text-justify) {
   -webkit-box-align: $ct-text-align;
   -webkit-align-items: $ct-text-align;

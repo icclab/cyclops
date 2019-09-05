@@ -3,14 +3,14 @@
     <div class = "md-layout">
 
     <div
-      class="md-layout-item md-medium-size-100 md-xsmall-size-100 md-size-50"
+      class="md-layout-item md-medium-size-100 md-xsmall-size-100 md-size-100"
       >
       <md-card>
         <md-card-header data-background-color="red">
           <h4 class="title">Record Cleanup</h4>
           <p class="category">Target model to clean-up</p>
         </md-card-header>
-        <div class="md-layout-item md-small-size-100 md-size-50">
+        <div class="md-layout-item md-small-size-100 md-size-100">
           <md-field>
             <label>Target model</label>
             <md-input v-model="target" type="text"></md-input>
@@ -18,7 +18,7 @@
 
         </div>
 
-        <div class="md-layout-item md-small-size-100 md-size-50">
+        <div class="md-layout-item md-small-size-100 md-size-100">
 
         <md-button class="md-danger" id="post" v-on:click="getJson">Execute</md-button>
         <md-button id="clear" v-on:click="clear">Clear</md-button>
@@ -29,7 +29,7 @@
     </div>
 
     <div
-      class="md-layout-item md-medium-size-100 md-xsmall-size-100 md-size-50"
+      class="md-layout-item md-medium-size-100 md-xsmall-size-100 md-size-100"
       >
       <md-card v-if="visible">
         <md-card-header data-background-color="orange">

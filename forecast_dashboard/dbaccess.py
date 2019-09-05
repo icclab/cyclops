@@ -1,6 +1,6 @@
 import psycopg2
 import requests
-from flask import jsonify
+
 
 
 class DBAccess:
