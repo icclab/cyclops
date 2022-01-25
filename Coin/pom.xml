@@ -110,11 +110,6 @@
             <name>Public online Restlet repository</name>
             <url>http://maven.restlet.com</url>
         </repository>
-        <repository>
-            <id>maven-xpp3</id>
-            <name>Public online XPP3 repository</name>
-            <url>https://teamcity-systeme.lip6.fr/nexus/content/groups/public</url>
-        </repository>
     </repositories>
 
     <dependencies>
